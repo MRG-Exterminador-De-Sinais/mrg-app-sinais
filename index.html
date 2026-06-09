@@ -29,6 +29,15 @@ body{margin:0;background:#060606;color:white;font-family:Arial,sans-serif;}
 .historico-item:last-child{border-bottom:none;}
 .badge{color:#00ff88;font-weight:bold;}
 .vazio{color:#aaa;text-align:center;padding:10px;}
+input{width:100%;box-sizing:border-box;margin:7px 0;padding:12px;border-radius:10px;border:1px solid #444;background:#0b0b0b;color:white;font-size:15px;}
+button{width:100%;padding:12px;margin-top:8px;border:0;border-radius:10px;background:#00ff88;color:#000;font-weight:bold;font-size:15px;cursor:pointer;}
+button.sec{background:#333;color:white;}
+button.sair{background:#7a2020;color:white;}
+.msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4;}
+.ok{color:#00ff88;}
+.erro{color:#ff6666;}
+.escondido{display:none;}
+.usuario-topo{text-align:center;color:#aaa;font-size:13px;margin-bottom:10px;}
 @media(max-width:600px){
     .ativos-grid.dois,.ativos-grid.tres{grid-template-columns:1fr;}
     .ativos-grid.tres .sinal-card:nth-child(3){grid-column:auto;}
@@ -47,19 +56,56 @@ body{margin:0;background:#060606;color:white;font-family:Arial,sans-serif;}
         <div class="sub">MRG EXTERMINADOR DE SINAIS</div>
     </div>
 
-    <div class="card leitura">
-        <div class="titulo">LEITURA AO VIVO</div>
-        <div id="leitura">Aguardando leitura do Exterminador de Sinais...</div>
+    <div id="authBox" class="card">
+        <div class="titulo">ACESSO RESTRITO</div>
+
+        <input id="nome" placeholder="Seu nome">
+        <input id="email" type="email" placeholder="E-mail de login">
+        <input id="senha" type="password" placeholder="Senha">
+
+        <button onclick="entrar()">ENTRAR</button>
+        <button class="sec" onclick="criarConta()">CRIAR CONTA</button>
+
+        <div id="authMsg" class="msg">
+            Faça login ou crie sua conta para solicitar liberação.
+        </div>
     </div>
 
-    <div class="card">
-        <div class="titulo">SINAIS ATIVOS</div>
-        <div id="ativos">Carregando sinais...</div>
+    <div id="aguardandoBox" class="card escondido">
+        <div class="titulo">AGUARDANDO LIBERAÇÃO</div>
+        <div class="msg">
+            Seu cadastro foi recebido.<br><br>
+            Chame o administrador no WhatsApp do grupo que você participa e envie o e-mail usado no cadastro:
+            <br><br>
+            <b id="emailAguardando"></b>
+            <br><br>
+            Após a liberação, seu acesso será ativado automaticamente.
+        </div>
+        <button class="sair" onclick="sair()">SAIR</button>
     </div>
 
-    <div class="card">
-        <div class="titulo">HISTÓRICO RECENTE</div>
-        <div id="historico">Carregando histórico...</div>
+    <div id="appBox" class="escondido">
+
+        <div class="usuario-topo">
+            Acesso liberado: <span id="usuarioEmail"></span>
+        </div>
+
+        <div class="card leitura">
+            <div class="titulo">LEITURA AO VIVO</div>
+            <div id="leitura">Aguardando leitura do Exterminador de Sinais...</div>
+        </div>
+
+        <div class="card">
+            <div class="titulo">SINAIS ATIVOS</div>
+            <div id="ativos">Carregando sinais...</div>
+        </div>
+
+        <div class="card">
+            <div class="titulo">HISTÓRICO RECENTE</div>
+            <div id="historico">Carregando histórico...</div>
+        </div>
+
+        <button class="sair" onclick="sair()">SAIR</button>
     </div>
 
 </div>
@@ -69,6 +115,130 @@ const SUPABASE_URL = "https://bflptqejltvwfjhixwpj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let painelAtivo = false;
+
+function mostrarAuth(msg=""){
+    document.getElementById("authBox").classList.remove("escondido");
+    document.getElementById("aguardandoBox").classList.add("escondido");
+    document.getElementById("appBox").classList.add("escondido");
+    if(msg) document.getElementById("authMsg").innerHTML = msg;
+}
+
+function mostrarAguardando(email){
+    document.getElementById("authBox").classList.add("escondido");
+    document.getElementById("aguardandoBox").classList.remove("escondido");
+    document.getElementById("appBox").classList.add("escondido");
+    document.getElementById("emailAguardando").innerText = email || "";
+}
+
+function mostrarApp(email){
+    document.getElementById("authBox").classList.add("escondido");
+    document.getElementById("aguardandoBox").classList.add("escondido");
+    document.getElementById("appBox").classList.remove("escondido");
+    document.getElementById("usuarioEmail").innerText = email || "";
+    painelAtivo = true;
+    carregar();
+    carregarLeitura();
+}
+
+async function criarConta(){
+    const nome = document.getElementById("nome").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const senha = document.getElementById("senha").value.trim();
+
+    if(!nome || !email || !senha){
+        document.getElementById("authMsg").innerHTML = "<span class='erro'>Preencha nome, e-mail e senha.</span>";
+        return;
+    }
+
+    const { data, error } = await db.auth.signUp({
+        email: email,
+        password: senha
+    });
+
+    if(error){
+        document.getElementById("authMsg").innerHTML = "<span class='erro'>" + error.message + "</span>";
+        return;
+    }
+
+    if(data && data.user){
+        await db.from("perfis").insert({
+            id: data.user.id,
+            nome: nome,
+            email: email,
+            liberado: false
+        });
+    }
+
+    mostrarAguardando(email);
+}
+
+async function entrar(){
+    const email = document.getElementById("email").value.trim();
+    const senha = document.getElementById("senha").value.trim();
+
+    if(!email || !senha){
+        document.getElementById("authMsg").innerHTML = "<span class='erro'>Informe e-mail e senha.</span>";
+        return;
+    }
+
+    const { data, error } = await db.auth.signInWithPassword({
+        email: email,
+        password: senha
+    });
+
+    if(error){
+        document.getElementById("authMsg").innerHTML = "<span class='erro'>Login ou senha inválidos.</span>";
+        return;
+    }
+
+    await verificarAcesso();
+}
+
+async function verificarAcesso(){
+    const { data: sessionData } = await db.auth.getSession();
+
+    if(!sessionData || !sessionData.session || !sessionData.session.user){
+        painelAtivo = false;
+        mostrarAuth();
+        return;
+    }
+
+    const user = sessionData.session.user;
+
+    const { data: perfil, error } = await db
+        .from("perfis")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+    if(error || !perfil){
+        await db.from("perfis").insert({
+            id: user.id,
+            nome: user.email,
+            email: user.email,
+            liberado: false
+        });
+
+        painelAtivo = false;
+        mostrarAguardando(user.email);
+        return;
+    }
+
+    if(perfil.liberado === true){
+        mostrarApp(user.email);
+    } else {
+        painelAtivo = false;
+        mostrarAguardando(user.email);
+    }
+}
+
+async function sair(){
+    painelAtivo = false;
+    await db.auth.signOut();
+    mostrarAuth("Sessão encerrada.");
+}
 
 function alvoNumero(alvo){
     if(!alvo) return 0;
@@ -113,6 +283,8 @@ function cardAtivo(item){
 }
 
 async function carregarLeitura() {
+    if(!painelAtivo) return;
+
     const { data, error } = await db
         .from("leituras_ao_vivo")
         .select("*")
@@ -131,6 +303,8 @@ async function carregarLeitura() {
 }
 
 async function carregar() {
+    if(!painelAtivo) return;
+
     const { data, error } = await db
         .from("sinais")
         .select("*")
@@ -194,9 +368,9 @@ async function carregar() {
     }
 }
 
-carregar();
-carregarLeitura();
+verificarAcesso();
 
+setInterval(verificarAcesso, 10000);
 setInterval(carregar, 2000);
 setInterval(carregarLeitura, 2000);
 </script>
