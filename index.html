@@ -112,6 +112,24 @@ function cardAtivo(item){
     `;
 }
 
+async function carregarLeitura() {
+    const { data, error } = await db
+        .from("leituras_ao_vivo")
+        .select("*")
+        .eq("ativo", true)
+        .order("id", { ascending: false })
+        .limit(1);
+
+    if (error || !data || data.length === 0) {
+        document.getElementById("leitura").innerHTML =
+            "Aguardando leitura do Exterminador de Sinais...";
+        return;
+    }
+
+    document.getElementById("leitura").innerHTML =
+        data[0].mensagem || "Aguardando leitura do Exterminador de Sinais...";
+}
+
 async function carregar() {
     const { data, error } = await db
         .from("sinais")
@@ -177,7 +195,10 @@ async function carregar() {
 }
 
 carregar();
+carregarLeitura();
+
 setInterval(carregar, 2000);
+setInterval(carregarLeitura, 2000);
 </script>
 
 </body>
