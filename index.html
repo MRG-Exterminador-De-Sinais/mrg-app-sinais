@@ -8,38 +8,85 @@
 
 <style>
 body{
-    background:#111;
+    margin:0;
+    background:#0b0b0b;
     color:white;
-    font-family:Arial;
-    text-align:center;
-    padding-top:50px;
+    font-family:Arial, sans-serif;
 }
-.card{
-    background:#222;
-    width:350px;
+.container{
+    max-width:520px;
     margin:auto;
     padding:20px;
-    border-radius:15px;
+}
+.header{
+    text-align:center;
+    margin-bottom:20px;
+}
+.card{
+    background:#181818;
+    border:1px solid #333;
+    border-radius:18px;
+    padding:20px;
+    margin-bottom:16px;
+}
+.titulo{
+    color:#aaa;
+    font-size:14px;
+    margin-bottom:8px;
 }
 .alvo{
-    font-size:40px;
+    font-size:48px;
     color:#00ff88;
     font-weight:bold;
 }
 .status{
+    font-size:20px;
     color:#ffaa00;
+    margin-top:8px;
+}
+.info{
+    font-size:15px;
+    color:#ddd;
+    margin-top:6px;
+}
+.historico-item{
+    border-bottom:1px solid #333;
+    padding:10px 0;
+    text-align:left;
+}
+.historico-item:last-child{
+    border-bottom:none;
+}
+.badge{
+    color:#00ff88;
+    font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card">
-<h1>MRG SINAIS</h1>
-<h3>Sinal Atual</h3>
+<div class="container">
 
-<div id="alvo" class="alvo">Carregando...</div>
-<div id="status" class="status">Aguardando...</div>
+    <div class="header">
+        <h1>MRG SIGNALS</h1>
+        <p>Painel oficial de sinais</p>
+    </div>
+
+    <div class="card">
+        <div class="titulo">SINAL ATIVO</div>
+        <div id="alvo" class="alvo">Carregando...</div>
+        <div id="status" class="status">Aguardando...</div>
+        <div id="janela" class="info"></div>
+        <div id="resultado" class="info"></div>
+        <div id="multiplicador" class="info"></div>
+    </div>
+
+    <div class="card">
+        <div class="titulo">HISTÓRICO RECENTE</div>
+        <div id="historico">Carregando histórico...</div>
+    </div>
+
 </div>
 
 <script>
@@ -53,21 +100,44 @@ async function carregar() {
         .from("sinais")
         .select("*")
         .order("id", { ascending: false })
-        .limit(1);
+        .limit(10);
 
     if (error) {
         document.getElementById("alvo").innerText = "BLOQUEADO";
-        document.getElementById("status").innerText = "Liberar RLS no Supabase";
+        document.getElementById("status").innerText = "Verificar Supabase";
+        document.getElementById("historico").innerText = "Erro ao carregar histórico";
         return;
     }
 
-    if (data && data.length > 0) {
-        document.getElementById("alvo").innerText = data[0].alvo;
-        document.getElementById("status").innerText = data[0].status;
-    } else {
+    if (!data || data.length === 0) {
         document.getElementById("alvo").innerText = "SEM SINAL";
-        document.getElementById("status").innerText = "Aguardando sinal";
+        document.getElementById("status").innerText = "Aguardando";
+        document.getElementById("historico").innerText = "Nenhum sinal ainda";
+        return;
     }
+
+    const atual = data[0];
+
+    document.getElementById("alvo").innerText = atual.alvo || "-";
+    document.getElementById("status").innerText = atual.status || "-";
+    document.getElementById("janela").innerText = atual.janela ? "Janela: " + atual.janela : "";
+    document.getElementById("resultado").innerText = atual.resultado ? "Resultado: " + atual.resultado : "";
+    document.getElementById("multiplicador").innerText = atual.multiplicador_real ? "Multiplicador: " + atual.multiplicador_real : "";
+
+    let html = "";
+
+    data.forEach(item => {
+        html += `
+            <div class="historico-item">
+                <div><span class="badge">${item.alvo || "-"}</span> | ${item.status || "-"}</div>
+                <div>Janela: ${item.janela || "não informada"}</div>
+                <div>Resultado: ${item.resultado || "pendente"}</div>
+                <div>Multiplicador: ${item.multiplicador_real || "-"}</div>
+            </div>
+        `;
+    });
+
+    document.getElementById("historico").innerHTML = html;
 }
 
 carregar();
