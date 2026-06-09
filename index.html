@@ -2,52 +2,69 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>MRG Sinais</title>
+<title>MRG Signals</title>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
 body{
     margin:0;
-    background:#0b0b0b;
+    background:#070707;
     color:white;
     font-family:Arial, sans-serif;
 }
 .container{
-    max-width:520px;
+    max-width:620px;
     margin:auto;
-    padding:20px;
+    padding:18px;
 }
 .header{
     text-align:center;
-    margin-bottom:20px;
+    margin-bottom:18px;
+}
+.header h1{
+    margin-bottom:4px;
 }
 .card{
-    background:#181818;
+    background:#171717;
     border:1px solid #333;
     border-radius:18px;
-    padding:20px;
+    padding:18px;
     margin-bottom:16px;
 }
 .titulo{
     color:#aaa;
     font-size:14px;
-    margin-bottom:8px;
+    margin-bottom:10px;
+    letter-spacing:1px;
+}
+.sinal-ativo{
+    background:#202020;
+    border:1px solid #00ff88;
+    border-radius:16px;
+    padding:16px;
+    margin-bottom:12px;
+    text-align:left;
 }
 .alvo{
-    font-size:48px;
+    font-size:44px;
     color:#00ff88;
     font-weight:bold;
 }
 .status{
-    font-size:20px;
+    font-size:18px;
     color:#ffaa00;
-    margin-top:8px;
+    margin-top:6px;
+    font-weight:bold;
 }
 .info{
-    font-size:15px;
+    font-size:14px;
     color:#ddd;
-    margin-top:6px;
+    margin-top:5px;
+}
+.origem{
+    color:#80c7ff;
+    font-weight:bold;
 }
 .historico-item{
     border-bottom:1px solid #333;
@@ -60,6 +77,11 @@ body{
 .badge{
     color:#00ff88;
     font-weight:bold;
+}
+.vazio{
+    color:#aaa;
+    text-align:center;
+    padding:12px;
 }
 </style>
 </head>
@@ -74,12 +96,8 @@ body{
     </div>
 
     <div class="card">
-        <div class="titulo">SINAL ATIVO</div>
-        <div id="alvo" class="alvo">Carregando...</div>
-        <div id="status" class="status">Aguardando...</div>
-        <div id="janela" class="info"></div>
-        <div id="resultado" class="info"></div>
-        <div id="multiplicador" class="info"></div>
+        <div class="titulo">SINAIS ATIVOS</div>
+        <div id="ativos">Carregando sinais ativos...</div>
     </div>
 
     <div class="card">
@@ -95,49 +113,79 @@ const SUPABASE_KEY = "sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+function ehAtivo(status){
+    if(!status) return false;
+    const s = status.toUpperCase();
+    return (
+        s === "ATIVO" ||
+        s === "AGUARDANDO" ||
+        s === "EM JANELA" ||
+        s === "ATINGIDO ANTECIPADAMENTE" ||
+        s === "TESTE"
+    );
+}
+
 async function carregar() {
     const { data, error } = await db
         .from("sinais")
         .select("*")
         .order("id", { ascending: false })
-        .limit(10);
+        .limit(20);
 
     if (error) {
-        document.getElementById("alvo").innerText = "BLOQUEADO";
-        document.getElementById("status").innerText = "Verificar Supabase";
-        document.getElementById("historico").innerText = "Erro ao carregar histórico";
+        document.getElementById("ativos").innerHTML = "<div class='vazio'>Erro ao carregar sinais</div>";
+        document.getElementById("historico").innerHTML = "<div class='vazio'>Verificar Supabase</div>";
         return;
     }
 
     if (!data || data.length === 0) {
-        document.getElementById("alvo").innerText = "SEM SINAL";
-        document.getElementById("status").innerText = "Aguardando";
-        document.getElementById("historico").innerText = "Nenhum sinal ainda";
+        document.getElementById("ativos").innerHTML = "<div class='vazio'>Nenhum sinal ativo</div>";
+        document.getElementById("historico").innerHTML = "<div class='vazio'>Nenhum histórico ainda</div>";
         return;
     }
 
-    const atual = data[0];
+    const ativos = data.filter(item => ehAtivo(item.status));
+    const historico = data.filter(item => !ehAtivo(item.status));
 
-    document.getElementById("alvo").innerText = atual.alvo || "-";
-    document.getElementById("status").innerText = atual.status || "-";
-    document.getElementById("janela").innerText = atual.janela ? "Janela: " + atual.janela : "";
-    document.getElementById("resultado").innerText = atual.resultado ? "Resultado: " + atual.resultado : "";
-    document.getElementById("multiplicador").innerText = atual.multiplicador_real ? "Multiplicador: " + atual.multiplicador_real : "";
+    let htmlAtivos = "";
 
-    let html = "";
+    if(ativos.length === 0){
+        htmlAtivos = "<div class='vazio'>Nenhum sinal ativo no momento</div>";
+    } else {
+        ativos.forEach(item => {
+            htmlAtivos += `
+                <div class="sinal-ativo">
+                    <div class="origem">${item.origem || "MRG"}</div>
+                    <div class="alvo">${item.alvo || "-"}</div>
+                    <div class="status">${item.status || "-"}</div>
+                    <div class="info">Janela: ${item.janela || "não informada"}</div>
+                    <div class="info">Resultado: ${item.resultado || "pendente"}</div>
+                    <div class="info">Multiplicador: ${item.multiplicador_real || "-"}</div>
+                </div>
+            `;
+        });
+    }
 
-    data.forEach(item => {
-        html += `
-            <div class="historico-item">
-                <div><span class="badge">${item.alvo || "-"}</span> | ${item.status || "-"}</div>
-                <div>Janela: ${item.janela || "não informada"}</div>
-                <div>Resultado: ${item.resultado || "pendente"}</div>
-                <div>Multiplicador: ${item.multiplicador_real || "-"}</div>
-            </div>
-        `;
-    });
+    let htmlHistorico = "";
 
-    document.getElementById("historico").innerHTML = html;
+    if(historico.length === 0){
+        htmlHistorico = "<div class='vazio'>Nenhum sinal encerrado ainda</div>";
+    } else {
+        historico.forEach(item => {
+            htmlHistorico += `
+                <div class="historico-item">
+                    <div><span class="badge">${item.alvo || "-"}</span> | ${item.status || "-"}</div>
+                    <div>Origem: ${item.origem || "MRG"}</div>
+                    <div>Janela: ${item.janela || "não informada"}</div>
+                    <div>Resultado: ${item.resultado || "pendente"}</div>
+                    <div>Multiplicador: ${item.multiplicador_real || "-"}</div>
+                </div>
+            `;
+        });
+    }
+
+    document.getElementById("ativos").innerHTML = htmlAtivos;
+    document.getElementById("historico").innerHTML = htmlHistorico;
 }
 
 carregar();
