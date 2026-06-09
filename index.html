@@ -3,17 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <title>MRG Sinais</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<style>
+body{
+    background:#111;
+    color:white;
+    font-family:Arial;
+    text-align:center;
+    padding-top:50px;
+}
+.card{
+    background:#222;
+    width:350px;
+    margin:auto;
+    padding:20px;
+    border-radius:15px;
+}
+.alvo{
+    font-size:40px;
+    color:#00ff88;
+    font-weight:bold;
+}
+.status{
+    color:#ffaa00;
+}
+</style>
 </head>
 
-<body style="background:#111;color:white;font-family:Arial;text-align:center;padding-top:50px;">
+<body>
 
+<div class="card">
 <h1>MRG SINAIS</h1>
+<h3>Sinal Atual</h3>
 
-<h2>Sinal Ativo</h2>
+<div id="alvo" class="alvo">Carregando...</div>
+<div id="status" class="status">Aguardando...</div>
 
-<p>100x</p>
+</div>
 
-<p>Status: ATIVO</p>
+<script>
+const SUPABASE_URL = "https://bflptqejltwfjhixwpj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function carregar() {
+    const { data, error } = await supabase
+        .from('sinais')
+        .select('*')
+        .order('id', { ascending:false })
+        .limit(1);
+
+    if (error) {
+        document.getElementById('alvo').innerText = "Erro";
+        document.getElementById('status').innerText = "Falha ao carregar";
+        return;
+    }
+
+    if (data && data.length) {
+        document.getElementById('alvo').innerText = data[0].alvo;
+        document.getElementById('status').innerText = data[0].status;
+    }
+}
+
+carregar();
+setInterval(carregar, 5000);
+</script>
 
 </body>
 </html>
