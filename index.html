@@ -62,9 +62,9 @@ button.sair{background:#7a2020;color:white;}
 <div class="titulo">ENTRAR</div>
 <input id="loginEmail" type="email" placeholder="E-mail">
 <input id="loginSenha" type="password" placeholder="Senha">
-<button onclick="entrar()">ENTRAR</button>
-<button class="sec" onclick="mostrarCadastro()">CRIAR CONTA</button>
-<button class="sec" onclick="mostrarRecuperar()">ESQUECI MINHA SENHA</button>
+<button type="button" onclick="entrar()">ENTRAR</button>
+<button type="button" class="sec" onclick="mostrarCadastro()">CRIAR CONTA</button>
+<button type="button" class="sec" onclick="mostrarRecuperar()">ESQUECI MINHA SENHA</button>
 <div id="loginMsg" class="msg">Entre com seu e-mail e senha.</div>
 </div>
 
@@ -74,23 +74,23 @@ button.sair{background:#7a2020;color:white;}
 <input id="cadEmail" type="email" placeholder="E-mail">
 <input id="cadTelefone" placeholder="Telefone / WhatsApp">
 <input id="cadSenha" type="password" placeholder="Criar senha">
-<button onclick="criarConta()">CRIAR CONTA</button>
-<button class="sec" onclick="mostrarLogin()">JÁ TENHO CADASTRO / ENTRAR</button>
+<button type="button" onclick="criarConta()">CRIAR CONTA</button>
+<button type="button" class="sec" onclick="mostrarLogin()">JÁ TENHO CADASTRO / ENTRAR</button>
 <div id="cadMsg" class="msg">Use um e-mail válido. Ele será usado para recuperar sua senha.</div>
 </div>
 
 <div id="recuperarBox" class="card escondido">
 <div class="titulo">RECUPERAR SENHA</div>
 <input id="recEmail" type="email" placeholder="Digite seu e-mail cadastrado">
-<button onclick="recuperarSenha()">ENVIAR LINK DE RECUPERAÇÃO</button>
-<button class="sec" onclick="mostrarLogin()">VOLTAR PARA LOGIN</button>
+<button type="button" onclick="recuperarSenha()">ENVIAR LINK DE RECUPERAÇÃO</button>
+<button type="button" class="sec" onclick="mostrarLogin()">VOLTAR PARA LOGIN</button>
 <div id="recMsg" class="msg">Você receberá um link no e-mail para criar nova senha.</div>
 </div>
 
 <div id="novaSenhaBox" class="card escondido">
 <div class="titulo">CRIAR NOVA SENHA</div>
 <input id="novaSenha" type="password" placeholder="Nova senha">
-<button onclick="salvarNovaSenha()">SALVAR NOVA SENHA</button>
+<button type="button" onclick="salvarNovaSenha()">SALVAR NOVA SENHA</button>
 <div id="novaSenhaMsg" class="msg">Digite sua nova senha.</div>
 </div>
 
@@ -104,7 +104,7 @@ Chame o administrador no WhatsApp do grupo que você participa e envie o e-mail 
 <br><br>
 Após a liberação, seu acesso será ativado automaticamente.
 </div>
-<button class="sair" onclick="sair()">SAIR</button>
+<button type="button" class="sair" onclick="sair()">SAIR</button>
 </div>
 
 <div id="appBox" class="escondido">
@@ -125,7 +125,7 @@ Após a liberação, seu acesso será ativado automaticamente.
 <div id="historico">Carregando histórico...</div>
 </div>
 
-<button class="sair" onclick="sair()">SAIR</button>
+<button type="button" class="sair" onclick="sair()">SAIR</button>
 </div>
 
 </div>
@@ -141,275 +141,315 @@ let painelAtivo = false;
 let telaAtual = "login";
 
 function esconderTudo(){
-["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>{
-document.getElementById(id).classList.add("escondido");
-});
+    ["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>{
+        document.getElementById(id).classList.add("escondido");
+    });
 }
 
 function mostrarLogin(msg=""){
-painelAtivo=false;
-telaAtual="login";
-esconderTudo();
-document.getElementById("loginBox").classList.remove("escondido");
-if(msg) document.getElementById("loginMsg").innerHTML=msg;
+    painelAtivo=false;
+    telaAtual="login";
+    esconderTudo();
+    document.getElementById("loginBox").classList.remove("escondido");
+    if(msg) document.getElementById("loginMsg").innerHTML=msg;
 }
 
 function mostrarCadastro(){
-painelAtivo=false;
-telaAtual="cadastro";
-esconderTudo();
-document.getElementById("cadastroBox").classList.remove("escondido");
+    painelAtivo=false;
+    telaAtual="cadastro";
+    esconderTudo();
+    document.getElementById("cadastroBox").classList.remove("escondido");
 }
 
 function mostrarRecuperar(){
-painelAtivo=false;
-telaAtual="recuperar";
-esconderTudo();
-document.getElementById("recuperarBox").classList.remove("escondido");
+    painelAtivo=false;
+    telaAtual="recuperar";
+    esconderTudo();
+    document.getElementById("recuperarBox").classList.remove("escondido");
 }
 
 function mostrarNovaSenha(){
-painelAtivo=false;
-telaAtual="novaSenha";
-esconderTudo();
-document.getElementById("novaSenhaBox").classList.remove("escondido");
+    painelAtivo=false;
+    telaAtual="novaSenha";
+    esconderTudo();
+    document.getElementById("novaSenhaBox").classList.remove("escondido");
 }
 
 function mostrarAguardando(email){
-painelAtivo=false;
-telaAtual="aguardando";
-esconderTudo();
-document.getElementById("aguardandoBox").classList.remove("escondido");
-document.getElementById("emailAguardando").innerText=email||"";
+    painelAtivo=false;
+    telaAtual="aguardando";
+    esconderTudo();
+    document.getElementById("aguardandoBox").classList.remove("escondido");
+    document.getElementById("emailAguardando").innerText=email||"";
 }
 
 function mostrarApp(email){
-telaAtual="app";
-esconderTudo();
-document.getElementById("appBox").classList.remove("escondido");
-document.getElementById("usuarioEmail").innerText=email||"";
-painelAtivo=true;
-carregar();
-carregarLeitura();
+    telaAtual="app";
+    esconderTudo();
+    document.getElementById("appBox").classList.remove("escondido");
+    document.getElementById("usuarioEmail").innerText=email||"";
+    painelAtivo=true;
+    carregar();
+    carregarLeitura();
 }
 
 async function criarConta(){
-const nome=document.getElementById("cadNome").value.trim();
-const email=document.getElementById("cadEmail").value.trim();
-const telefone=document.getElementById("cadTelefone").value.trim();
-const senha=document.getElementById("cadSenha").value.trim();
+    const nome=document.getElementById("cadNome").value.trim();
+    const email=document.getElementById("cadEmail").value.trim();
+    const telefone=document.getElementById("cadTelefone").value.trim();
+    const senha=document.getElementById("cadSenha").value.trim();
 
-if(!nome||!email||!telefone||!senha){
-document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";
-return;
-}
+    if(!nome||!email||!telefone||!senha){
+        document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";
+        return;
+    }
 
-const {data,error}=await db.auth.signUp({
-email:email,
-password:senha,
-options:{
-emailRedirectTo:SITE_URL,
-data:{nome:nome,telefone:telefone}
-}
-});
+    document.getElementById("cadMsg").innerHTML="Criando cadastro...";
 
-if(error){
-document.getElementById("cadMsg").innerHTML="<span class='erro'>"+error.message+"</span>";
-return;
-}
+    const {data,error}=await db.auth.signUp({
+        email:email,
+        password:senha,
+        options:{
+            emailRedirectTo:SITE_URL,
+            data:{nome:nome,telefone:telefone}
+        }
+    });
 
-if(data && data.user){
-await db.from("perfis").upsert({
-id:data.user.id,
-nome:nome,
-email:email,
-telefone:telefone,
-liberado:false
-});
-}
+    if(error){
+        document.getElementById("cadMsg").innerHTML="<span class='erro'>"+error.message+"</span>";
+        return;
+    }
 
-document.getElementById("cadMsg").innerHTML=
-"Cadastro criado. Confirme seu e-mail. Depois volte aqui e clique em <b>JÁ TENHO CADASTRO / ENTRAR</b>.";
+    if(data && data.user){
+        await db.from("perfis").upsert({
+            id:data.user.id,
+            nome:nome,
+            email:email,
+            telefone:telefone,
+            liberado:false
+        });
+    }
+
+    telaAtual="cadastro";
+    document.getElementById("cadMsg").innerHTML=
+    "Cadastro criado. Confirme seu e-mail. Depois volte aqui e clique em <b>JÁ TENHO CADASTRO / ENTRAR</b>.";
 }
 
 async function entrar(){
-const email=document.getElementById("loginEmail").value.trim();
-const senha=document.getElementById("loginSenha").value.trim();
+    const email=document.getElementById("loginEmail").value.trim();
+    const senha=document.getElementById("loginSenha").value.trim();
 
-if(!email||!senha){
-document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";
-return;
-}
+    if(!email||!senha){
+        document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";
+        return;
+    }
 
-const {error}=await db.auth.signInWithPassword({email:email,password:senha});
+    const {error}=await db.auth.signInWithPassword({email:email,password:senha});
 
-if(error){
-document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";
-return;
-}
+    if(error){
+        document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";
+        return;
+    }
 
-await verificarAcesso(true);
+    await verificarAcesso(true);
 }
 
 async function recuperarSenha(){
-const email=document.getElementById("recEmail").value.trim();
+    const email=document.getElementById("recEmail").value.trim();
 
-if(!email){
-document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";
-return;
-}
+    if(!email){
+        document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";
+        return;
+    }
 
-const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});
+    const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});
 
-if(error){
-document.getElementById("recMsg").innerHTML="<span class='erro'>"+error.message+"</span>";
-return;
-}
+    if(error){
+        document.getElementById("recMsg").innerHTML="<span class='erro'>"+error.message+"</span>";
+        return;
+    }
 
-document.getElementById("recMsg").innerHTML="Link de recuperação enviado. Verifique seu e-mail.";
+    document.getElementById("recMsg").innerHTML="Link de recuperação enviado. Verifique seu e-mail.";
 }
 
 async function salvarNovaSenha(){
-const senha=document.getElementById("novaSenha").value.trim();
+    const senha=document.getElementById("novaSenha").value.trim();
 
-if(!senha){
-document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";
-return;
-}
+    if(!senha){
+        document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";
+        return;
+    }
 
-const {error}=await db.auth.updateUser({password:senha});
+    const {error}=await db.auth.updateUser({password:senha});
 
-if(error){
-document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";
-return;
-}
+    if(error){
+        document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";
+        return;
+    }
 
-document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";
-setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000);
+    document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";
+    setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000);
 }
 
 async function verificarAcesso(redirecionarSemSessao=false){
-const {data:sessionData}=await db.auth.getSession();
+    if(telaAtual==="cadastro" || telaAtual==="recuperar" || telaAtual==="novaSenha"){
+        return;
+    }
 
-if(!sessionData||!sessionData.session||!sessionData.session.user){
-painelAtivo=false;
-if(redirecionarSemSessao) mostrarLogin();
-return;
-}
+    const {data:sessionData}=await db.auth.getSession();
 
-const user=sessionData.session.user;
+    if(!sessionData||!sessionData.session||!sessionData.session.user){
+        painelAtivo=false;
+        if(redirecionarSemSessao) mostrarLogin();
+        return;
+    }
 
-const {data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();
+    const user=sessionData.session.user;
 
-if(error||!perfil){
-await db.from("perfis").insert({
-id:user.id,
-nome:user.user_metadata?.nome || user.email,
-email:user.email,
-telefone:user.user_metadata?.telefone || "",
-liberado:false
-});
-mostrarAguardando(user.email);
-return;
-}
+    const {data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();
 
-if(perfil.liberado===true){
-mostrarApp(user.email);
-}else{
-mostrarAguardando(user.email);
-}
+    if(error||!perfil){
+        await db.from("perfis").insert({
+            id:user.id,
+            nome:user.user_metadata?.nome || user.email,
+            email:user.email,
+            telefone:user.user_metadata?.telefone || "",
+            liberado:false
+        });
+        mostrarAguardando(user.email);
+        return;
+    }
+
+    if(perfil.liberado===true){
+        mostrarApp(user.email);
+    }else{
+        mostrarAguardando(user.email);
+    }
 }
 
 async function sair(){
-painelAtivo=false;
-await db.auth.signOut();
-mostrarLogin("Sessão encerrada.");
+    painelAtivo=false;
+    await db.auth.signOut();
+    mostrarLogin("Sessão encerrada.");
 }
 
-function alvoNumero(alvo){return Number(String(alvo||"").replace("x","").replace("X","").trim())||0;}
+function alvoNumero(alvo){
+    return Number(String(alvo||"").replace("x","").replace("X","").trim())||0;
+}
+
 function horarioValor(h){
-if(!h)return 999999;
-const p=String(h).split(":").map(Number);
-return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
+    if(!h)return 999999;
+    const p=String(h).split(":").map(Number);
+    return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
 }
-function ehAtivo(item){return item.ativo===true;}
-function nomeCategoria(item){return item.categoria||item.origem||item.tipo||"MRG";}
+
+function ehAtivo(item){
+    return item.ativo===true;
+}
+
+function nomeCategoria(item){
+    return item.categoria||item.origem||item.tipo||"MRG";
+}
+
 function textoMultiplicador(item){
-if(!item.multiplicador_real)return "-";
-return item.horario_real ? `${item.multiplicador_real} às ${item.horario_real}` : item.multiplicador_real;
+    if(!item.multiplicador_real)return "-";
+    return item.horario_real ? `${item.multiplicador_real} às ${item.horario_real}` : item.multiplicador_real;
 }
+
 function cardAtivo(item){
-return `<div class="sinal-card">
-<div class="cat">${nomeCategoria(item)}</div>
-<div class="alvo">${item.alvo||"-"}</div>
-<div class="status">${item.status||"-"}</div>
-<div class="info">Horário: ${item.horario||"não informado"}</div>
-<div class="info">VAR: ${item.variacao||"não informado"}</div>
-<div class="info">Janela: ${item.janela||"não informada"}</div>
-<div class="info">Score: ${item.score||"-"}</div>
-</div>`;
+    return `<div class="sinal-card">
+        <div class="cat">${nomeCategoria(item)}</div>
+        <div class="alvo">${item.alvo||"-"}</div>
+        <div class="status">${item.status||"-"}</div>
+        <div class="info">Horário: ${item.horario||"não informado"}</div>
+        <div class="info">VAR: ${item.variacao||"não informado"}</div>
+        <div class="info">Janela: ${item.janela||"não informada"}</div>
+        <div class="info">Score: ${item.score||"-"}</div>
+    </div>`;
 }
 
 async function carregarLeitura(){
-if(!painelAtivo)return;
-const {data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(1);
-document.getElementById("leitura").innerHTML=(error||!data||data.length===0)?"Aguardando leitura do Exterminador de Sinais...":(data[0].mensagem||"Aguardando leitura do Exterminador de Sinais...");
+    if(!painelAtivo)return;
+
+    const {data,error}=await db
+        .from("leituras_ao_vivo")
+        .select("*")
+        .eq("ativo",true)
+        .order("id",{ascending:false})
+        .limit(1);
+
+    document.getElementById("leitura").innerHTML=
+        (error||!data||data.length===0)
+        ? "Aguardando leitura do Exterminador de Sinais..."
+        : (data[0].mensagem||"Aguardando leitura do Exterminador de Sinais...");
 }
 
 async function carregar(){
-if(!painelAtivo)return;
-const {data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);
+    if(!painelAtivo)return;
 
-if(error){
-document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";
-document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";
-return;
-}
+    const {data,error}=await db
+        .from("sinais")
+        .select("*")
+        .order("id",{ascending:false})
+        .limit(60);
 
-let ativos=(data||[]).filter(ehAtivo);
-let historico=(data||[]).filter(item=>!ehAtivo(item));
+    if(error){
+        document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";
+        document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";
+        return;
+    }
 
-ativos.sort((a,b)=>{
-const h=horarioValor(a.horario)-horarioValor(b.horario);
-return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo);
-});
+    let ativos=(data||[]).filter(ehAtivo);
+    let historico=(data||[]).filter(item=>!ehAtivo(item));
 
-ativos=ativos.slice(0,3);
-historico=historico.slice(0,20);
+    ativos.sort((a,b)=>{
+        const h=horarioValor(a.horario)-horarioValor(b.horario);
+        return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo);
+    });
 
-let classe="ativos-grid";
-if(ativos.length===2)classe+=" dois";
-if(ativos.length===3)classe+=" tres";
+    ativos=ativos.slice(0,3);
+    historico=historico.slice(0,20);
 
-document.getElementById("ativos").innerHTML=ativos.length?`<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:"<div class='vazio'>Nenhum sinal ativo no momento</div>";
+    let classe="ativos-grid";
+    if(ativos.length===2)classe+=" dois";
+    if(ativos.length===3)classe+=" tres";
 
-document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`
-<div class="historico-item">
-<div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div>
-<div>Origem: ${nomeCategoria(item)}</div>
-<div>Horário previsto: ${item.horario||"não informado"}</div>
-<div>Janela: ${item.janela||"não informada"}</div>
-<div>Resultado: ${item.resultado||"pendente"}</div>
-<div>Multiplicador: ${textoMultiplicador(item)}</div>
-</div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>";
+    document.getElementById("ativos").innerHTML=
+        ativos.length
+        ? `<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`
+        : "<div class='vazio'>Nenhum sinal ativo no momento</div>";
+
+    document.getElementById("historico").innerHTML=
+        historico.length
+        ? historico.map(item=>`
+            <div class="historico-item">
+                <div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div>
+                <div>Origem: ${nomeCategoria(item)}</div>
+                <div>Horário previsto: ${item.horario||"não informado"}</div>
+                <div>Janela: ${item.janela||"não informada"}</div>
+                <div>Resultado: ${item.resultado||"pendente"}</div>
+                <div>Multiplicador: ${textoMultiplicador(item)}</div>
+            </div>
+        `).join("")
+        : "<div class='vazio'>Nenhum sinal encerrado ainda</div>";
 }
 
 db.auth.onAuthStateChange((event,session)=>{
-if(event==="PASSWORD_RECOVERY"){
-mostrarNovaSenha();
-}
+    if(event==="PASSWORD_RECOVERY"){
+        mostrarNovaSenha();
+    }
 });
 
 if(window.location.hash.includes("type=recovery")){
-mostrarNovaSenha();
+    mostrarNovaSenha();
 }else{
-verificarAcesso(false);
+    mostrarLogin();
 }
 
 setInterval(()=>{
-if(telaAtual==="aguardando" || telaAtual==="app"){
-verificarAcesso(false);
-}
+    if(telaAtual==="aguardando" || telaAtual==="app"){
+        verificarAcesso(false);
+    }
 },10000);
 
 setInterval(carregar,2000);
