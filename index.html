@@ -7,32 +7,18 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-html,body{
-    width:100%;
-    max-width:100%;
-    overflow-x:hidden;
-}
+html,body{width:100%;max-width:100%;overflow-x:hidden;}
 *{box-sizing:border-box;}
-body{
-    margin:0;
-    background:#060606;
-    color:white;
-    font-family:Arial,sans-serif;
-}
-.container{
-    width:100%;
-    max-width:760px;
-    margin:auto;
-    padding:14px;
-}
+body{margin:0;background:#060606;color:white;font-family:Arial,sans-serif;}
+.container{width:100%;max-width:760px;margin:auto;padding:14px;}
 .header{text-align:center;margin-bottom:14px;}
-.header h1{margin:0;font-size:25px;color:#00ff88;}
+.header h1{margin:0;font-size:24px;color:#00ff88;}
 .header .linha{margin-top:5px;color:#ddd;font-size:15px;}
 .header .sub{margin-top:5px;color:#ffaa00;font-weight:bold;font-size:14px;}
 .card{background:#171717;border:1px solid #333;border-radius:16px;padding:14px;margin-bottom:12px;}
 .titulo{color:#aaa;font-size:13px;margin-bottom:8px;letter-spacing:1px;}
 input{width:100%;margin:7px 0;padding:14px;border-radius:10px;border:1px solid #444;background:#0b0b0b;color:white;font-size:16px;}
-button{width:100%;padding:14px;margin-top:8px;border:0;border-radius:10px;background:#00ff88;color:#000;font-weight:bold;font-size:16px;cursor:pointer;}
+button{width:100%;padding:14px;margin-top:8px;border:0;border-radius:10px;background:#00ff88;color:#000;font-weight:bold;font-size:16px;}
 button.sec{background:#333;color:white;}
 button.sair{background:#7a2020;color:white;}
 .msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4;}
@@ -52,18 +38,13 @@ button.sair{background:#7a2020;color:white;}
 .badge{color:#00ff88;font-weight:bold;}
 .vazio{color:#aaa;text-align:center;padding:10px;}
 .usuario-topo{text-align:center;color:#aaa;font-size:13px;margin-bottom:10px;}
-
 @media(max-width:600px){
-    .container{padding:12px;}
-    .header h1{font-size:22px;}
-    .header .linha{font-size:14px;}
-    .header .sub{font-size:13px;}
-    .card{padding:13px;border-radius:14px;}
-    input{font-size:16px;padding:14px;}
-    button{font-size:16px;padding:14px;}
-    .ativos-grid.dois,.ativos-grid.tres{grid-template-columns:1fr;}
-    .ativos-grid.tres .sinal-card:nth-child(3){grid-column:auto;}
-    .alvo{font-size:38px;}
+.container{padding:12px;}
+.header h1{font-size:22px;}
+.card{padding:13px;}
+.ativos-grid.dois,.ativos-grid.tres{grid-template-columns:1fr;}
+.ativos-grid.tres .sinal-card:nth-child(3){grid-column:auto;}
+.alvo{font-size:38px;}
 }
 </style>
 </head>
@@ -91,6 +72,7 @@ button.sair{background:#7a2020;color:white;}
 <div class="titulo">CRIAR CONTA</div>
 <input id="cadNome" placeholder="Seu nome">
 <input id="cadEmail" type="email" placeholder="E-mail">
+<input id="cadTelefone" placeholder="Telefone / WhatsApp">
 <input id="cadSenha" type="password" placeholder="Criar senha">
 <button onclick="criarConta()">CRIAR CONTA</button>
 <button class="sec" onclick="mostrarLogin()">JÁ TENHO CADASTRO / ENTRAR</button>
@@ -154,7 +136,9 @@ const SUPABASE_KEY = "sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const SITE_URL = "https://mrg-app-sinais.vercel.app";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 let painelAtivo = false;
+let telaAtual = "login";
 
 function esconderTudo(){
 ["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>{
@@ -163,33 +147,44 @@ document.getElementById(id).classList.add("escondido");
 }
 
 function mostrarLogin(msg=""){
-painelAtivo=false; esconderTudo();
+painelAtivo=false;
+telaAtual="login";
+esconderTudo();
 document.getElementById("loginBox").classList.remove("escondido");
 if(msg) document.getElementById("loginMsg").innerHTML=msg;
 }
 
 function mostrarCadastro(){
-painelAtivo=false; esconderTudo();
+painelAtivo=false;
+telaAtual="cadastro";
+esconderTudo();
 document.getElementById("cadastroBox").classList.remove("escondido");
 }
 
 function mostrarRecuperar(){
-painelAtivo=false; esconderTudo();
+painelAtivo=false;
+telaAtual="recuperar";
+esconderTudo();
 document.getElementById("recuperarBox").classList.remove("escondido");
 }
 
 function mostrarNovaSenha(){
-painelAtivo=false; esconderTudo();
+painelAtivo=false;
+telaAtual="novaSenha";
+esconderTudo();
 document.getElementById("novaSenhaBox").classList.remove("escondido");
 }
 
 function mostrarAguardando(email){
-painelAtivo=false; esconderTudo();
+painelAtivo=false;
+telaAtual="aguardando";
+esconderTudo();
 document.getElementById("aguardandoBox").classList.remove("escondido");
 document.getElementById("emailAguardando").innerText=email||"";
 }
 
 function mostrarApp(email){
+telaAtual="app";
 esconderTudo();
 document.getElementById("appBox").classList.remove("escondido");
 document.getElementById("usuarioEmail").innerText=email||"";
@@ -201,22 +196,36 @@ carregarLeitura();
 async function criarConta(){
 const nome=document.getElementById("cadNome").value.trim();
 const email=document.getElementById("cadEmail").value.trim();
+const telefone=document.getElementById("cadTelefone").value.trim();
 const senha=document.getElementById("cadSenha").value.trim();
 
-if(!nome||!email||!senha){
-document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail e senha.</span>";
+if(!nome||!email||!telefone||!senha){
+document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";
 return;
 }
 
 const {data,error}=await db.auth.signUp({
 email:email,
 password:senha,
-options:{emailRedirectTo:SITE_URL,data:{nome:nome}}
+options:{
+emailRedirectTo:SITE_URL,
+data:{nome:nome,telefone:telefone}
+}
 });
 
 if(error){
 document.getElementById("cadMsg").innerHTML="<span class='erro'>"+error.message+"</span>";
 return;
+}
+
+if(data && data.user){
+await db.from("perfis").upsert({
+id:data.user.id,
+nome:nome,
+email:email,
+telefone:telefone,
+liberado:false
+});
 }
 
 document.getElementById("cadMsg").innerHTML=
@@ -232,14 +241,14 @@ document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail
 return;
 }
 
-const {data,error}=await db.auth.signInWithPassword({email:email,password:senha});
+const {error}=await db.auth.signInWithPassword({email:email,password:senha});
 
 if(error){
 document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";
 return;
 }
 
-await verificarAcesso();
+await verificarAcesso(true);
 }
 
 async function recuperarSenha(){
@@ -279,11 +288,12 @@ document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login
 setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000);
 }
 
-async function verificarAcesso(){
+async function verificarAcesso(redirecionarSemSessao=false){
 const {data:sessionData}=await db.auth.getSession();
 
 if(!sessionData||!sessionData.session||!sessionData.session.user){
-mostrarLogin();
+painelAtivo=false;
+if(redirecionarSemSessao) mostrarLogin();
 return;
 }
 
@@ -296,6 +306,7 @@ await db.from("perfis").insert({
 id:user.id,
 nome:user.user_metadata?.nome || user.email,
 email:user.email,
+telefone:user.user_metadata?.telefone || "",
 liberado:false
 });
 mostrarAguardando(user.email);
@@ -392,10 +403,15 @@ mostrarNovaSenha();
 if(window.location.hash.includes("type=recovery")){
 mostrarNovaSenha();
 }else{
-verificarAcesso();
+verificarAcesso(false);
 }
 
-setInterval(verificarAcesso,10000);
+setInterval(()=>{
+if(telaAtual==="aguardando" || telaAtual==="app"){
+verificarAcesso(false);
+}
+},10000);
+
 setInterval(carregar,2000);
 setInterval(carregarLeitura,2000);
 </script>
