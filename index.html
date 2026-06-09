@@ -14,26 +14,26 @@ body{
     font-family:Arial, sans-serif;
 }
 .container{
-    max-width:720px;
+    max-width:760px;
     margin:auto;
-    padding:18px;
+    padding:14px;
 }
 .header{
     text-align:center;
-    margin-bottom:18px;
+    margin-bottom:14px;
 }
 .header h1{
     margin:0;
-    font-size:26px;
+    font-size:25px;
     color:#00ff88;
 }
 .header .linha{
-    margin-top:6px;
+    margin-top:5px;
     color:#ddd;
     font-size:15px;
 }
 .header .sub{
-    margin-top:6px;
+    margin-top:5px;
     color:#ffaa00;
     font-weight:bold;
     font-size:14px;
@@ -41,44 +41,65 @@ body{
 .card{
     background:#171717;
     border:1px solid #333;
-    border-radius:18px;
-    padding:18px;
-    margin-bottom:16px;
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:12px;
 }
 .titulo{
     color:#aaa;
-    font-size:14px;
-    margin-bottom:10px;
+    font-size:13px;
+    margin-bottom:8px;
     letter-spacing:1px;
 }
-.principal{
+.leitura{
+    border:1px solid #555;
     text-align:center;
-    border:2px solid #00ff88;
 }
-.origem{
+.ativos-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+}
+.ativos-grid.dois{
+    grid-template-columns:1fr 1fr;
+}
+.ativos-grid.tres{
+    grid-template-columns:1fr 1fr;
+}
+.ativos-grid.tres .sinal-card:nth-child(3){
+    grid-column:1 / 3;
+}
+.sinal-card{
+    background:#202020;
+    border:2px solid #00ff88;
+    border-radius:16px;
+    padding:14px;
+    text-align:center;
+}
+.cat{
     color:#80c7ff;
     font-weight:bold;
-    font-size:18px;
+    font-size:16px;
 }
 .alvo{
-    font-size:64px;
+    font-size:42px;
     color:#00ff88;
     font-weight:bold;
-    margin:8px 0;
+    margin:6px 0;
 }
 .status{
-    font-size:22px;
+    font-size:18px;
     color:#ffaa00;
     font-weight:bold;
 }
 .info{
-    font-size:15px;
+    font-size:14px;
     color:#ddd;
-    margin-top:6px;
+    margin-top:4px;
 }
 .historico-item{
     border-bottom:1px solid #333;
-    padding:10px 0;
+    padding:9px 0;
     text-align:left;
 }
 .historico-item:last-child{
@@ -91,7 +112,19 @@ body{
 .vazio{
     color:#aaa;
     text-align:center;
-    padding:12px;
+    padding:10px;
+}
+@media(max-width:600px){
+    .ativos-grid.dois,
+    .ativos-grid.tres{
+        grid-template-columns:1fr;
+    }
+    .ativos-grid.tres .sinal-card:nth-child(3){
+        grid-column:auto;
+    }
+    .alvo{
+        font-size:38px;
+    }
 }
 </style>
 </head>
@@ -106,19 +139,14 @@ body{
         <div class="sub">MRG EXTERMINADOR DE SINAIS</div>
     </div>
 
-    <div class="card principal">
-        <div class="titulo">SINAL PRINCIPAL</div>
-        <div id="principal">Carregando sinal...</div>
-    </div>
-
-    <div class="card">
+    <div class="card leitura">
         <div class="titulo">LEITURA AO VIVO</div>
-        <div class="vazio">Aguardando leitura do robô...</div>
+        <div id="leitura">Aguardando leitura do robô...</div>
     </div>
 
     <div class="card">
-        <div class="titulo">OUTROS SINAIS ATIVOS</div>
-        <div id="ativos">Carregando...</div>
+        <div class="titulo">SINAIS ATIVOS</div>
+        <div id="ativos">Carregando sinais...</div>
     </div>
 
     <div class="card">
@@ -134,9 +162,28 @@ const SUPABASE_KEY = "sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function ehAtivo(status){
-    if(!status) return false;
+function alvoNumero(alvo){
+    if(!alvo) return 0;
+    return Number(String(alvo).replace("x","").replace("X","").trim()) || 0;
+}
+
+function horarioValor(h){
+    if(!h) return 999999;
+    const partes = String(h).split(":").map(Number);
+    if(partes.length < 2) return 999999;
+    const hh = partes[0] || 0;
+    const mm = partes[1] || 0;
+    const ss = partes[2] || 0;
+    return hh * 3600 + mm * 60 + ss;
+}
+
+function ehAtivo(item){
+    if(item.ativo === true) return true;
+    if(item.ativo === false) return false;
+
+    const status = item.status || "";
     const s = status.toUpperCase();
+
     return (
         s === "ATIVO" ||
         s === "AGUARDANDO" ||
@@ -147,17 +194,21 @@ function ehAtivo(status){
     );
 }
 
-function cardSinal(item){
+function nomeCategoria(item){
+    return item.categoria || item.origem || item.tipo || "MRG";
+}
+
+function cardAtivo(item){
     return `
-        <div class="origem">${item.origem || item.tipo || "MRG"}</div>
-        <div class="alvo">${item.alvo || "-"}</div>
-        <div class="status">${item.status || "-"}</div>
-        <div class="info">Horário: ${item.horario || "não informado"}</div>
-        <div class="info">VAR: ${item.variacao || "não informado"}</div>
-        <div class="info">Janela: ${item.janela || "não informada"}</div>
-        <div class="info">Score: ${item.score || "-"}</div>
-        <div class="info">Resultado: ${item.resultado || "pendente"}</div>
-        <div class="info">Multiplicador: ${item.multiplicador_real || "-"}</div>
+        <div class="sinal-card">
+            <div class="cat">${nomeCategoria(item)}</div>
+            <div class="alvo">${item.alvo || "-"}</div>
+            <div class="status">${item.status || "-"}</div>
+            <div class="info">Horário: ${item.horario || "não informado"}</div>
+            <div class="info">VAR: ${item.variacao || "não informado"}</div>
+            <div class="info">Janela: ${item.janela || "não informada"}</div>
+            <div class="info">Score: ${item.score || "-"}</div>
+        </div>
     `;
 }
 
@@ -166,47 +217,43 @@ async function carregar() {
         .from("sinais")
         .select("*")
         .order("id", { ascending: false })
-        .limit(30);
+        .limit(40);
 
     if (error) {
-        document.getElementById("principal").innerHTML = "<div class='vazio'>Erro ao carregar</div>";
-        document.getElementById("ativos").innerHTML = "<div class='vazio'>Verificar Supabase</div>";
-        document.getElementById("historico").innerHTML = "<div class='vazio'>Erro no histórico</div>";
+        document.getElementById("ativos").innerHTML = "<div class='vazio'>Erro ao carregar sinais</div>";
+        document.getElementById("historico").innerHTML = "<div class='vazio'>Verificar Supabase</div>";
         return;
     }
 
     if (!data || data.length === 0) {
-        document.getElementById("principal").innerHTML = "<div class='vazio'>Nenhum sinal ativo</div>";
-        document.getElementById("ativos").innerHTML = "<div class='vazio'>Nenhum outro sinal</div>";
+        document.getElementById("ativos").innerHTML = "<div class='vazio'>Nenhum sinal ativo</div>";
         document.getElementById("historico").innerHTML = "<div class='vazio'>Nenhum histórico</div>";
         return;
     }
 
-    const ativos = data.filter(item => ehAtivo(item.status));
-    const historico = data.filter(item => !ehAtivo(item.status));
+    let ativos = data.filter(item => ehAtivo(item));
+    let historico = data.filter(item => !ehAtivo(item));
 
-    if(ativos.length > 0){
-        document.getElementById("principal").innerHTML = cardSinal(ativos[0]);
-    } else {
-        document.getElementById("principal").innerHTML = "<div class='vazio'>Nenhum sinal ativo no momento</div>";
-    }
+    ativos.sort((a,b) => {
+        const h = horarioValor(a.horario) - horarioValor(b.horario);
+        if(h !== 0) return h;
+        return alvoNumero(a.alvo) - alvoNumero(b.alvo);
+    });
 
-    let outros = ativos.slice(1);
-    if(outros.length === 0){
-        document.getElementById("ativos").innerHTML = "<div class='vazio'>Nenhum outro sinal ativo</div>";
+    ativos = ativos.slice(0,3);
+
+    let classeGrid = "ativos-grid";
+    if(ativos.length === 2) classeGrid += " dois";
+    if(ativos.length === 3) classeGrid += " tres";
+
+    if(ativos.length === 0){
+        document.getElementById("ativos").innerHTML = "<div class='vazio'>Nenhum sinal ativo no momento</div>";
     } else {
-        let htmlAtivos = "";
-        outros.forEach(item => {
-            htmlAtivos += `
-                <div class="historico-item">
-                    <div><span class="badge">${item.alvo || "-"}</span> | ${item.status || "-"}</div>
-                    <div>Origem: ${item.origem || item.tipo || "MRG"}</div>
-                    <div>Horário: ${item.horario || "não informado"}</div>
-                    <div>Janela: ${item.janela || "não informada"}</div>
-                    <div>Score: ${item.score || "-"}</div>
-                </div>
-            `;
+        let htmlAtivos = `<div class="${classeGrid}">`;
+        ativos.forEach(item => {
+            htmlAtivos += cardAtivo(item);
         });
+        htmlAtivos += "</div>";
         document.getElementById("ativos").innerHTML = htmlAtivos;
     }
 
@@ -218,7 +265,7 @@ async function carregar() {
             htmlHistorico += `
                 <div class="historico-item">
                     <div><span class="badge">${item.alvo || "-"}</span> | ${item.status || "-"}</div>
-                    <div>Origem: ${item.origem || item.tipo || "MRG"}</div>
+                    <div>Origem: ${nomeCategoria(item)}</div>
                     <div>Horário: ${item.horario || "não informado"}</div>
                     <div>Janela: ${item.janela || "não informada"}</div>
                     <div>Resultado: ${item.resultado || "pendente"}</div>
