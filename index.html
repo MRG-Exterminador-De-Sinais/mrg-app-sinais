@@ -2,19 +2,19 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>MRG Signals</title>
+<title>MRG Sinais Alto Padrão</title>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
 body{
     margin:0;
-    background:#070707;
+    background:#060606;
     color:white;
     font-family:Arial, sans-serif;
 }
 .container{
-    max-width:620px;
+    max-width:720px;
     margin:auto;
     padding:18px;
 }
@@ -23,7 +23,20 @@ body{
     margin-bottom:18px;
 }
 .header h1{
-    margin-bottom:4px;
+    margin:0;
+    font-size:26px;
+    color:#00ff88;
+}
+.header .linha{
+    margin-top:6px;
+    color:#ddd;
+    font-size:15px;
+}
+.header .sub{
+    margin-top:6px;
+    color:#ffaa00;
+    font-weight:bold;
+    font-size:14px;
 }
 .card{
     background:#171717;
@@ -38,33 +51,30 @@ body{
     margin-bottom:10px;
     letter-spacing:1px;
 }
-.sinal-ativo{
-    background:#202020;
-    border:1px solid #00ff88;
-    border-radius:16px;
-    padding:16px;
-    margin-bottom:12px;
-    text-align:left;
-}
-.alvo{
-    font-size:44px;
-    color:#00ff88;
-    font-weight:bold;
-}
-.status{
-    font-size:18px;
-    color:#ffaa00;
-    margin-top:6px;
-    font-weight:bold;
-}
-.info{
-    font-size:14px;
-    color:#ddd;
-    margin-top:5px;
+.principal{
+    text-align:center;
+    border:2px solid #00ff88;
 }
 .origem{
     color:#80c7ff;
     font-weight:bold;
+    font-size:18px;
+}
+.alvo{
+    font-size:64px;
+    color:#00ff88;
+    font-weight:bold;
+    margin:8px 0;
+}
+.status{
+    font-size:22px;
+    color:#ffaa00;
+    font-weight:bold;
+}
+.info{
+    font-size:15px;
+    color:#ddd;
+    margin-top:6px;
 }
 .historico-item{
     border-bottom:1px solid #333;
@@ -91,13 +101,24 @@ body{
 <div class="container">
 
     <div class="header">
-        <h1>MRG SIGNALS</h1>
-        <p>Painel oficial de sinais</p>
+        <h1>MRG SINAIS ALTO PADRÃO</h1>
+        <div class="linha">G1 SORTE NA BET | G2 BETOU</div>
+        <div class="sub">MRG EXTERMINADOR DE SINAIS</div>
+    </div>
+
+    <div class="card principal">
+        <div class="titulo">SINAL PRINCIPAL</div>
+        <div id="principal">Carregando sinal...</div>
     </div>
 
     <div class="card">
-        <div class="titulo">SINAIS ATIVOS</div>
-        <div id="ativos">Carregando sinais ativos...</div>
+        <div class="titulo">LEITURA AO VIVO</div>
+        <div class="vazio">Aguardando leitura do robô...</div>
+    </div>
+
+    <div class="card">
+        <div class="titulo">OUTROS SINAIS ATIVOS</div>
+        <div id="ativos">Carregando...</div>
     </div>
 
     <div class="card">
@@ -121,8 +142,23 @@ function ehAtivo(status){
         s === "AGUARDANDO" ||
         s === "EM JANELA" ||
         s === "ATINGIDO ANTECIPADAMENTE" ||
-        s === "TESTE"
+        s === "TESTE" ||
+        s === "PENDENTE"
     );
+}
+
+function cardSinal(item){
+    return `
+        <div class="origem">${item.origem || item.tipo || "MRG"}</div>
+        <div class="alvo">${item.alvo || "-"}</div>
+        <div class="status">${item.status || "-"}</div>
+        <div class="info">Horário: ${item.horario || "não informado"}</div>
+        <div class="info">VAR: ${item.variacao || "não informado"}</div>
+        <div class="info">Janela: ${item.janela || "não informada"}</div>
+        <div class="info">Score: ${item.score || "-"}</div>
+        <div class="info">Resultado: ${item.resultado || "pendente"}</div>
+        <div class="info">Multiplicador: ${item.multiplicador_real || "-"}</div>
+    `;
 }
 
 async function carregar() {
@@ -130,62 +166,68 @@ async function carregar() {
         .from("sinais")
         .select("*")
         .order("id", { ascending: false })
-        .limit(20);
+        .limit(30);
 
     if (error) {
-        document.getElementById("ativos").innerHTML = "<div class='vazio'>Erro ao carregar sinais</div>";
-        document.getElementById("historico").innerHTML = "<div class='vazio'>Verificar Supabase</div>";
+        document.getElementById("principal").innerHTML = "<div class='vazio'>Erro ao carregar</div>";
+        document.getElementById("ativos").innerHTML = "<div class='vazio'>Verificar Supabase</div>";
+        document.getElementById("historico").innerHTML = "<div class='vazio'>Erro no histórico</div>";
         return;
     }
 
     if (!data || data.length === 0) {
-        document.getElementById("ativos").innerHTML = "<div class='vazio'>Nenhum sinal ativo</div>";
-        document.getElementById("historico").innerHTML = "<div class='vazio'>Nenhum histórico ainda</div>";
+        document.getElementById("principal").innerHTML = "<div class='vazio'>Nenhum sinal ativo</div>";
+        document.getElementById("ativos").innerHTML = "<div class='vazio'>Nenhum outro sinal</div>";
+        document.getElementById("historico").innerHTML = "<div class='vazio'>Nenhum histórico</div>";
         return;
     }
 
     const ativos = data.filter(item => ehAtivo(item.status));
     const historico = data.filter(item => !ehAtivo(item.status));
 
-    let htmlAtivos = "";
-
-    if(ativos.length === 0){
-        htmlAtivos = "<div class='vazio'>Nenhum sinal ativo no momento</div>";
+    if(ativos.length > 0){
+        document.getElementById("principal").innerHTML = cardSinal(ativos[0]);
     } else {
-        ativos.forEach(item => {
+        document.getElementById("principal").innerHTML = "<div class='vazio'>Nenhum sinal ativo no momento</div>";
+    }
+
+    let outros = ativos.slice(1);
+    if(outros.length === 0){
+        document.getElementById("ativos").innerHTML = "<div class='vazio'>Nenhum outro sinal ativo</div>";
+    } else {
+        let htmlAtivos = "";
+        outros.forEach(item => {
             htmlAtivos += `
-                <div class="sinal-ativo">
-                    <div class="origem">${item.origem || "MRG"}</div>
-                    <div class="alvo">${item.alvo || "-"}</div>
-                    <div class="status">${item.status || "-"}</div>
-                    <div class="info">Janela: ${item.janela || "não informada"}</div>
-                    <div class="info">Resultado: ${item.resultado || "pendente"}</div>
-                    <div class="info">Multiplicador: ${item.multiplicador_real || "-"}</div>
+                <div class="historico-item">
+                    <div><span class="badge">${item.alvo || "-"}</span> | ${item.status || "-"}</div>
+                    <div>Origem: ${item.origem || item.tipo || "MRG"}</div>
+                    <div>Horário: ${item.horario || "não informado"}</div>
+                    <div>Janela: ${item.janela || "não informada"}</div>
+                    <div>Score: ${item.score || "-"}</div>
                 </div>
             `;
         });
+        document.getElementById("ativos").innerHTML = htmlAtivos;
     }
 
-    let htmlHistorico = "";
-
     if(historico.length === 0){
-        htmlHistorico = "<div class='vazio'>Nenhum sinal encerrado ainda</div>";
+        document.getElementById("historico").innerHTML = "<div class='vazio'>Nenhum sinal encerrado ainda</div>";
     } else {
+        let htmlHistorico = "";
         historico.forEach(item => {
             htmlHistorico += `
                 <div class="historico-item">
                     <div><span class="badge">${item.alvo || "-"}</span> | ${item.status || "-"}</div>
-                    <div>Origem: ${item.origem || "MRG"}</div>
+                    <div>Origem: ${item.origem || item.tipo || "MRG"}</div>
+                    <div>Horário: ${item.horario || "não informado"}</div>
                     <div>Janela: ${item.janela || "não informada"}</div>
                     <div>Resultado: ${item.resultado || "pendente"}</div>
                     <div>Multiplicador: ${item.multiplicador_real || "-"}</div>
                 </div>
             `;
         });
+        document.getElementById("historico").innerHTML = htmlHistorico;
     }
-
-    document.getElementById("ativos").innerHTML = htmlAtivos;
-    document.getElementById("historico").innerHTML = htmlHistorico;
 }
 
 carregar();
