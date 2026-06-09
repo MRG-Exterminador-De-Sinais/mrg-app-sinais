@@ -7,124 +7,32 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-body{
-    margin:0;
-    background:#060606;
-    color:white;
-    font-family:Arial, sans-serif;
-}
-.container{
-    max-width:760px;
-    margin:auto;
-    padding:14px;
-}
-.header{
-    text-align:center;
-    margin-bottom:14px;
-}
-.header h1{
-    margin:0;
-    font-size:25px;
-    color:#00ff88;
-}
-.header .linha{
-    margin-top:5px;
-    color:#ddd;
-    font-size:15px;
-}
-.header .sub{
-    margin-top:5px;
-    color:#ffaa00;
-    font-weight:bold;
-    font-size:14px;
-}
-.card{
-    background:#171717;
-    border:1px solid #333;
-    border-radius:16px;
-    padding:14px;
-    margin-bottom:12px;
-}
-.titulo{
-    color:#aaa;
-    font-size:13px;
-    margin-bottom:8px;
-    letter-spacing:1px;
-}
-.leitura{
-    border:1px solid #555;
-    text-align:center;
-}
-.ativos-grid{
-    display:grid;
-    grid-template-columns:1fr;
-    gap:10px;
-}
-.ativos-grid.dois{
-    grid-template-columns:1fr 1fr;
-}
-.ativos-grid.tres{
-    grid-template-columns:1fr 1fr;
-}
-.ativos-grid.tres .sinal-card:nth-child(3){
-    grid-column:1 / 3;
-}
-.sinal-card{
-    background:#202020;
-    border:2px solid #00ff88;
-    border-radius:16px;
-    padding:14px;
-    text-align:center;
-}
-.cat{
-    color:#80c7ff;
-    font-weight:bold;
-    font-size:16px;
-}
-.alvo{
-    font-size:42px;
-    color:#00ff88;
-    font-weight:bold;
-    margin:6px 0;
-}
-.status{
-    font-size:18px;
-    color:#ffaa00;
-    font-weight:bold;
-}
-.info{
-    font-size:14px;
-    color:#ddd;
-    margin-top:4px;
-}
-.historico-item{
-    border-bottom:1px solid #333;
-    padding:9px 0;
-    text-align:left;
-}
-.historico-item:last-child{
-    border-bottom:none;
-}
-.badge{
-    color:#00ff88;
-    font-weight:bold;
-}
-.vazio{
-    color:#aaa;
-    text-align:center;
-    padding:10px;
-}
+body{margin:0;background:#060606;color:white;font-family:Arial,sans-serif;}
+.container{max-width:760px;margin:auto;padding:14px;}
+.header{text-align:center;margin-bottom:14px;}
+.header h1{margin:0;font-size:25px;color:#00ff88;}
+.header .linha{margin-top:5px;color:#ddd;font-size:15px;}
+.header .sub{margin-top:5px;color:#ffaa00;font-weight:bold;font-size:14px;}
+.card{background:#171717;border:1px solid #333;border-radius:16px;padding:14px;margin-bottom:12px;}
+.titulo{color:#aaa;font-size:13px;margin-bottom:8px;letter-spacing:1px;}
+.leitura{border:1px solid #555;text-align:center;}
+.ativos-grid{display:grid;grid-template-columns:1fr;gap:10px;}
+.ativos-grid.dois{grid-template-columns:1fr 1fr;}
+.ativos-grid.tres{grid-template-columns:1fr 1fr;}
+.ativos-grid.tres .sinal-card:nth-child(3){grid-column:1 / 3;}
+.sinal-card{background:#202020;border:2px solid #00ff88;border-radius:16px;padding:14px;text-align:center;}
+.cat{color:#80c7ff;font-weight:bold;font-size:16px;}
+.alvo{font-size:42px;color:#00ff88;font-weight:bold;margin:6px 0;}
+.status{font-size:18px;color:#ffaa00;font-weight:bold;}
+.info{font-size:14px;color:#ddd;margin-top:4px;}
+.historico-item{border-bottom:1px solid #333;padding:9px 0;text-align:left;}
+.historico-item:last-child{border-bottom:none;}
+.badge{color:#00ff88;font-weight:bold;}
+.vazio{color:#aaa;text-align:center;padding:10px;}
 @media(max-width:600px){
-    .ativos-grid.dois,
-    .ativos-grid.tres{
-        grid-template-columns:1fr;
-    }
-    .ativos-grid.tres .sinal-card:nth-child(3){
-        grid-column:auto;
-    }
-    .alvo{
-        font-size:38px;
-    }
+    .ativos-grid.dois,.ativos-grid.tres{grid-template-columns:1fr;}
+    .ativos-grid.tres .sinal-card:nth-child(3){grid-column:auto;}
+    .alvo{font-size:38px;}
 }
 </style>
 </head>
@@ -171,31 +79,23 @@ function horarioValor(h){
     if(!h) return 999999;
     const partes = String(h).split(":").map(Number);
     if(partes.length < 2) return 999999;
-    const hh = partes[0] || 0;
-    const mm = partes[1] || 0;
-    const ss = partes[2] || 0;
-    return hh * 3600 + mm * 60 + ss;
+    return (partes[0]||0)*3600 + (partes[1]||0)*60 + (partes[2]||0);
 }
 
 function ehAtivo(item){
-    if(item.ativo === true) return true;
-    if(item.ativo === false) return false;
-
-    const status = item.status || "";
-    const s = status.toUpperCase();
-
-    return (
-        s === "ATIVO" ||
-        s === "AGUARDANDO" ||
-        s === "EM JANELA" ||
-        s === "ATINGIDO ANTECIPADAMENTE" ||
-        s === "TESTE" ||
-        s === "PENDENTE"
-    );
+    return item.ativo === true;
 }
 
 function nomeCategoria(item){
     return item.categoria || item.origem || item.tipo || "MRG";
+}
+
+function textoMultiplicador(item){
+    if(!item.multiplicador_real) return "-";
+    if(item.horario_real){
+        return `${item.multiplicador_real} às ${item.horario_real}`;
+    }
+    return item.multiplicador_real;
 }
 
 function cardAtivo(item){
@@ -217,7 +117,7 @@ async function carregar() {
         .from("sinais")
         .select("*")
         .order("id", { ascending: false })
-        .limit(40);
+        .limit(60);
 
     if (error) {
         document.getElementById("ativos").innerHTML = "<div class='vazio'>Erro ao carregar sinais</div>";
@@ -241,6 +141,7 @@ async function carregar() {
     });
 
     ativos = ativos.slice(0,3);
+    historico = historico.slice(0,20);
 
     let classeGrid = "ativos-grid";
     if(ativos.length === 2) classeGrid += " dois";
@@ -250,9 +151,7 @@ async function carregar() {
         document.getElementById("ativos").innerHTML = "<div class='vazio'>Nenhum sinal ativo no momento</div>";
     } else {
         let htmlAtivos = `<div class="${classeGrid}">`;
-        ativos.forEach(item => {
-            htmlAtivos += cardAtivo(item);
-        });
+        ativos.forEach(item => htmlAtivos += cardAtivo(item));
         htmlAtivos += "</div>";
         document.getElementById("ativos").innerHTML = htmlAtivos;
     }
@@ -266,10 +165,10 @@ async function carregar() {
                 <div class="historico-item">
                     <div><span class="badge">${item.alvo || "-"}</span> | ${item.status || "-"}</div>
                     <div>Origem: ${nomeCategoria(item)}</div>
-                    <div>Horário: ${item.horario || "não informado"}</div>
+                    <div>Horário previsto: ${item.horario || "não informado"}</div>
                     <div>Janela: ${item.janela || "não informada"}</div>
                     <div>Resultado: ${item.resultado || "pendente"}</div>
-                    <div>Multiplicador: ${item.multiplicador_real || "-"}</div>
+                    <div>Multiplicador: ${textoMultiplicador(item)}</div>
                 </div>
             `;
         });
