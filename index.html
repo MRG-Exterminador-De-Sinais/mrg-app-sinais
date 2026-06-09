@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>MRG Sinais</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
 body{
@@ -40,31 +40,33 @@ body{
 
 <div id="alvo" class="alvo">Carregando...</div>
 <div id="status" class="status">Aguardando...</div>
-
 </div>
 
 <script>
 const SUPABASE_URL = "https://bflptqejltwfjhixwpj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function carregar() {
-    const { data, error } = await supabase
-        .from('sinais')
-        .select('*')
-        .order('id', { ascending:false })
+    const { data, error } = await db
+        .from("sinais")
+        .select("*")
+        .order("id", { ascending: false })
         .limit(1);
 
     if (error) {
-        document.getElementById('alvo').innerText = "Erro";
-        document.getElementById('status').innerText = "Falha ao carregar";
+        document.getElementById("alvo").innerText = "BLOQUEADO";
+        document.getElementById("status").innerText = "Liberar RLS no Supabase";
         return;
     }
 
-    if (data && data.length) {
-        document.getElementById('alvo').innerText = data[0].alvo;
-        document.getElementById('status').innerText = data[0].status;
+    if (data && data.length > 0) {
+        document.getElementById("alvo").innerText = data[0].alvo;
+        document.getElementById("status").innerText = data[0].status;
+    } else {
+        document.getElementById("alvo").innerText = "SEM SINAL";
+        document.getElementById("status").innerText = "Aguardando sinal";
     }
 }
 
