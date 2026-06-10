@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MRG Admin - Sinais Alto Padrão</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<style>
+html,body{width:100%;max-width:100%;overflow-x:hidden;}
+*{box-sizing:border-box;}
+body{margin:0;background:#060606;color:white;font-family:Arial,sans-serif;}
+.container{width:100%;max-width:860px;margin:auto;padding:14px;}
+.header{text-align:center;margin-bottom:14px;}
+.header h1{margin:0;font-size:24px;color:#00ff88;}
+.header .sub{margin-top:5px;color:#ffaa00;font-weight:bold;font-size:14px;}
+.card{background:#171717;border:1px solid #333;border-radius:16px;padding:14px;margin-bottom:12px;}
+.titulo{color:#aaa;font-size:13px;margin-bottom:8px;letter-spacing:1px;}
+input{width:100%;margin:7px 0;padding:14px;border-radius:10px;border:1px solid #444;background:#0b0b0b;color:white;font-size:16px;}
+button{width:100%;padding:13px;margin-top:8px;border:0;border-radius:10px;background:#00ff88;color:#000;font-weight:bold;font-size:15px;}
+button.sec{background:#333;color:white;}
+button.bloquear{background:#7a2020;color:white;}
+button.whats{background:#1fa855;color:white;}
+button.pequeno{width:auto;padding:8px 10px;margin:4px;font-size:13px;}
+.msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4;}
+.erro{color:#ff6666;}
+.ok{color:#00ff88;}
+.escondido{display:none!important;}
+.usuario-admin{text-align:center;color:#aaa;font-size:13px;margin-bottom:10px;}
+.usuario-card{background:#202020;border:1px solid #444;border-radius:14px;padding:12px;margin-bottom:10px;}
+.linha{font-size:14px;color:#ddd;margin:4px 0;word-break:break-word;}
+.nome{font-size:16px;color:#00ff88;font-weight:bold;margin-bottom:6px;}
+.badge{display:inline-block;padding:4px 8px;border-radius:8px;font-size:12px;font-weight:bold;margin-top:4px;}
+.liberado{background:#00ff88;color:#000;}
+.bloqueado{background:#7a2020;color:white;}
+.acoes{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+.vazio{text-align:center;color:#aaa;padding:12px;}
+@media(max-width:600px){
+.container{padding:12px;}
+.header h1{font-size:21px;}
+.card{padding:13px;}
+.acoes button{flex:1 1 100%;}
+button.pequeno{width:100%;margin:4px 0;}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="header">
+<h1>MRG ADMIN</h1>
+<div class="sub">Painel de Liberação de Usuários</div>
+</div>
+
+<div id="loginBox" class="card">
+<div class="titulo">ENTRAR COMO ADMINISTRADOR</div>
+<input id="loginEmail" type="email" placeholder="E-mail do administrador">
+<input id="loginSenha" type="password" placeholder="Senha">
+<button type="button" onclick="entrar()">ENTRAR</button>
+<div id="loginMsg" class="msg">Use seu login cadastrado no Supabase.</div>
+</div>
+
+<div id="adminBox" class="escondido">
+<div class="usuario-admin">
+Administrador: <span id="adminEmail"></span>
+</div>
+
+<div class="card">
+<div class="titulo">CONTROLE DE USUÁRIOS</div>
+<button type="button" onclick="carregarUsuarios()">ATUALIZAR LISTA</button>
+<div id="listaUsuarios" class="vazio">Carregando usuários...</div>
+</div>
+
+<button type="button" class="bloquear" onclick="sair()">SAIR DO ADMIN</button>
+</div>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://bflptqejltvwfjhixwpj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
+const ADMIN_EMAIL = "maiconrodrigoguth@gmail.com";
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function texto(v){
+    if(v === null || v === undefined || v === "") return "-";
+    return String(v);
+}
+
+function limparTelefone(tel){
+    return String(tel||"").replace(/\D/g,"");
+}
+
+function abrirWhatsapp(telefone,nome,email){
+    let tel = limparTelefone(telefone);
+
+    if(!tel){
+        alert("Este usuário não tem telefone cadastrado.");
+        return;
+    }
+
+    if(tel.length === 10 || tel.length === 11){
+        tel = "55" + tel;
+    }
+
+    const msg =
+        "Olá " + (nome || "") + ", seu cadastro no MRG Sinais Alto Padrão foi localizado. " +
+        "Seu e-mail de acesso é: " + (email || "") + ".";
+
+    const url = "https://wa.me/" + tel + "?text=" + encodeURIComponent(msg);
+    window.open(url, "_blank");
+}
+
+function badgeLiberado(liberado){
+    if(liberado === true){
+        return "<span class='badge liberado'>LIBERADO</span>";
+    }
+    return "<span class='badge bloqueado'>BLOQUEADO / AGUARDANDO</span>";
+}
+
+async function entrar(){
+    const email = document.getElementById("loginEmail").value.trim();
+    const senha = document.getElementById("loginSenha").value.trim();
+
+    if(!email || !senha){
+        document.getElementById("loginMsg").innerHTML = "<span class='erro'>Informe e-mail e senha.</span>";
+        return;
+    }
+
+    if(email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()){
+        document.getElementById("loginMsg").innerHTML = "<span class='erro'>Este e-mail não é administrador.</span>";
+        return;
+    }
+
+    const {error} = await db.auth.signInWithPassword({email:email,password:senha});
+
+    if(error){
+        document.getElementById("loginMsg").innerHTML = "<span class='erro'>Login inválido ou e-mail não confirmado.</span>";
+        return;
+    }
+
+    await verificarAdmin();
+}
+
+async function verificarAdmin(){
+    const {data:sessionData} = await db.auth.getSession();
+
+    if(!sessionData || !sessionData.session || !sessionData.session.user){
+        document.getElementById("loginBox").classList.remove("escondido");
+        document.getElementById("adminBox").classList.add("escondido");
+        return;
+    }
+
+    const user = sessionData.session.user;
+
+    if(String(user.email).toLowerCase() !== ADMIN_EMAIL.toLowerCase()){
+        await db.auth.signOut();
+        document.getElementById("loginMsg").innerHTML = "<span class='erro'>Acesso negado.</span>";
+        return;
+    }
+
+    document.getElementById("loginBox").classList.add("escondido");
+    document.getElementById("adminBox").classList.remove("escondido");
+    document.getElementById("adminEmail").innerText = user.email;
+
+    await carregarUsuarios();
+}
+
+async function carregarUsuarios(){
+    document.getElementById("listaUsuarios").innerHTML = "<div class='vazio'>Carregando usuários...</div>";
+
+    const {data,error} = await db
+        .from("perfis")
+        .select("*")
+        .order("nome",{ascending:true});
+
+    if(error){
+        document.getElementById("listaUsuarios").innerHTML =
+            "<div class='erro'>Erro ao carregar perfis. Verifique permissões no Supabase.</div>";
+        return;
+    }
+
+    if(!data || data.length === 0){
+        document.getElementById("listaUsuarios").innerHTML =
+            "<div class='vazio'>Nenhum usuário encontrado.</div>";
+        return;
+    }
+
+    let html = "";
+
+    data.forEach(u=>{
+        const nome = texto(u.nome);
+        const email = texto(u.email);
+        const telefone = texto(u.telefone);
+        const liberado = u.liberado === true;
+
+        html += `
+            <div class="usuario-card">
+                <div class="nome">${nome}</div>
+                <div class="linha"><b>E-mail:</b> ${email}</div>
+                <div class="linha"><b>Telefone:</b> ${telefone}</div>
+                <div class="linha"><b>Status:</b> ${badgeLiberado(liberado)}</div>
+
+                <div class="acoes">
+                    <button type="button" class="pequeno" onclick="alterarLiberado('${u.id}',true)">LIBERAR</button>
+                    <button type="button" class="pequeno bloquear" onclick="alterarLiberado('${u.id}',false)">BLOQUEAR</button>
+                    <button type="button" class="pequeno whats" onclick="abrirWhatsapp('${telefone}','${nome}','${email}')">WHATSAPP</button>
+                </div>
+            </div>
+        `;
+    });
+
+    document.getElementById("listaUsuarios").innerHTML = html;
+}
+
+async function alterarLiberado(id,valor){
+    const {error} = await db
+        .from("perfis")
+        .update({liberado: valor})
+        .eq("id", id);
+
+    if(error){
+        alert("Erro ao atualizar usuário.");
+        return;
+    }
+
+    await carregarUsuarios();
+}
+
+async function sair(){
+    await db.auth.signOut();
+    document.getElementById("adminBox").classList.add("escondido");
+    document.getElementById("loginBox").classList.remove("escondido");
+    document.getElementById("loginMsg").innerHTML = "Sessão encerrada.";
+}
+
+verificarAdmin();
+</script>
+</body>
+</html>
