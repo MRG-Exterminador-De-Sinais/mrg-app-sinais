@@ -18,13 +18,15 @@ body{margin:0;background:#060606;color:white;font-family:Arial,sans-serif;}
 .titulo{color:#aaa;font-size:13px;margin-bottom:8px;letter-spacing:1px;}
 input{width:100%;margin:7px 0;padding:14px;border-radius:10px;border:1px solid #444;background:#0b0b0b;color:white;font-size:16px;}
 button{width:100%;padding:13px;margin-top:8px;border:0;border-radius:10px;background:#00ff88;color:#000;font-weight:bold;font-size:15px;}
-button.sec{background:#333;color:white;}
 button.bloquear{background:#7a2020;color:white;}
 button.whats{background:#1fa855;color:white;}
+button.cobranca{background:#ffaa00;color:#000;}
+button.pago{background:#00ff88;color:#000;}
+button.pendente{background:#ffaa00;color:#000;}
+button.free{background:#2f80ff;color:white;}
 button.pequeno{width:auto;padding:8px 10px;margin:4px;font-size:13px;}
 .msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4;}
 .erro{color:#ff6666;}
-.ok{color:#00ff88;}
 .escondido{display:none!important;}
 .usuario-admin{text-align:center;color:#aaa;font-size:13px;margin-bottom:10px;}
 .usuario-card{background:#202020;border:1px solid #444;border-radius:14px;padding:12px;margin-bottom:10px;}
@@ -33,42 +35,14 @@ button.pequeno{width:auto;padding:8px 10px;margin:4px;font-size:13px;}
 .badge{display:inline-block;padding:4px 8px;border-radius:8px;font-size:12px;font-weight:bold;margin-top:4px;}
 .liberado{background:#00ff88;color:#000;}
 .bloqueado{background:#7a2020;color:white;}
+.financeiro-pago{background:#00ff88;color:#000;}
+.financeiro-pendente{background:#ffaa00;color:#000;}
+.financeiro-free{background:#2f80ff;color:white;}
 .acoes{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
 .vazio{text-align:center;color:#aaa;padding:12px;}
-
-.topo-controle{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-}
-
-.btn-lupa{
-    width:34px;
-    height:34px;
-    margin:0;
-    padding:0;
-    border-radius:8px;
-    background:#00ff88;
-    color:#000;
-    font-size:16px;
-    font-weight:bold;
-    flex:0 0 auto;
-}
-
-#campoBusca{
-    display:none;
-    margin-top:10px;
-    margin-bottom:10px;
-    width:100%;
-    padding:10px;
-    border-radius:8px;
-    border:1px solid #444;
-    background:#0b0b0b;
-    color:white;
-    font-size:15px;
-}
-
+.topo-controle{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.btn-lupa{width:34px;height:34px;margin:0;padding:0;border-radius:8px;background:#00ff88;color:#000;font-size:16px;font-weight:bold;flex:0 0 auto;}
+#campoBusca{display:none;margin-top:10px;margin-bottom:10px;width:100%;padding:10px;border-radius:8px;border:1px solid #444;background:#0b0b0b;color:white;font-size:15px;}
 @media(max-width:600px){
 .container{padding:12px;}
 .header h1{font-size:21px;}
@@ -84,7 +58,7 @@ button.pequeno{width:100%;margin:4px 0;}
 
 <div class="header">
 <h1>MRG ADMIN</h1>
-<div class="sub">Painel de Liberação de Usuários</div>
+<div class="sub">Painel de Liberação e Financeiro</div>
 </div>
 
 <div id="loginBox" class="card">
@@ -106,10 +80,7 @@ Administrador: <span id="adminEmail"></span>
     <button type="button" class="btn-lupa" onclick="toggleBusca()">🔍</button>
 </div>
 
-<input
-    id="campoBusca"
-    placeholder="Nome, e-mail ou telefone"
-    onkeyup="filtrarUsuarios()">
+<input id="campoBusca" placeholder="Nome, e-mail, telefone ou status" onkeyup="filtrarUsuarios()">
 
 <button type="button" onclick="carregarUsuarios()">ATUALIZAR LISTA</button>
 <div id="listaUsuarios" class="vazio">Carregando usuários...</div>
@@ -124,6 +95,7 @@ Administrador: <span id="adminEmail"></span>
 const SUPABASE_URL = "https://bflptqejltvwfjhixwpj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const ADMIN_EMAIL = "maiconrodrigoguth@gmail.com";
+const VALOR_MENSAL = "R$ 30,00";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -158,11 +130,50 @@ function abrirWhatsapp(telefone,nome,email){
     window.open(url, "_blank");
 }
 
+function abrirCobranca(telefone,nome,email){
+    let tel = limparTelefone(telefone);
+
+    if(!tel){
+        alert("Este usuário não tem telefone cadastrado.");
+        return;
+    }
+
+    if(tel.length === 10 || tel.length === 11){
+        tel = "55" + tel;
+    }
+
+    const msg =
+        "Olá " + (nome || "") + ", tudo bem?\n\n" +
+        "Eu espero que você esteja gostando de utilizar o sistema MRG Sinais Alto Padrão e aproveitando os recursos disponibilizados.\n\n" +
+        "Passando para lembrar que a mensalidade de acesso encontra-se pendente. Para continuar utilizando o aplicativo e receber as atualizações normalmente, é importante manter a contribuição em dia.\n\n" +
+        "Valor mensal: " + VALOR_MENSAL + "\n\n" +
+        "E-mail cadastrado: " + (email || "") + "\n\n" +
+        "Caso o pagamento já tenha sido realizado, desconsidere esta mensagem.\n\n" +
+        "Qualquer dúvida, estou à disposição.";
+
+    const url = "https://wa.me/" + tel + "?text=" + encodeURIComponent(msg);
+    window.open(url, "_blank");
+}
+
 function badgeLiberado(liberado){
     if(liberado === true){
         return "<span class='badge liberado'>LIBERADO</span>";
     }
     return "<span class='badge bloqueado'>BLOQUEADO / AGUARDANDO</span>";
+}
+
+function badgeFinanceiro(status){
+    const st = String(status || "PENDENTE").toUpperCase();
+
+    if(st === "PAGO"){
+        return "<span class='badge financeiro-pago'>PAGO</span>";
+    }
+
+    if(st === "FREE"){
+        return "<span class='badge financeiro-free'>FREE</span>";
+    }
+
+    return "<span class='badge financeiro-pendente'>PENDENTE</span>";
 }
 
 async function entrar(){
@@ -252,18 +263,30 @@ function renderizarUsuarios(lista){
         const email = texto(u.email);
         const telefone = texto(u.telefone);
         const liberado = u.liberado === true;
+        const statusPagamento = texto(u.status_pagamento || "PENDENTE");
 
         html += `
             <div class="usuario-card">
                 <div class="nome">${nome}</div>
                 <div class="linha"><b>E-mail:</b> ${email}</div>
                 <div class="linha"><b>Telefone:</b> ${telefone}</div>
-                <div class="linha"><b>Status:</b> ${badgeLiberado(liberado)}</div>
+                <div class="linha"><b>Acesso:</b> ${badgeLiberado(liberado)}</div>
+                <div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(statusPagamento)}</div>
 
                 <div class="acoes">
                     <button type="button" class="pequeno" onclick="alterarLiberado('${u.id}',true)">LIBERAR</button>
                     <button type="button" class="pequeno bloquear" onclick="alterarLiberado('${u.id}',false)">BLOQUEAR</button>
+                </div>
+
+                <div class="acoes">
+                    <button type="button" class="pequeno pago" onclick="alterarPagamento('${u.id}','PAGO')">PAGO</button>
+                    <button type="button" class="pequeno pendente" onclick="alterarPagamento('${u.id}','PENDENTE')">PENDENTE</button>
+                    <button type="button" class="pequeno free" onclick="alterarPagamento('${u.id}','FREE')">FREE</button>
+                </div>
+
+                <div class="acoes">
                     <button type="button" class="pequeno whats" onclick="abrirWhatsapp('${telefone}','${nome}','${email}')">WHATSAPP</button>
+                    <button type="button" class="pequeno cobranca" onclick="abrirCobranca('${telefone}','${nome}','${email}')">COBRANÇA</button>
                 </div>
             </div>
         `;
@@ -301,11 +324,13 @@ function filtrarUsuarios(){
         const nome = String(u.nome || "").toLowerCase();
         const email = String(u.email || "").toLowerCase();
         const telefone = String(u.telefone || "").toLowerCase();
+        const status = String(u.status_pagamento || "").toLowerCase();
 
         return (
             nome.includes(termo) ||
             email.includes(termo) ||
-            telefone.includes(termo)
+            telefone.includes(termo) ||
+            status.includes(termo)
         );
     });
 
@@ -323,10 +348,32 @@ async function alterarLiberado(id,valor){
         return;
     }
 
+    await recarregarMantendoBusca();
+}
+
+async function alterarPagamento(id,status){
+    const {error} = await db
+        .from("perfis")
+        .update({status_pagamento: status})
+        .eq("id", id);
+
+    if(error){
+        alert("Erro ao atualizar financeiro.");
+        return;
+    }
+
+    await recarregarMantendoBusca();
+}
+
+async function recarregarMantendoBusca(){
+    const campo = document.getElementById("campoBusca");
+    const termo = campo ? campo.value : "";
+    const aberto = campo && campo.style.display !== "none";
+
     await carregarUsuarios();
 
-    const campo = document.getElementById("campoBusca");
-    if(campo && campo.style.display !== "none" && campo.value.trim()){
+    if(aberto && termo.trim()){
+        campo.value = termo;
         filtrarUsuarios();
     }
 }
