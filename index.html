@@ -38,6 +38,11 @@ button.sair{background:#7a2020;color:white;}
 .badge{color:#00ff88;font-weight:bold;}
 .vazio{color:#aaa;text-align:center;padding:10px;}
 .usuario-topo{text-align:center;color:#aaa;font-size:13px;margin-bottom:10px;}
+.resumo-fechados{text-align:center;border:1px solid #444;}
+.resumo-linha{font-size:14px;color:#ddd;margin:4px 0;}
+.resumo-destaque{color:#00ff88;font-weight:bold;}
+.resumo-protecao{color:#ffaa00;font-weight:bold;}
+.resumo-erro{color:#ff6666;font-weight:bold;}
 @media(max-width:600px){
 .container{padding:12px;}
 .header h1{font-size:22px;}
@@ -118,6 +123,11 @@ Após a liberação, seu acesso será ativado automaticamente.
 <div class="card">
 <div class="titulo">SINAIS ATIVOS</div>
 <div id="ativos">Carregando sinais...</div>
+</div>
+
+<div class="card resumo-fechados">
+<div class="titulo">RESUMO DOS ÚLTIMOS 5 FECHADOS</div>
+<div id="resumoFechados" class="vazio">Aguardando histórico...</div>
 </div>
 
 <div class="card">
@@ -368,6 +378,78 @@ function cardAtivo(item){
     </div>`;
 }
 
+function statusNormalizado(item){
+    const texto = String((item.status || "") + " " + (item.resultado || "")).toUpperCase();
+
+    if(texto.includes("PROTECAO") || texto.includes("PROTEÇÃO") || texto.includes("PARCIAL")){
+        return "PROTECAO";
+    }
+
+    if(texto.includes("ACERTO")){
+        return "ACERTO";
+    }
+
+    if(texto.includes("ERRO")){
+        return "ERRO";
+    }
+
+    if(texto.includes("RETIDO") || texto.includes("PRESSAO") || texto.includes("PRESSÃO")){
+        return "RETIDO";
+    }
+
+    if(texto.includes("CANCEL")){
+        return "CANCELADO";
+    }
+
+    return "OUTRO";
+}
+
+function atualizarResumoFechados(historico){
+    const ultimos = historico.slice(0,5);
+
+    if(ultimos.length === 0){
+        document.getElementById("resumoFechados").innerHTML =
+            "<div class='vazio'>Nenhum sinal fechado ainda</div>";
+        return;
+    }
+
+    let acertos = 0;
+    let protecoes = 0;
+    let erros = 0;
+    let retidos = 0;
+
+    ultimos.forEach(item => {
+        const st = statusNormalizado(item);
+
+        if(st === "ACERTO") acertos++;
+        else if(st === "PROTECAO") protecoes++;
+        else if(st === "ERRO") erros++;
+        else if(st === "RETIDO" || st === "CANCELADO") retidos++;
+    });
+
+    const total = ultimos.length;
+    const taxaCheia = Math.round((acertos / total) * 100);
+    const taxaOperacional = Math.round(((acertos + protecoes) / total) * 100);
+
+    document.getElementById("resumoFechados").innerHTML = `
+        <div class="resumo-linha">
+            ✅ <span class="resumo-destaque">Acertos: ${acertos}</span>
+            &nbsp;|&nbsp;
+            🟡 <span class="resumo-protecao">Proteções: ${protecoes}</span>
+            &nbsp;|&nbsp;
+            ❌ <span class="resumo-erro">Erros: ${erros}</span>
+        </div>
+        <div class="resumo-linha">
+            🟠 Retidos/Cancelados: ${retidos}
+        </div>
+        <div class="resumo-linha">
+            🎯 Taxa cheia: <span class="resumo-destaque">${taxaCheia}%</span>
+            &nbsp;|&nbsp;
+            📌 Operacional: <span class="resumo-destaque">${taxaOperacional}%</span>
+        </div>
+    `;
+}
+
 async function carregarLeitura(){
     if(!painelAtivo)return;
 
@@ -395,6 +477,7 @@ async function carregar(){
 
     if(error){
         document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";
+        document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Verificar Supabase</div>";
         document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";
         return;
     }
@@ -409,6 +492,8 @@ async function carregar(){
 
     ativos=ativos.slice(0,3);
     historico=historico.slice(0,20);
+
+    atualizarResumoFechados(historico);
 
     let classe="ativos-grid";
     if(ativos.length===2)classe+=" dois";
