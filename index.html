@@ -23,7 +23,7 @@ button.sec{background:#333;color:white;}
 button.sair{background:#7a2020;color:white;}
 .msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4;}
 .erro{color:#ff6666;}
-.escondido{display:none;}
+.escondido{display:none!important;}
 .leitura{border:1px solid #555;text-align:center;}
 .ativos-grid{display:grid;grid-template-columns:1fr;gap:10px;}
 .ativos-grid.dois{grid-template-columns:1fr 1fr;}
@@ -38,11 +38,15 @@ button.sair{background:#7a2020;color:white;}
 .badge{color:#00ff88;font-weight:bold;}
 .vazio{color:#aaa;text-align:center;padding:10px;}
 .usuario-topo{text-align:center;color:#aaa;font-size:13px;margin-bottom:10px;}
+.btn-projecoes{width:auto;display:inline-block;margin:0 0 0 8px;padding:4px 9px;font-size:12px;line-height:1.1;background:#00ff88;color:#000;border-radius:8px;font-weight:bold;vertical-align:middle;}
 .resumo-fechados{text-align:center;border:1px solid #444;}
 .resumo-linha{font-size:14px;color:#ddd;margin:4px 0;}
 .resumo-destaque{color:#00ff88;font-weight:bold;}
 .resumo-protecao{color:#ffaa00;font-weight:bold;}
 .resumo-erro{color:#ff6666;font-weight:bold;}
+.modal-projecoes{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:9999;display:flex;align-items:center;justify-content:center;padding:14px;}
+.modal-caixa{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:#111;border:2px solid #00ff88;border-radius:16px;padding:14px;}
+.projecoes-texto{white-space:pre-wrap;font-family:Consolas,monospace;font-size:13px;line-height:1.35;color:#eee;background:#050505;border:1px solid #333;border-radius:12px;padding:12px;text-align:left;}
 @media(max-width:600px){
 .container{padding:12px;}
 .header h1{font-size:22px;}
@@ -50,6 +54,7 @@ button.sair{background:#7a2020;color:white;}
 .ativos-grid.dois,.ativos-grid.tres{grid-template-columns:1fr;}
 .ativos-grid.tres .sinal-card:nth-child(3){grid-column:auto;}
 .alvo{font-size:38px;}
+.btn-projecoes{font-size:11px;padding:4px 8px;}
 }
 </style>
 </head>
@@ -113,7 +118,18 @@ Após a liberação, seu acesso será ativado automaticamente.
 </div>
 
 <div id="appBox" class="escondido">
-<div class="usuario-topo">Acesso liberado: <span id="usuarioEmail"></span></div>
+<div class="usuario-topo">
+Acesso liberado: <span id="usuarioEmail"></span>
+<button type="button" class="btn-projecoes" onclick="abrirProjecoes()">📈 Projeções Futuras</button>
+</div>
+
+<div id="modalProjecoes" class="modal-projecoes escondido" onclick="fecharProjecoes()">
+    <div class="modal-caixa" onclick="event.stopPropagation()">
+        <div class="titulo">PROJEÇÕES FUTURAS DE MERCADO</div>
+        <div id="conteudoProjecoes" class="projecoes-texto">Aguardando projeções...</div>
+        <button type="button" class="sec" onclick="fecharProjecoes()">FECHAR</button>
+    </div>
+</div>
 
 <div class="card leitura">
 <div class="titulo">LEITURA AO VIVO</div>
@@ -201,6 +217,7 @@ function mostrarApp(email){
     painelAtivo=true;
     carregar();
     carregarLeitura();
+    carregarProjecoes();
 }
 
 async function criarConta(){
@@ -466,6 +483,34 @@ async function carregarLeitura(){
         : (data[0].mensagem||"Aguardando leitura do Exterminador de Sinais...");
 }
 
+async function carregarProjecoes(){
+    const alvo = document.getElementById("conteudoProjecoes");
+    if(!alvo)return;
+
+    const {data,error}=await db
+        .from("projecoes_mercado")
+        .select("*")
+        .eq("ativo",true)
+        .order("id",{ascending:false})
+        .limit(1);
+
+    if(error || !data || data.length===0){
+        alvo.innerText = "Aguardando projeções...";
+        return;
+    }
+
+    alvo.innerText = data[0].mensagem || "Aguardando projeções...";
+}
+
+function abrirProjecoes(){
+    carregarProjecoes();
+    document.getElementById("modalProjecoes").classList.remove("escondido");
+}
+
+function fecharProjecoes(){
+    document.getElementById("modalProjecoes").classList.add("escondido");
+}
+
 async function carregar(){
     if(!painelAtivo)return;
 
@@ -539,6 +584,7 @@ setInterval(()=>{
 
 setInterval(carregar,2000);
 setInterval(carregarLeitura,2000);
+setInterval(carregarProjecoes,60000);
 </script>
 </body>
 </html>
