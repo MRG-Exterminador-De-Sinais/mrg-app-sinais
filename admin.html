@@ -35,6 +35,40 @@ button.pequeno{width:auto;padding:8px 10px;margin:4px;font-size:13px;}
 .bloqueado{background:#7a2020;color:white;}
 .acoes{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
 .vazio{text-align:center;color:#aaa;padding:12px;}
+
+.topo-controle{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+
+.btn-lupa{
+    width:34px;
+    height:34px;
+    margin:0;
+    padding:0;
+    border-radius:8px;
+    background:#00ff88;
+    color:#000;
+    font-size:16px;
+    font-weight:bold;
+    flex:0 0 auto;
+}
+
+#campoBusca{
+    display:none;
+    margin-top:10px;
+    margin-bottom:10px;
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #444;
+    background:#0b0b0b;
+    color:white;
+    font-size:15px;
+}
+
 @media(max-width:600px){
 .container{padding:12px;}
 .header h1{font-size:21px;}
@@ -67,7 +101,16 @@ Administrador: <span id="adminEmail"></span>
 </div>
 
 <div class="card">
-<div class="titulo">CONTROLE DE USUÁRIOS</div>
+<div class="topo-controle">
+    <div class="titulo">CONTROLE DE USUÁRIOS</div>
+    <button type="button" class="btn-lupa" onclick="toggleBusca()">🔍</button>
+</div>
+
+<input
+    id="campoBusca"
+    placeholder="Nome, e-mail ou telefone"
+    onkeyup="filtrarUsuarios()">
+
 <button type="button" onclick="carregarUsuarios()">ATUALIZAR LISTA</button>
 <div id="listaUsuarios" class="vazio">Carregando usuários...</div>
 </div>
@@ -83,6 +126,8 @@ const SUPABASE_KEY = "sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const ADMIN_EMAIL = "maiconrodrigoguth@gmail.com";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+window.USUARIOS_CACHE = [];
 
 function texto(v){
     if(v === null || v === undefined || v === "") return "-";
@@ -183,6 +228,18 @@ async function carregarUsuarios(){
     }
 
     if(!data || data.length === 0){
+        window.USUARIOS_CACHE = [];
+        document.getElementById("listaUsuarios").innerHTML =
+            "<div class='vazio'>Nenhum usuário encontrado.</div>";
+        return;
+    }
+
+    window.USUARIOS_CACHE = data;
+    renderizarUsuarios(data);
+}
+
+function renderizarUsuarios(lista){
+    if(!lista || lista.length === 0){
         document.getElementById("listaUsuarios").innerHTML =
             "<div class='vazio'>Nenhum usuário encontrado.</div>";
         return;
@@ -190,7 +247,7 @@ async function carregarUsuarios(){
 
     let html = "";
 
-    data.forEach(u=>{
+    lista.forEach(u=>{
         const nome = texto(u.nome);
         const email = texto(u.email);
         const telefone = texto(u.telefone);
@@ -215,6 +272,46 @@ async function carregarUsuarios(){
     document.getElementById("listaUsuarios").innerHTML = html;
 }
 
+function toggleBusca(){
+    const campo = document.getElementById("campoBusca");
+
+    if(campo.style.display === "none" || campo.style.display === ""){
+        campo.style.display = "block";
+        campo.focus();
+    }else{
+        campo.value = "";
+        campo.style.display = "none";
+        renderizarUsuarios(window.USUARIOS_CACHE || []);
+    }
+}
+
+function filtrarUsuarios(){
+    const termo = document
+        .getElementById("campoBusca")
+        .value
+        .toLowerCase()
+        .trim();
+
+    if(!termo){
+        renderizarUsuarios(window.USUARIOS_CACHE || []);
+        return;
+    }
+
+    const filtrados = (window.USUARIOS_CACHE || []).filter(u => {
+        const nome = String(u.nome || "").toLowerCase();
+        const email = String(u.email || "").toLowerCase();
+        const telefone = String(u.telefone || "").toLowerCase();
+
+        return (
+            nome.includes(termo) ||
+            email.includes(termo) ||
+            telefone.includes(termo)
+        );
+    });
+
+    renderizarUsuarios(filtrados);
+}
+
 async function alterarLiberado(id,valor){
     const {error} = await db
         .from("perfis")
@@ -227,6 +324,11 @@ async function alterarLiberado(id,valor){
     }
 
     await carregarUsuarios();
+
+    const campo = document.getElementById("campoBusca");
+    if(campo && campo.style.display !== "none" && campo.value.trim()){
+        filtrarUsuarios();
+    }
 }
 
 async function sair(){
