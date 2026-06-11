@@ -22,7 +22,6 @@ button.bloquear{background:#7a2020;color:white;}
 button.whats{background:#1fa855;color:white;}
 button.cobranca{background:#ffaa00;color:#000;}
 button.pago{background:#00ff88;color:#000;}
-button.pendente{background:#ffaa00;color:#000;}
 button.free{background:#2f80ff;color:white;}
 button.pequeno{width:auto;padding:8px 10px;margin:4px;font-size:13px;}
 .msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4;}
@@ -38,6 +37,7 @@ button.pequeno{width:auto;padding:8px 10px;margin:4px;font-size:13px;}
 .financeiro-pago{background:#00ff88;color:#000;}
 .financeiro-pendente{background:#ffaa00;color:#000;}
 .financeiro-free{background:#2f80ff;color:white;}
+.financeiro-atrasado{background:#ff3333;color:white;}
 .acoes{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
 .vazio{text-align:center;color:#aaa;padding:12px;}
 .topo-controle{display:flex;justify-content:space-between;align-items:center;gap:10px;}
@@ -110,6 +110,49 @@ function limparTelefone(tel){
     return String(tel||"").replace(/\D/g,"");
 }
 
+function hojeISO(){
+    const d = new Date();
+    const ano = d.getFullYear();
+    const mes = String(d.getMonth()+1).padStart(2,"0");
+    const dia = String(d.getDate()).padStart(2,"0");
+    return `${ano}-${mes}-${dia}`;
+}
+
+function formatarDataBR(data){
+    if(!data)return "-";
+    const p = String(data).split("-");
+    if(p.length !== 3)return data;
+    return `${p[2]}/${p[1]}/${p[0]}`;
+}
+
+function mesmoMesAtual(data){
+    if(!data)return false;
+    const d = new Date(String(data) + "T12:00:00");
+    const agora = new Date();
+
+    return d.getFullYear() === agora.getFullYear() &&
+           d.getMonth() === agora.getMonth();
+}
+
+function statusFinanceiroReal(u){
+    const status = String(u.status_pagamento || "PENDENTE").toUpperCase();
+    const diaAtual = new Date().getDate();
+
+    if(status === "PAGO" && mesmoMesAtual(u.data_ultimo_pagamento)){
+        return "PAGO";
+    }
+
+    if(status === "FREE" && mesmoMesAtual(u.data_free)){
+        return "FREE";
+    }
+
+    if(diaAtual >= 6){
+        return "ATRASADO";
+    }
+
+    return "PENDENTE";
+}
+
 function abrirWhatsapp(telefone,nome,email){
     let tel = limparTelefone(telefone);
 
@@ -171,6 +214,10 @@ function badgeFinanceiro(status){
 
     if(st === "FREE"){
         return "<span class='badge financeiro-free'>FREE</span>";
+    }
+
+    if(st === "ATRASADO"){
+        return "<span class='badge financeiro-atrasado'>ATRASADO</span>";
     }
 
     return "<span class='badge financeiro-pendente'>PENDENTE</span>";
@@ -263,7 +310,7 @@ function renderizarUsuarios(lista){
         const email = texto(u.email);
         const telefone = texto(u.telefone);
         const liberado = u.liberado === true;
-        const statusPagamento = texto(u.status_pagamento || "PENDENTE");
+        const statusReal = statusFinanceiroReal(u);
 
         html += `
             <div class="usuario-card">
@@ -271,17 +318,14 @@ function renderizarUsuarios(lista){
                 <div class="linha"><b>E-mail:</b> ${email}</div>
                 <div class="linha"><b>Telefone:</b> ${telefone}</div>
                 <div class="linha"><b>Acesso:</b> ${badgeLiberado(liberado)}</div>
-                <div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(statusPagamento)}</div>
+                <div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(statusReal)}</div>
+                <div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div>
+                <div class="linha"><b>Último free:</b> ${formatarDataBR(u.data_free)}</div>
 
                 <div class="acoes">
-                    <button type="button" class="pequeno" onclick="alterarLiberado('${u.id}',true)">LIBERAR</button>
-                    <button type="button" class="pequeno bloquear" onclick="alterarLiberado('${u.id}',false)">BLOQUEAR</button>
-                </div>
-
-                <div class="acoes">
-                    <button type="button" class="pequeno pago" onclick="alterarPagamento('${u.id}','PAGO')">PAGO</button>
-                    <button type="button" class="pequeno pendente" onclick="alterarPagamento('${u.id}','PENDENTE')">PENDENTE</button>
-                    <button type="button" class="pequeno free" onclick="alterarPagamento('${u.id}','FREE')">FREE</button>
+                    <button type="button" class="pequeno pago" onclick="marcarPago('${u.id}')">PAGO</button>
+                    <button type="button" class="pequeno free" onclick="marcarFree('${u.id}')">FREE</button>
+                    <button type="button" class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button>
                 </div>
 
                 <div class="acoes">
@@ -324,7 +368,7 @@ function filtrarUsuarios(){
         const nome = String(u.nome || "").toLowerCase();
         const email = String(u.email || "").toLowerCase();
         const telefone = String(u.telefone || "").toLowerCase();
-        const status = String(u.status_pagamento || "").toLowerCase();
+        const status = statusFinanceiroReal(u).toLowerCase();
 
         return (
             nome.includes(termo) ||
@@ -337,28 +381,53 @@ function filtrarUsuarios(){
     renderizarUsuarios(filtrados);
 }
 
-async function alterarLiberado(id,valor){
+async function marcarPago(id){
     const {error} = await db
         .from("perfis")
-        .update({liberado: valor})
+        .update({
+            liberado: true,
+            status_pagamento: "PAGO",
+            data_ultimo_pagamento: hojeISO()
+        })
         .eq("id", id);
 
     if(error){
-        alert("Erro ao atualizar usuário.");
+        alert("Erro ao marcar como pago.");
         return;
     }
 
     await recarregarMantendoBusca();
 }
 
-async function alterarPagamento(id,status){
+async function marcarFree(id){
     const {error} = await db
         .from("perfis")
-        .update({status_pagamento: status})
+        .update({
+            liberado: true,
+            status_pagamento: "FREE",
+            data_free: hojeISO()
+        })
         .eq("id", id);
 
     if(error){
-        alert("Erro ao atualizar financeiro.");
+        alert("Erro ao marcar como free.");
+        return;
+    }
+
+    await recarregarMantendoBusca();
+}
+
+async function bloquearUsuario(id){
+    const {error} = await db
+        .from("perfis")
+        .update({
+            liberado: false,
+            status_pagamento: "PENDENTE"
+        })
+        .eq("id", id);
+
+    if(error){
+        alert("Erro ao bloquear usuário.");
         return;
     }
 
