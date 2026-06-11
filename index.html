@@ -134,6 +134,27 @@ button.sair{background:#7a2020;color:white;}
 .modal-projecoes{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:9999;display:flex;align-items:center;justify-content:center;padding:14px;}
 .modal-caixa{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:#111;border:2px solid #00ff88;border-radius:16px;padding:14px;}
 .projecoes-texto{white-space:pre-wrap;font-family:Consolas,monospace;font-size:13px;line-height:1.35;color:#eee;background:#050505;border:1px solid #333;border-radius:12px;padding:12px;text-align:left;}
+
+.aviso-operacional{
+    background:rgba(255,170,0,0.10);
+    border:2px solid #ffaa00;
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:10px;
+    text-align:center;
+    color:#ffaa00;
+    font-weight:bold;
+    line-height:1.45;
+    white-space:pre-wrap;
+    box-shadow:0 0 12px rgba(255,170,0,0.12);
+    animation:piscaOperacional 1.7s infinite;
+}
+@keyframes piscaOperacional{
+    0%{opacity:1;}
+    50%{opacity:0.68;}
+    100%{opacity:1;}
+}
+
 @media(max-width:600px){
 .container{padding:12px;}
 .header h1{font-size:22px;}
@@ -257,6 +278,12 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let painelAtivo = false;
 let telaAtual = "login";
 
+let CONTROLE_ENVIO = {
+    snarpy_ativo: true,
+    hyper_ativo: true,
+    mensagem: ""
+};
+
 function esconderTudo(){
     ["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>{
         document.getElementById(id).classList.add("escondido");
@@ -306,6 +333,7 @@ function mostrarApp(email){
     document.getElementById("appBox").classList.remove("escondido");
     document.getElementById("usuarioEmail").innerText=email||"";
     painelAtivo=true;
+    carregarControleEnvio();
     carregar();
     carregarLeitura();
     carregarProjecoes();
@@ -558,6 +586,57 @@ function atualizarResumoFechados(historico){
     `;
 }
 
+
+async function carregarControleEnvio(){
+    if(!painelAtivo)return;
+
+    const {data,error}=await db
+        .from("controle_envio")
+        .select("*")
+        .eq("id",1)
+        .single();
+
+    if(error || !data){
+        return;
+    }
+
+    CONTROLE_ENVIO = {
+        snarpy_ativo: data.snarpy_ativo === true,
+        hyper_ativo: data.hyper_ativo === true,
+        mensagem: data.mensagem || ""
+    };
+}
+
+function existePausaOperacional(){
+    return !(CONTROLE_ENVIO.snarpy_ativo === true && CONTROLE_ENVIO.hyper_ativo === true);
+}
+
+function mensagemPausaOperacional(){
+    if(CONTROLE_ENVIO.mensagem && String(CONTROLE_ENVIO.mensagem).trim()){
+        return String(CONTROLE_ENVIO.mensagem).trim();
+    }
+
+    return "⚠️ MERCADO EM OBSERVAÇÃO\n\nNovas entradas estão temporariamente pausadas.\nOs sinais já enviados continuam sendo acompanhados até o fechamento.";
+}
+
+function avisoOperacionalHTML(){
+    if(!existePausaOperacional()){
+        return "";
+    }
+
+    let detalhe = "";
+
+    if(CONTROLE_ENVIO.snarpy_ativo !== true && CONTROLE_ENVIO.hyper_ativo !== true){
+        detalhe = "\n\nSNARPY e HYPER pausados temporariamente.";
+    }else if(CONTROLE_ENVIO.snarpy_ativo !== true){
+        detalhe = "\n\nSNARPY pausado temporariamente.";
+    }else if(CONTROLE_ENVIO.hyper_ativo !== true){
+        detalhe = "\n\nHYPER pausado temporariamente.";
+    }
+
+    return `<div class="aviso-operacional">${mensagemPausaOperacional()}${detalhe}</div>`;
+}
+
 async function carregarLeitura(){
     if(!painelAtivo)return;
 
@@ -605,6 +684,8 @@ function fecharProjecoes(){
 async function carregar(){
     if(!painelAtivo)return;
 
+    await carregarControleEnvio();
+
     const {data,error}=await db
         .from("sinais")
         .select("*")
@@ -635,10 +716,16 @@ async function carregar(){
     if(ativos.length===2)classe+=" dois";
     if(ativos.length===3)classe+=" tres";
 
+    const avisoOperacional = avisoOperacionalHTML();
+
     document.getElementById("ativos").innerHTML=
         ativos.length
-        ? `<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`
-        : "<div class='vazio'>Nenhum sinal ativo no momento</div>";
+        ? `${avisoOperacional}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`
+        : (
+            avisoOperacional
+            ? avisoOperacional
+            : "<div class='vazio'>Nenhum sinal ativo no momento</div>"
+        );
 
     document.getElementById("historico").innerHTML=
         historico.length
@@ -676,6 +763,7 @@ setInterval(()=>{
 setInterval(carregar,2000);
 setInterval(carregarLeitura,2000);
 setInterval(carregarProjecoes,60000);
+setInterval(carregarControleEnvio,5000);
 </script>
 </body>
 </html>
