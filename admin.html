@@ -57,6 +57,14 @@ button.pequeno{width:auto;padding:8px 10px;margin:4px;font-size:13px;}
 .historico-data{color:#00ff88;font-weight:bold;}
 .btn-fechar{background:#7a2020;color:white;}
 
+.controle-operacional-botoes{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.btn-toggle{flex:1 1 30%;min-width:95px;padding:10px 8px;margin:0;border-radius:10px;font-size:13px;}
+.btn-toggle.ativo{background:#00ff88;color:#000;}
+.btn-toggle.pausado{background:#7a2020;color:white;}
+textarea{width:100%;min-height:100px;margin-top:10px;padding:12px;border-radius:10px;border:1px solid #444;background:#0b0b0b;color:white;font-size:14px;font-family:Arial,sans-serif;resize:vertical;}
+.status-controle{margin-top:8px;font-size:13px;color:#aaa;text-align:center;}
+
+
 @media(max-width:600px){
 .container{padding:12px;}
 .header h1{font-size:21px;}
@@ -94,6 +102,21 @@ Administrador: <span id="adminEmail"></span>
 <div id="resumoFinanceiro" class="vazio">Carregando resumo...</div>
 <button type="button" class="bloquear" onclick="bloquearAtrasados()">BLOQUEAR ATRASADOS</button>
 <button type="button" class="cobranca" onclick="abrirModalManutencao()">⚠️ MANUTENÇÃO</button>
+</div>
+
+<div class="card">
+<div class="titulo">CONTROLE OPERACIONAL</div>
+
+<div class="controle-operacional-botoes">
+    <button type="button" id="btnSnarpy" class="btn-toggle ativo" onclick="alternarSnarpy()">🟢 SNARPY</button>
+    <button type="button" id="btnHyper" class="btn-toggle ativo" onclick="alternarHyper()">🟢 HYPER</button>
+    <button type="button" id="btnTodos" class="btn-toggle ativo" onclick="alternarTodos()">🟢 TODOS</button>
+</div>
+
+<div class="status-controle" id="statusControleEnvio">Carregando controle...</div>
+
+<textarea id="mensagemControleEnvio" placeholder="Mensagem exibida quando o envio estiver pausado"></textarea>
+<button type="button" onclick="salvarMensagemControle()">SALVAR MENSAGEM</button>
 </div>
 
 <div class="card">
@@ -147,6 +170,11 @@ const VALOR_MENSAL_TXT = "R$ 30,00";
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 window.USUARIOS_CACHE = [];
+window.CONTROLE_ENVIO = {
+    snarpy_ativo: true,
+    hyper_ativo: true,
+    mensagem: ""
+};
 
 function texto(v){
     if(v === null || v === undefined || v === "") return "-";
@@ -212,6 +240,145 @@ function statusFinanceiroReal(u){
     }
 
     return "PENDENTE";
+}
+
+
+async function carregarControleEnvio(){
+    const {data,error} = await db
+        .from("controle_envio")
+        .select("*")
+        .eq("id",1)
+        .single();
+
+    if(error || !data){
+        document.getElementById("statusControleEnvio").innerText = "Erro ao carregar controle operacional.";
+        return;
+    }
+
+    window.CONTROLE_ENVIO = data;
+
+    if(!window.CONTROLE_ENVIO.mensagem){
+        window.CONTROLE_ENVIO.mensagem =
+`⚠️ MERCADO EM OBSERVAÇÃO
+
+Novas entradas estão temporariamente pausadas.
+Os sinais já enviados continuam sendo acompanhados até o fechamento.`;
+    }
+
+    const campo = document.getElementById("mensagemControleEnvio");
+    if(campo){
+        campo.value = window.CONTROLE_ENVIO.mensagem || "";
+    }
+
+    atualizarBotoesControle();
+}
+
+function atualizarBotoesControle(){
+    const c = window.CONTROLE_ENVIO || {};
+    const snarpyAtivo = c.snarpy_ativo === true;
+    const hyperAtivo = c.hyper_ativo === true;
+    const todosAtivos = snarpyAtivo && hyperAtivo;
+
+    const btnSnarpy = document.getElementById("btnSnarpy");
+    const btnHyper = document.getElementById("btnHyper");
+    const btnTodos = document.getElementById("btnTodos");
+
+    if(btnSnarpy){
+        btnSnarpy.innerText = (snarpyAtivo ? "🟢 " : "🔴 ") + "SNARPY";
+        btnSnarpy.className = "btn-toggle " + (snarpyAtivo ? "ativo" : "pausado");
+    }
+
+    if(btnHyper){
+        btnHyper.innerText = (hyperAtivo ? "🟢 " : "🔴 ") + "HYPER";
+        btnHyper.className = "btn-toggle " + (hyperAtivo ? "ativo" : "pausado");
+    }
+
+    if(btnTodos){
+        btnTodos.innerText = (todosAtivos ? "🟢 " : "🔴 ") + "TODOS";
+        btnTodos.className = "btn-toggle " + (todosAtivos ? "ativo" : "pausado");
+    }
+
+    const status = document.getElementById("statusControleEnvio");
+    if(status){
+        if(todosAtivos){
+            status.innerText = "Envio de novos sinais liberado.";
+        }else if(!snarpyAtivo && !hyperAtivo){
+            status.innerText = "Novos sinais pausados para SNARPY e HYPER.";
+        }else if(!snarpyAtivo){
+            status.innerText = "Novos sinais SNARPY pausados. HYPER liberado.";
+        }else{
+            status.innerText = "Novos sinais HYPER pausados. SNARPY liberado.";
+        }
+    }
+}
+
+async function salvarControleEnvio(snarpyAtivo, hyperAtivo, mensagem=null){
+    const payload = {
+        snarpy_ativo: snarpyAtivo,
+        hyper_ativo: hyperAtivo,
+        atualizado_em: new Date().toISOString()
+    };
+
+    if(mensagem !== null){
+        payload.mensagem = mensagem;
+    }
+
+    const {error} = await db
+        .from("controle_envio")
+        .update(payload)
+        .eq("id",1);
+
+    if(error){
+        alert("Erro ao atualizar controle operacional.");
+        return false;
+    }
+
+    window.CONTROLE_ENVIO.snarpy_ativo = snarpyAtivo;
+    window.CONTROLE_ENVIO.hyper_ativo = hyperAtivo;
+    if(mensagem !== null){
+        window.CONTROLE_ENVIO.mensagem = mensagem;
+    }
+
+    atualizarBotoesControle();
+    return true;
+}
+
+async function alternarSnarpy(){
+    const c = window.CONTROLE_ENVIO || {};
+    await salvarControleEnvio(!(c.snarpy_ativo === true), c.hyper_ativo === true);
+}
+
+async function alternarHyper(){
+    const c = window.CONTROLE_ENVIO || {};
+    await salvarControleEnvio(c.snarpy_ativo === true, !(c.hyper_ativo === true));
+}
+
+async function alternarTodos(){
+    const c = window.CONTROLE_ENVIO || {};
+    const todosAtivos = c.snarpy_ativo === true && c.hyper_ativo === true;
+
+    if(todosAtivos){
+        await salvarControleEnvio(false, false);
+    }else{
+        await salvarControleEnvio(true, true);
+    }
+}
+
+async function salvarMensagemControle(){
+    const campo = document.getElementById("mensagemControleEnvio");
+    const msg = campo ? campo.value.trim() : "";
+
+    if(!msg){
+        alert("Digite uma mensagem para exibir quando pausar sinais.");
+        return;
+    }
+
+    const c = window.CONTROLE_ENVIO || {};
+    const ok = await salvarControleEnvio(c.snarpy_ativo === true, c.hyper_ativo === true, msg);
+
+    if(ok){
+        alert("Mensagem salva.");
+    }
 }
 
 function abrirWhatsapp(telefone,nome,email){
@@ -330,6 +497,7 @@ async function verificarAdmin(){
     document.getElementById("adminEmail").innerText = user.email;
 
     await carregarUsuarios();
+    await carregarControleEnvio();
 }
 
 async function carregarUsuarios(){
