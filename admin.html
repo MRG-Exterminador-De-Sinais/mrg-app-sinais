@@ -23,6 +23,7 @@ button.whats{background:#1fa855;color:white;}
 button.cobranca{background:#ffaa00;color:#000;}
 button.pago{background:#00ff88;color:#000;}
 button.free{background:#2f80ff;color:white;}
+button.hist{background:#333;color:white;}
 button.pequeno{width:auto;padding:8px 10px;margin:4px;font-size:13px;}
 .msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4;}
 .erro{color:#ff6666;}
@@ -43,12 +44,26 @@ button.pequeno{width:auto;padding:8px 10px;margin:4px;font-size:13px;}
 .topo-controle{display:flex;justify-content:space-between;align-items:center;gap:10px;}
 .btn-lupa{width:34px;height:34px;margin:0;padding:0;border-radius:8px;background:#00ff88;color:#000;font-size:16px;font-weight:bold;flex:0 0 auto;}
 #campoBusca{display:none;margin-top:10px;margin-bottom:10px;width:100%;padding:10px;border-radius:8px;border:1px solid #444;background:#0b0b0b;color:white;font-size:15px;}
+
+.resumo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.resumo-item{background:#202020;border:1px solid #444;border-radius:12px;padding:10px;text-align:center;}
+.resumo-num{font-size:22px;font-weight:bold;color:#00ff88;}
+.resumo-label{font-size:12px;color:#aaa;margin-top:3px;}
+.receita{margin-top:10px;text-align:center;color:#ffaa00;font-weight:bold;font-size:15px;}
+
+.modal-fundo{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:9999;display:flex;align-items:center;justify-content:center;padding:14px;}
+.modal-caixa{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:#111;border:2px solid #00ff88;border-radius:16px;padding:14px;}
+.historico-item{border-bottom:1px solid #333;padding:9px 0;color:#ddd;font-size:14px;}
+.historico-data{color:#00ff88;font-weight:bold;}
+.btn-fechar{background:#7a2020;color:white;}
+
 @media(max-width:600px){
 .container{padding:12px;}
 .header h1{font-size:21px;}
 .card{padding:13px;}
 .acoes button{flex:1 1 100%;}
 button.pequeno{width:100%;margin:4px 0;}
+.resumo-grid{grid-template-columns:1fr 1fr;}
 }
 </style>
 </head>
@@ -75,6 +90,12 @@ Administrador: <span id="adminEmail"></span>
 </div>
 
 <div class="card">
+<div class="titulo">RESUMO FINANCEIRO DO MÊS</div>
+<div id="resumoFinanceiro" class="vazio">Carregando resumo...</div>
+<button type="button" class="bloquear" onclick="bloquearAtrasados()">BLOQUEAR ATRASADOS</button>
+</div>
+
+<div class="card">
 <div class="topo-controle">
     <div class="titulo">CONTROLE DE USUÁRIOS</div>
     <button type="button" class="btn-lupa" onclick="toggleBusca()">🔍</button>
@@ -91,11 +112,20 @@ Administrador: <span id="adminEmail"></span>
 
 </div>
 
+<div id="modalHistorico" class="modal-fundo escondido" onclick="fecharHistorico()">
+    <div class="modal-caixa" onclick="event.stopPropagation()">
+        <div class="titulo">HISTÓRICO FINANCEIRO</div>
+        <div id="conteudoHistorico" class="vazio">Carregando histórico...</div>
+        <button type="button" class="btn-fechar" onclick="fecharHistorico()">FECHAR</button>
+    </div>
+</div>
+
 <script>
 const SUPABASE_URL = "https://bflptqejltvwfjhixwpj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const ADMIN_EMAIL = "maiconrodrigoguth@gmail.com";
-const VALOR_MENSAL = "R$ 30,00";
+const VALOR_MENSAL = 30;
+const VALOR_MENSAL_TXT = "R$ 30,00";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -118,11 +148,25 @@ function hojeISO(){
     return `${ano}-${mes}-${dia}`;
 }
 
+function agoraISO(){
+    return new Date().toISOString();
+}
+
 function formatarDataBR(data){
     if(!data)return "-";
     const p = String(data).split("-");
     if(p.length !== 3)return data;
     return `${p[2]}/${p[1]}/${p[0]}`;
+}
+
+function formatarDataHoraBR(data){
+    if(!data)return "-";
+    try{
+        const d = new Date(data);
+        return d.toLocaleString("pt-BR");
+    }catch(e){
+        return data;
+    }
 }
 
 function mesmoMesAtual(data){
@@ -189,7 +233,7 @@ function abrirCobranca(telefone,nome,email){
         "Olá " + (nome || "") + ", tudo bem?\n\n" +
         "Eu espero que você esteja gostando de utilizar o sistema MRG Sinais Alto Padrão e aproveitando os recursos disponibilizados.\n\n" +
         "Passando para lembrar que a mensalidade de acesso encontra-se pendente. Para continuar utilizando o aplicativo e receber as atualizações normalmente, é importante manter a contribuição em dia.\n\n" +
-        "Valor mensal: " + VALOR_MENSAL + "\n\n" +
+        "Valor mensal: " + VALOR_MENSAL_TXT + "\n\n" +
         "E-mail cadastrado: " + (email || "") + "\n\n" +
         "Caso o pagamento já tenha sido realizado, desconsidere esta mensagem.\n\n" +
         "Qualquer dúvida, estou à disposição.";
@@ -289,11 +333,48 @@ async function carregarUsuarios(){
         window.USUARIOS_CACHE = [];
         document.getElementById("listaUsuarios").innerHTML =
             "<div class='vazio'>Nenhum usuário encontrado.</div>";
+        atualizarResumoFinanceiro([]);
         return;
     }
 
     window.USUARIOS_CACHE = data;
+    atualizarResumoFinanceiro(data);
     renderizarUsuarios(data);
+}
+
+function atualizarResumoFinanceiro(lista){
+    let pagos = 0;
+    let pendentes = 0;
+    let atrasados = 0;
+    let free = 0;
+    let liberados = 0;
+    let bloqueados = 0;
+
+    (lista || []).forEach(u=>{
+        const st = statusFinanceiroReal(u);
+
+        if(st === "PAGO") pagos++;
+        else if(st === "FREE") free++;
+        else if(st === "ATRASADO") atrasados++;
+        else pendentes++;
+
+        if(u.liberado === true) liberados++;
+        else bloqueados++;
+    });
+
+    const receita = pagos * VALOR_MENSAL;
+
+    document.getElementById("resumoFinanceiro").innerHTML = `
+        <div class="resumo-grid">
+            <div class="resumo-item"><div class="resumo-num">${pagos}</div><div class="resumo-label">PAGOS</div></div>
+            <div class="resumo-item"><div class="resumo-num">${pendentes}</div><div class="resumo-label">PENDENTES</div></div>
+            <div class="resumo-item"><div class="resumo-num">${atrasados}</div><div class="resumo-label">ATRASADOS</div></div>
+            <div class="resumo-item"><div class="resumo-num">${free}</div><div class="resumo-label">FREE</div></div>
+            <div class="resumo-item"><div class="resumo-num">${liberados}</div><div class="resumo-label">LIBERADOS</div></div>
+            <div class="resumo-item"><div class="resumo-num">${bloqueados}</div><div class="resumo-label">BLOQUEADOS</div></div>
+        </div>
+        <div class="receita">Receita do mês: R$ ${receita.toFixed(2).replace(".",",")}</div>
+    `;
 }
 
 function renderizarUsuarios(lista){
@@ -323,14 +404,15 @@ function renderizarUsuarios(lista){
                 <div class="linha"><b>Último free:</b> ${formatarDataBR(u.data_free)}</div>
 
                 <div class="acoes">
-                    <button type="button" class="pequeno pago" onclick="marcarPago('${u.id}')">PAGO</button>
-                    <button type="button" class="pequeno free" onclick="marcarFree('${u.id}')">FREE</button>
-                    <button type="button" class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button>
+                    <button type="button" class="pequeno pago" onclick="marcarPago('${u.id}','${nome}','${email}')">PAGO</button>
+                    <button type="button" class="pequeno free" onclick="marcarFree('${u.id}','${nome}','${email}')">FREE</button>
+                    <button type="button" class="pequeno bloquear" onclick="bloquearUsuario('${u.id}','${nome}','${email}')">BLOQUEAR</button>
                 </div>
 
                 <div class="acoes">
                     <button type="button" class="pequeno whats" onclick="abrirWhatsapp('${telefone}','${nome}','${email}')">WHATSAPP</button>
                     <button type="button" class="pequeno cobranca" onclick="abrirCobranca('${telefone}','${nome}','${email}')">COBRANÇA</button>
+                    <button type="button" class="pequeno hist" onclick="abrirHistorico('${u.id}','${nome}')">HISTÓRICO</button>
                 </div>
             </div>
         `;
@@ -381,7 +463,20 @@ function filtrarUsuarios(){
     renderizarUsuarios(filtrados);
 }
 
-async function marcarPago(id){
+async function registrarHistorico(perfilId,nome,email,acao,valor){
+    try{
+        await db.from("historico_financeiro").insert({
+            perfil_id: perfilId,
+            nome: nome,
+            email: email,
+            acao: acao,
+            valor: valor,
+            criado_em: agoraISO()
+        });
+    }catch(e){}
+}
+
+async function marcarPago(id,nome,email){
     const {error} = await db
         .from("perfis")
         .update({
@@ -396,10 +491,11 @@ async function marcarPago(id){
         return;
     }
 
+    await registrarHistorico(id,nome,email,"PAGO",VALOR_MENSAL);
     await recarregarMantendoBusca();
 }
 
-async function marcarFree(id){
+async function marcarFree(id,nome,email){
     const {error} = await db
         .from("perfis")
         .update({
@@ -414,10 +510,14 @@ async function marcarFree(id){
         return;
     }
 
+    await registrarHistorico(id,nome,email,"FREE",0);
     await recarregarMantendoBusca();
 }
 
-async function bloquearUsuario(id){
+async function bloquearUsuario(id,nome,email){
+    const confirmar = confirm("Confirmar bloqueio deste usuário?");
+    if(!confirmar)return;
+
     const {error} = await db
         .from("perfis")
         .update({
@@ -431,7 +531,74 @@ async function bloquearUsuario(id){
         return;
     }
 
+    await registrarHistorico(id,nome,email,"BLOQUEADO",0);
     await recarregarMantendoBusca();
+}
+
+async function bloquearAtrasados(){
+    const atrasados = (window.USUARIOS_CACHE || []).filter(u => {
+        return statusFinanceiroReal(u) === "ATRASADO" && u.liberado === true;
+    });
+
+    if(atrasados.length === 0){
+        alert("Nenhum usuário atrasado liberado para bloquear.");
+        return;
+    }
+
+    const confirmar = confirm("Bloquear " + atrasados.length + " usuário(s) atrasado(s)?");
+    if(!confirmar)return;
+
+    for(const u of atrasados){
+        await db.from("perfis")
+            .update({liberado:false,status_pagamento:"PENDENTE"})
+            .eq("id", u.id);
+
+        await registrarHistorico(u.id,u.nome,u.email,"BLOQUEADO_ATRASADO",0);
+    }
+
+    await carregarUsuarios();
+}
+
+async function abrirHistorico(id,nome){
+    document.getElementById("modalHistorico").classList.remove("escondido");
+    document.getElementById("conteudoHistorico").innerHTML = "<div class='vazio'>Carregando histórico...</div>";
+
+    const {data,error} = await db
+        .from("historico_financeiro")
+        .select("*")
+        .eq("perfil_id", id)
+        .order("criado_em",{ascending:false})
+        .limit(50);
+
+    if(error){
+        document.getElementById("conteudoHistorico").innerHTML =
+            "<div class='erro'>Erro ao carregar histórico.</div>";
+        return;
+    }
+
+    if(!data || data.length === 0){
+        document.getElementById("conteudoHistorico").innerHTML =
+            "<div class='vazio'>Nenhum histórico para " + nome + ".</div>";
+        return;
+    }
+
+    let html = "";
+
+    data.forEach(h=>{
+        html += `
+            <div class="historico-item">
+                <div class="historico-data">${formatarDataHoraBR(h.criado_em)}</div>
+                <div><b>Ação:</b> ${texto(h.acao)}</div>
+                <div><b>Valor:</b> R$ ${Number(h.valor || 0).toFixed(2).replace(".",",")}</div>
+            </div>
+        `;
+    });
+
+    document.getElementById("conteudoHistorico").innerHTML = html;
+}
+
+function fecharHistorico(){
+    document.getElementById("modalHistorico").classList.add("escondido");
 }
 
 async function recarregarMantendoBusca(){
