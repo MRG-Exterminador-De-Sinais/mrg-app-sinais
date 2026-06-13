@@ -9,7 +9,7 @@
 <style>
 html,body{width:100%;max-width:100%;overflow-x:hidden;}
 *{box-sizing:border-box;}
-body{margin:0;background:#060606;color:white;font-family:Arial,sans-serif;}
+body{margin:0;background:#060606;color:white;font-family:Arial,sans-serif;padding-bottom:90px;}
 .container{width:100%;max-width:760px;margin:auto;padding:14px;position:relative;}
 
 /* Marca visual geral do app */
@@ -66,12 +66,34 @@ body{margin:0;background:#060606;color:white;font-family:Arial,sans-serif;}
 input{width:100%;margin:7px 0;padding:14px;border-radius:10px;border:1px solid #444;background:#0b0b0b;color:white;font-size:16px;}
 button{width:100%;padding:14px;margin-top:8px;border:0;border-radius:10px;background:#00ff88;color:#000;font-weight:bold;font-size:16px;}
 button.sec{background:#333;color:white;}
-button.sair{background:#7a2020;color:white;}
+button.sair{background:#7a2020;color:white;margin-bottom:70px;}
 .msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4;}
 .erro{color:#ff6666;}
 .escondido{display:none!important;}
-.leitura{border:1px solid #555;text-align:center;background:rgba(23,23,23,0.86);}
-#leitura{white-space:pre-wrap;line-height:1.4;word-break:break-word;}
+
+/* Leitura ao vivo compacta para não empurrar a área de operação */
+.leitura{
+    border:1px solid #555;
+    text-align:center;
+    background:rgba(23,23,23,0.86);
+    min-height:72px;
+    max-height:92px;
+    overflow:hidden;
+    padding:10px 12px;
+}
+.leitura .titulo{margin-bottom:5px;}
+#leitura{
+    white-space:normal;
+    line-height:1.25;
+    word-break:break-word;
+    overflow:hidden;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    max-height:42px;
+    font-size:13px;
+}
+
 .ativos-grid{display:grid;grid-template-columns:1fr;gap:10px;}
 .ativos-grid.dois{grid-template-columns:1fr 1fr;}
 .ativos-grid.tres{grid-template-columns:1fr 1fr;}
@@ -135,6 +157,51 @@ button.sair{background:#7a2020;color:white;}
 .modal-caixa{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:#111;border:2px solid #00ff88;border-radius:16px;padding:14px;}
 .projecoes-texto{white-space:pre-wrap;font-family:Consolas,monospace;font-size:13px;line-height:1.35;color:#eee;background:#050505;border:1px solid #333;border-radius:12px;padding:12px;text-align:left;}
 
+/* Aviator 7K oficial - teste dentro do app */
+.aviator-card{
+    border:2px solid #00ff88;
+    background:rgba(5,5,5,0.96);
+    box-shadow:0 0 16px rgba(0,255,136,0.12);
+    padding:10px;
+}
+.aviator-topo{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin-bottom:8px;
+}
+.aviator-selo{
+    border:1px solid #00ff88;
+    color:#00ff88;
+    border-radius:999px;
+    padding:3px 8px;
+    font-size:11px;
+    font-weight:bold;
+    white-space:nowrap;
+}
+.aviator-aviso{
+    color:#aaa;
+    font-size:11px;
+    line-height:1.25;
+    text-align:center;
+    margin-bottom:8px;
+}
+.aviator-box{
+    width:100%;
+    height:560px;
+    border-radius:14px;
+    overflow:hidden;
+    background:#000;
+    border:1px solid #222;
+}
+.aviator-frame{
+    width:100%;
+    height:100%;
+    border:0;
+    background:#000;
+}
+
 .aviso-operacional{
     background:rgba(255,170,0,0.10);
     border:2px solid #ffaa00;
@@ -156,17 +223,22 @@ button.sair{background:#7a2020;color:white;}
 }
 
 @media(max-width:600px){
-.container{padding:12px;}
-.header h1{font-size:22px;}
-.card{padding:13px;}
+.container{padding:10px;}
+.header h1{font-size:21px;}
+.header{margin-bottom:10px;padding-top:8px;padding-bottom:5px;}
+.header .linha{font-size:13px;}
+.header .sub{font-size:13px;}
+.card{padding:10px;margin-bottom:10px;border-radius:14px;}
 .ativos-grid.dois,.ativos-grid.tres{grid-template-columns:1fr;}
 .ativos-grid.tres .sinal-card:nth-child(3){grid-column:auto;}
-.alvo{font-size:38px;}
+.alvo{font-size:36px;}
+.sinal-card{padding:12px;}
 .btn-projecoes{font-size:11px;padding:4px 8px;}
-.sinal-card::after{font-size:78px;right:7%;}
+.sinal-card::after{font-size:74px;right:7%;}
 .sinal-card::before{background-size:105%;opacity:0.26;}
 #appBox::before{background-size:110%;opacity:0.17;}
 .header::before{background-size:110%;opacity:0.14;}
+.aviator-box{height:520px;}
 }
 </style>
 </head>
@@ -251,6 +323,24 @@ Acesso liberado: <span id="usuarioEmail"></span>
 <div class="card">
 <div class="titulo">SINAIS ATIVOS</div>
 <div id="ativos">Carregando sinais...</div>
+</div>
+
+<div class="card aviator-card">
+    <div class="aviator-topo">
+        <div class="titulo">AVIATOR 7K OFICIAL</div>
+        <div class="aviator-selo">7K • OFICIAL</div>
+    </div>
+    <div class="aviator-aviso">
+        Login, saldo, depósito, saque e apostas ficam 100% dentro da 7K. O MRG não captura senha, saldo, token ou aposta.
+    </div>
+    <div class="aviator-box">
+        <iframe
+            class="aviator-frame"
+            src="https://7k.bet.br/cassino/jogar/spribe/aviator"
+            allow="fullscreen; autoplay; clipboard-read; clipboard-write"
+            referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+    </div>
 </div>
 
 <div class="card resumo-fechados">
@@ -647,10 +737,21 @@ async function carregarLeitura(){
         .order("id",{ascending:false})
         .limit(1);
 
-    document.getElementById("leitura").innerHTML=
+    document.getElementById("leitura").innerText=
         (error||!data||data.length===0)
         ? "Aguardando leitura do Exterminador de Sinais..."
-        : (data[0].mensagem||"Aguardando leitura do Exterminador de Sinais...");
+        : resumirLeitura(data[0].mensagem||"Aguardando leitura do Exterminador de Sinais...");
+}
+
+function resumirLeitura(msg){
+    const texto = String(msg || "").replace(/\s+/g," ").trim();
+    if(!texto){
+        return "Aguardando leitura do Exterminador de Sinais...";
+    }
+    if(texto.length <= 95){
+        return texto;
+    }
+    return texto.slice(0,92) + "...";
 }
 
 async function carregarProjecoes(){
