@@ -70,8 +70,8 @@ button.sair{background:#7a2020;color:white;}
 .msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4;}
 .erro{color:#ff6666;}
 .escondido{display:none!important;}
-.leitura{border:1px solid #555;text-align:center;background:rgba(23,23,23,0.86);}
-#leitura{white-space:pre-wrap;line-height:1.4;word-break:break-word;}
+.leitura{border:1px solid #555;text-align:center;background:rgba(23,23,23,0.86);height:92px;overflow:hidden;}
+#leitura{line-height:1.25;word-break:break-word;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-height:38px;}
 .ativos-grid{display:grid;grid-template-columns:1fr;gap:10px;}
 .ativos-grid.dois{grid-template-columns:1fr 1fr;}
 .ativos-grid.tres{grid-template-columns:1fr 1fr;}
@@ -135,6 +135,15 @@ button.sair{background:#7a2020;color:white;}
 .modal-caixa{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:#111;border:2px solid #00ff88;border-radius:16px;padding:14px;}
 .projecoes-texto{white-space:pre-wrap;font-family:Consolas,monospace;font-size:13px;line-height:1.35;color:#eee;background:#050505;border:1px solid #333;border-radius:12px;padding:12px;text-align:left;}
 
+.aviator7k-card{border:2px solid #00ff88;background:rgba(10,10,10,0.94);box-shadow:0 0 14px rgba(0,255,136,0.10);}
+.aviator7k-topo{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;}
+.selo-7k{color:#00ff88;font-weight:bold;font-size:12px;border:1px solid #00ff88;border-radius:999px;padding:4px 8px;white-space:nowrap;}
+.aviator7k-aviso{color:#aaa;font-size:12px;text-align:center;margin-bottom:8px;line-height:1.35;}
+.aviator7k-botoes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.aviator7k-framebox{width:100%;height:520px;overflow:hidden;border-radius:14px;border:1px solid #333;background:#000;position:relative;}
+#aviator7kFrame{width:1220px;height:860px;border:0;transform:scale(0.60);transform-origin:top left;background:#000;}
+.aviator7k-ajuda{font-size:11px;color:#888;text-align:center;margin-top:7px;line-height:1.3;}
+
 .aviso-operacional{
     background:rgba(255,170,0,0.10);
     border:2px solid #ffaa00;
@@ -149,11 +158,7 @@ button.sair{background:#7a2020;color:white;}
     box-shadow:0 0 12px rgba(255,170,0,0.12);
     animation:piscaOperacional 1.7s infinite;
 }
-@keyframes piscaOperacional{
-    0%{opacity:1;}
-    50%{opacity:0.68;}
-    100%{opacity:1;}
-}
+@keyframes piscaOperacional{0%{opacity:1;}50%{opacity:0.68;}100%{opacity:1;}}
 
 @media(max-width:600px){
 .container{padding:12px;}
@@ -167,6 +172,9 @@ button.sair{background:#7a2020;color:white;}
 .sinal-card::before{background-size:105%;opacity:0.26;}
 #appBox::before{background-size:110%;opacity:0.17;}
 .header::before{background-size:110%;opacity:0.14;}
+.aviator7k-framebox{height:470px;}
+#aviator7kFrame{width:980px;height:800px;transform:scale(0.50);}
+.aviator7k-botoes{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -253,6 +261,30 @@ Acesso liberado: <span id="usuarioEmail"></span>
 <div id="ativos">Carregando sinais...</div>
 </div>
 
+<div class="card aviator7k-card">
+    <div class="aviator7k-topo">
+        <div class="titulo">AVIATOR 7K OFICIAL</div>
+        <div class="selo-7k">7K • OFICIAL</div>
+    </div>
+
+    <div class="aviator7k-aviso">
+        Acesso visual oficial da 7K. Login, saldo, depósito, saque e apostas ficam 100% dentro da 7K.
+    </div>
+
+    <div class="aviator7k-botoes">
+        <button type="button" onclick="abrirAviator7K()">✈️ Abrir Aviator 7K</button>
+        <button type="button" class="sec" onclick="abrir7KNovaAba()">Abrir em nova janela</button>
+    </div>
+
+    <div id="aviator7kBox" class="aviator7k-framebox escondido">
+        <iframe id="aviator7kFrame" allow="fullscreen; autoplay; clipboard-read; clipboard-write" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+
+    <div class="aviator7k-ajuda">
+        O MRG não captura senha, saldo, token, depósito, saque ou aposta. Esta área é apenas uma porta visual para o Aviator oficial da 7K.
+    </div>
+</div>
+
 <div class="card resumo-fechados">
 <div class="titulo">RESUMO DOS ÚLTIMOS 5 FECHADOS</div>
 <div id="resumoFechados" class="vazio">Aguardando histórico...</div>
@@ -272,494 +304,156 @@ Acesso liberado: <span id="usuarioEmail"></span>
 const SUPABASE_URL = "https://bflptqejltvwfjhixwpj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const SITE_URL = "https://mrg-app-sinais.vercel.app";
+const URL_AVIATOR_7K = "https://7k.bet.br/cassino/jogar/spribe/aviator";
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let painelAtivo = false;
 let telaAtual = "login";
 
-let CONTROLE_ENVIO = {
-    snarpy_ativo: true,
-    hyper_ativo: true,
-    mensagem: ""
-};
+let CONTROLE_ENVIO = {snarpy_ativo: true, hyper_ativo: true, mensagem: ""};
 
-function esconderTudo(){
-    ["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>{
-        document.getElementById(id).classList.add("escondido");
-    });
-}
-
-function mostrarLogin(msg=""){
-    painelAtivo=false;
-    telaAtual="login";
-    esconderTudo();
-    document.getElementById("loginBox").classList.remove("escondido");
-    if(msg) document.getElementById("loginMsg").innerHTML=msg;
-}
-
-function mostrarCadastro(){
-    painelAtivo=false;
-    telaAtual="cadastro";
-    esconderTudo();
-    document.getElementById("cadastroBox").classList.remove("escondido");
-}
-
-function mostrarRecuperar(){
-    painelAtivo=false;
-    telaAtual="recuperar";
-    esconderTudo();
-    document.getElementById("recuperarBox").classList.remove("escondido");
-}
-
-function mostrarNovaSenha(){
-    painelAtivo=false;
-    telaAtual="novaSenha";
-    esconderTudo();
-    document.getElementById("novaSenhaBox").classList.remove("escondido");
-}
-
-function mostrarAguardando(email){
-    painelAtivo=false;
-    telaAtual="aguardando";
-    esconderTudo();
-    document.getElementById("aguardandoBox").classList.remove("escondido");
-    document.getElementById("emailAguardando").innerText=email||"";
-}
-
-function mostrarApp(email){
-    telaAtual="app";
-    esconderTudo();
-    document.getElementById("appBox").classList.remove("escondido");
-    document.getElementById("usuarioEmail").innerText=email||"";
-    painelAtivo=true;
-    carregarControleEnvio();
-    carregar();
-    carregarLeitura();
-    carregarProjecoes();
-}
+function esconderTudo(){["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>{document.getElementById(id).classList.add("escondido");});}
+function mostrarLogin(msg=""){painelAtivo=false;telaAtual="login";esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg;}
+function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";esconderTudo();document.getElementById("cadastroBox").classList.remove("escondido");}
+function mostrarRecuperar(){painelAtivo=false;telaAtual="recuperar";esconderTudo();document.getElementById("recuperarBox").classList.remove("escondido");}
+function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";esconderTudo();document.getElementById("novaSenhaBox").classList.remove("escondido");}
+function mostrarAguardando(email){painelAtivo=false;telaAtual="aguardando";esconderTudo();document.getElementById("aguardandoBox").classList.remove("escondido");document.getElementById("emailAguardando").innerText=email||"";}
+function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;carregarControleEnvio();carregar();carregarLeitura();carregarProjecoes();}
 
 async function criarConta(){
     const nome=document.getElementById("cadNome").value.trim();
     const email=document.getElementById("cadEmail").value.trim();
     const telefone=document.getElementById("cadTelefone").value.trim();
     const senha=document.getElementById("cadSenha").value.trim();
-
-    if(!nome||!email||!telefone||!senha){
-        document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";
-        return;
-    }
-
+    if(!nome||!email||!telefone||!senha){document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";return;}
     document.getElementById("cadMsg").innerHTML="Criando cadastro...";
-
-    const {data,error}=await db.auth.signUp({
-        email:email,
-        password:senha,
-        options:{
-            emailRedirectTo:SITE_URL,
-            data:{nome:nome,telefone:telefone}
-        }
-    });
-
-    if(error){
-        document.getElementById("cadMsg").innerHTML="<span class='erro'>"+error.message+"</span>";
-        return;
-    }
-
-    if(data && data.user){
-        await db.from("perfis").upsert({
-            id:data.user.id,
-            nome:nome,
-            email:email,
-            telefone:telefone,
-            liberado:false
-        });
-    }
-
-    telaAtual="cadastro";
-    document.getElementById("cadMsg").innerHTML=
-    "Cadastro criado. Confirme seu e-mail. Depois volte aqui e clique em <b>JÁ TENHO CADASTRO / ENTRAR</b>.";
+    const {data,error}=await db.auth.signUp({email:email,password:senha,options:{emailRedirectTo:SITE_URL,data:{nome:nome,telefone:telefone}}});
+    if(error){document.getElementById("cadMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return;}
+    if(data&&data.user){await db.from("perfis").upsert({id:data.user.id,nome:nome,email:email,telefone:telefone,liberado:false});}
+    telaAtual="cadastro";document.getElementById("cadMsg").innerHTML="Cadastro criado. Confirme seu e-mail. Depois volte aqui e clique em <b>JÁ TENHO CADASTRO / ENTRAR</b>.";
 }
 
 async function entrar(){
     const email=document.getElementById("loginEmail").value.trim();
     const senha=document.getElementById("loginSenha").value.trim();
-
-    if(!email||!senha){
-        document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";
-        return;
-    }
-
+    if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return;}
     const {error}=await db.auth.signInWithPassword({email:email,password:senha});
-
-    if(error){
-        document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";
-        return;
-    }
-
+    if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return;}
     await verificarAcesso(true);
 }
 
 async function recuperarSenha(){
     const email=document.getElementById("recEmail").value.trim();
-
-    if(!email){
-        document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";
-        return;
-    }
-
+    if(!email){document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";return;}
     const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});
-
-    if(error){
-        document.getElementById("recMsg").innerHTML="<span class='erro'>"+error.message+"</span>";
-        return;
-    }
-
+    if(error){document.getElementById("recMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return;}
     document.getElementById("recMsg").innerHTML="Link de recuperação enviado. Verifique seu e-mail.";
 }
 
 async function salvarNovaSenha(){
     const senha=document.getElementById("novaSenha").value.trim();
-
-    if(!senha){
-        document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";
-        return;
-    }
-
+    if(!senha){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";return;}
     const {error}=await db.auth.updateUser({password:senha});
-
-    if(error){
-        document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";
-        return;
-    }
-
+    if(error){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return;}
     document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";
     setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000);
 }
 
 async function verificarAcesso(redirecionarSemSessao=false){
-    if(telaAtual==="cadastro" || telaAtual==="recuperar" || telaAtual==="novaSenha"){
-        return;
-    }
-
+    if(telaAtual==="cadastro"||telaAtual==="recuperar"||telaAtual==="novaSenha"){return;}
     const {data:sessionData}=await db.auth.getSession();
-
-    if(!sessionData||!sessionData.session||!sessionData.session.user){
-        painelAtivo=false;
-        if(redirecionarSemSessao) mostrarLogin();
-        return;
-    }
-
+    if(!sessionData||!sessionData.session||!sessionData.session.user){painelAtivo=false;if(redirecionarSemSessao)mostrarLogin();return;}
     const user=sessionData.session.user;
-
     const {data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();
-
-    if(error||!perfil){
-        await db.from("perfis").insert({
-            id:user.id,
-            nome:user.user_metadata?.nome || user.email,
-            email:user.email,
-            telefone:user.user_metadata?.telefone || "",
-            liberado:false
-        });
-        mostrarAguardando(user.email);
-        return;
-    }
-
-    if(perfil.liberado===true){
-        mostrarApp(user.email);
-    }else{
-        mostrarAguardando(user.email);
-    }
+    if(error||!perfil){await db.from("perfis").insert({id:user.id,nome:user.user_metadata?.nome||user.email,email:user.email,telefone:user.user_metadata?.telefone||"",liberado:false});mostrarAguardando(user.email);return;}
+    if(perfil.liberado===true){mostrarApp(user.email);}else{mostrarAguardando(user.email);}
 }
 
-async function sair(){
-    painelAtivo=false;
-    await db.auth.signOut();
-    mostrarLogin("Sessão encerrada.");
-}
-
-function alvoNumero(alvo){
-    return Number(String(alvo||"").replace("x","").replace("X","").trim())||0;
-}
-
-function horarioValor(h){
-    if(!h)return 999999;
-    const p=String(h).split(":").map(Number);
-    return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
-}
-
-function ehAtivo(item){
-    return item.ativo===true;
-}
-
-function nomeCategoria(item){
-    return item.categoria||item.origem||item.tipo||"MRG";
-}
-
-function textoMultiplicador(item){
-    if(!item.multiplicador_real)return "-";
-    return item.horario_real ? `${item.multiplicador_real} às ${item.horario_real}` : item.multiplicador_real;
-}
-
-function cardAtivo(item){
-    return `<div class="sinal-card">
-        <div class="cat">${nomeCategoria(item)}</div>
-        <div class="alvo">${item.alvo||"-"}</div>
-        <div class="status">${item.status||"-"}</div>
-        <div class="info">Horário: ${item.horario||"não informado"}</div>
-        <div class="info">VAR: ${item.variacao||"não informado"}</div>
-        <div class="info">Janela: ${item.janela||"não informada"}</div>
-        <div class="info">Score: ${item.score||"-"}</div>
-    </div>`;
-}
+async function sair(){painelAtivo=false;await db.auth.signOut();mostrarLogin("Sessão encerrada.");}
+function alvoNumero(alvo){return Number(String(alvo||"").replace("x","").replace("X","").trim())||0;}
+function horarioValor(h){if(!h)return 999999;const p=String(h).split(":").map(Number);return(p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);}
+function ehAtivo(item){return item.ativo===true;}
+function nomeCategoria(item){return item.categoria||item.origem||item.tipo||"MRG";}
+function textoMultiplicador(item){if(!item.multiplicador_real)return "-";return item.horario_real?`${item.multiplicador_real} às ${item.horario_real}`:item.multiplicador_real;}
+function cardAtivo(item){return `<div class="sinal-card"><div class="cat">${nomeCategoria(item)}</div><div class="alvo">${item.alvo||"-"}</div><div class="status">${item.status||"-"}</div><div class="info">Horário: ${item.horario||"não informado"}</div><div class="info">VAR: ${item.variacao||"não informado"}</div><div class="info">Janela: ${item.janela||"não informada"}</div><div class="info">Score: ${item.score||"-"}</div></div>`;}
 
 function statusNormalizado(item){
-    const texto = String((item.status || "") + " " + (item.resultado || "")).toUpperCase();
-
-    if(texto.includes("PROTECAO") || texto.includes("PROTEÇÃO") || texto.includes("PARCIAL")){
-        return "PROTECAO";
-    }
-
-    if(texto.includes("ACERTO")){
-        return "ACERTO";
-    }
-
-    if(texto.includes("ERRO")){
-        return "ERRO";
-    }
-
-    if(texto.includes("RETIDO") || texto.includes("PRESSAO") || texto.includes("PRESSÃO")){
-        return "RETIDO";
-    }
-
-    if(texto.includes("CANCEL")){
-        return "CANCELADO";
-    }
-
+    const texto=String((item.status||"")+" "+(item.resultado||"")).toUpperCase();
+    if(texto.includes("PROTECAO")||texto.includes("PROTEÇÃO")||texto.includes("PARCIAL"))return "PROTECAO";
+    if(texto.includes("ACERTO"))return "ACERTO";
+    if(texto.includes("ERRO"))return "ERRO";
+    if(texto.includes("RETIDO")||texto.includes("PRESSAO")||texto.includes("PRESSÃO"))return "RETIDO";
+    if(texto.includes("CANCEL"))return "CANCELADO";
     return "OUTRO";
 }
 
 function atualizarResumoFechados(historico){
-    const ultimos = historico.slice(0,5);
-
-    if(ultimos.length === 0){
-        document.getElementById("resumoFechados").innerHTML =
-            "<div class='vazio'>Nenhum sinal fechado ainda</div>";
-        return;
-    }
-
-    let acertos = 0;
-    let protecoes = 0;
-    let erros = 0;
-    let retidos = 0;
-
-    ultimos.forEach(item => {
-        const st = statusNormalizado(item);
-
-        if(st === "ACERTO") acertos++;
-        else if(st === "PROTECAO") protecoes++;
-        else if(st === "ERRO") erros++;
-        else if(st === "RETIDO" || st === "CANCELADO") retidos++;
-    });
-
-    const total = ultimos.length;
-    const taxaCheia = Math.round((acertos / total) * 100);
-    const taxaOperacional = Math.round(((acertos + protecoes) / total) * 100);
-
-    document.getElementById("resumoFechados").innerHTML = `
-        <div class="resumo-linha">
-            ✅ <span class="resumo-destaque">Acertos: ${acertos}</span>
-            &nbsp;|&nbsp;
-            🟡 <span class="resumo-protecao">Proteções: ${protecoes}</span>
-            &nbsp;|&nbsp;
-            ❌ <span class="resumo-erro">Erros: ${erros}</span>
-        </div>
-        <div class="resumo-linha">
-            🟠 Retidos/Cancelados: ${retidos}
-        </div>
-        <div class="resumo-linha">
-            🎯 Taxa cheia: <span class="resumo-destaque">${taxaCheia}%</span>
-            &nbsp;|&nbsp;
-            📌 Operacional: <span class="resumo-destaque">${taxaOperacional}%</span>
-        </div>
-    `;
+    const ultimos=historico.slice(0,5);
+    if(ultimos.length===0){document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Nenhum sinal fechado ainda</div>";return;}
+    let acertos=0,protecoes=0,erros=0,retidos=0;
+    ultimos.forEach(item=>{const st=statusNormalizado(item);if(st==="ACERTO")acertos++;else if(st==="PROTECAO")protecoes++;else if(st==="ERRO")erros++;else if(st==="RETIDO"||st==="CANCELADO")retidos++;});
+    const total=ultimos.length;
+    const taxaCheia=Math.round((acertos/total)*100);
+    const taxaOperacional=Math.round(((acertos+protecoes)/total)*100);
+    document.getElementById("resumoFechados").innerHTML=`<div class="resumo-linha">✅ <span class="resumo-destaque">Acertos: ${acertos}</span>&nbsp;|&nbsp;🟡 <span class="resumo-protecao">Proteções: ${protecoes}</span>&nbsp;|&nbsp;❌ <span class="resumo-erro">Erros: ${erros}</span></div><div class="resumo-linha">🟠 Retidos/Cancelados: ${retidos}</div><div class="resumo-linha">🎯 Taxa cheia: <span class="resumo-destaque">${taxaCheia}%</span>&nbsp;|&nbsp;📌 Operacional: <span class="resumo-destaque">${taxaOperacional}%</span></div>`;
 }
-
 
 async function carregarControleEnvio(){
     if(!painelAtivo)return;
-
-    const {data,error}=await db
-        .from("controle_envio")
-        .select("*")
-        .eq("id",1)
-        .single();
-
-    if(error || !data){
-        return;
-    }
-
-    CONTROLE_ENVIO = {
-        snarpy_ativo: data.snarpy_ativo === true,
-        hyper_ativo: data.hyper_ativo === true,
-        mensagem: data.mensagem || ""
-    };
+    const {data,error}=await db.from("controle_envio").select("*").eq("id",1).single();
+    if(error||!data)return;
+    CONTROLE_ENVIO={snarpy_ativo:data.snarpy_ativo===true,hyper_ativo:data.hyper_ativo===true,mensagem:data.mensagem||""};
 }
-
-function existePausaOperacional(){
-    return !(CONTROLE_ENVIO.snarpy_ativo === true && CONTROLE_ENVIO.hyper_ativo === true);
-}
-
-function mensagemPausaOperacional(){
-    if(CONTROLE_ENVIO.mensagem && String(CONTROLE_ENVIO.mensagem).trim()){
-        return String(CONTROLE_ENVIO.mensagem).trim();
-    }
-
-    return "⚠️ MERCADO EM OBSERVAÇÃO\n\nNovas entradas estão temporariamente pausadas.\nOs sinais já enviados continuam sendo acompanhados até o fechamento.";
-}
-
+function existePausaOperacional(){return !(CONTROLE_ENVIO.snarpy_ativo===true&&CONTROLE_ENVIO.hyper_ativo===true);}
+function mensagemPausaOperacional(){if(CONTROLE_ENVIO.mensagem&&String(CONTROLE_ENVIO.mensagem).trim())return String(CONTROLE_ENVIO.mensagem).trim();return "⚠️ MERCADO EM OBSERVAÇÃO\n\nNovas entradas estão temporariamente pausadas.\nOs sinais já enviados continuam sendo acompanhados até o fechamento.";}
 function avisoOperacionalHTML(){
-    if(!existePausaOperacional()){
-        return "";
-    }
-
-    let detalhe = "";
-
-    if(CONTROLE_ENVIO.snarpy_ativo !== true && CONTROLE_ENVIO.hyper_ativo !== true){
-        detalhe = "\n\nSNARPY e HYPER pausados temporariamente.";
-    }else if(CONTROLE_ENVIO.snarpy_ativo !== true){
-        detalhe = "\n\nSNARPY pausado temporariamente.";
-    }else if(CONTROLE_ENVIO.hyper_ativo !== true){
-        detalhe = "\n\nHYPER pausado temporariamente.";
-    }
-
+    if(!existePausaOperacional())return "";
+    let detalhe="";
+    if(CONTROLE_ENVIO.snarpy_ativo!==true&&CONTROLE_ENVIO.hyper_ativo!==true)detalhe="\n\nSNARPY e HYPER pausados temporariamente.";
+    else if(CONTROLE_ENVIO.snarpy_ativo!==true)detalhe="\n\nSNARPY pausado temporariamente.";
+    else if(CONTROLE_ENVIO.hyper_ativo!==true)detalhe="\n\nHYPER pausado temporariamente.";
     return `<div class="aviso-operacional">${mensagemPausaOperacional()}${detalhe}</div>`;
 }
 
 async function carregarLeitura(){
     if(!painelAtivo)return;
-
-    const {data,error}=await db
-        .from("leituras_ao_vivo")
-        .select("*")
-        .eq("ativo",true)
-        .order("id",{ascending:false})
-        .limit(1);
-
-    document.getElementById("leitura").innerHTML=
-        (error||!data||data.length===0)
-        ? "Aguardando leitura do Exterminador de Sinais..."
-        : (data[0].mensagem||"Aguardando leitura do Exterminador de Sinais...");
+    const {data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(1);
+    const msg=(error||!data||data.length===0)?"Aguardando leitura do Exterminador de Sinais...":(data[0].mensagem||"Aguardando leitura do Exterminador de Sinais...");
+    document.getElementById("leitura").innerText=resumirLeitura(msg);
 }
+function resumirLeitura(msg){const texto=String(msg||"").replace(/\s+/g," ").trim();if(!texto)return "Aguardando leitura do Exterminador de Sinais...";if(texto.length<=88)return texto;return texto.slice(0,85)+"...";}
 
 async function carregarProjecoes(){
-    const alvo = document.getElementById("conteudoProjecoes");
-    if(!alvo)return;
-
-    const {data,error}=await db
-        .from("projecoes_mercado")
-        .select("*")
-        .eq("ativo",true)
-        .order("id",{ascending:false})
-        .limit(1);
-
-    if(error || !data || data.length===0){
-        alvo.innerText = "Aguardando projeções...";
-        return;
-    }
-
-    alvo.innerText = data[0].mensagem || "Aguardando projeções...";
+    const alvo=document.getElementById("conteudoProjecoes");if(!alvo)return;
+    const {data,error}=await db.from("projecoes_mercado").select("*").eq("ativo",true).order("id",{ascending:false}).limit(1);
+    if(error||!data||data.length===0){alvo.innerText="Aguardando projeções...";return;}
+    alvo.innerText=data[0].mensagem||"Aguardando projeções...";
 }
-
-function abrirProjecoes(){
-    carregarProjecoes();
-    document.getElementById("modalProjecoes").classList.remove("escondido");
-}
-
-function fecharProjecoes(){
-    document.getElementById("modalProjecoes").classList.add("escondido");
-}
+function abrirProjecoes(){carregarProjecoes();document.getElementById("modalProjecoes").classList.remove("escondido");}
+function fecharProjecoes(){document.getElementById("modalProjecoes").classList.add("escondido");}
+function abrirAviator7K(){const box=document.getElementById("aviator7kBox");const frame=document.getElementById("aviator7kFrame");box.classList.remove("escondido");if(!frame.src){frame.src=URL_AVIATOR_7K;}}
+function abrir7KNovaAba(){window.open(URL_AVIATOR_7K,"_blank");}
 
 async function carregar(){
     if(!painelAtivo)return;
-
     await carregarControleEnvio();
-
-    const {data,error}=await db
-        .from("sinais")
-        .select("*")
-        .order("id",{ascending:false})
-        .limit(60);
-
-    if(error){
-        document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";
-        document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Verificar Supabase</div>";
-        document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";
-        return;
-    }
-
+    const {data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);
+    if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Verificar Supabase</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";return;}
     let ativos=(data||[]).filter(ehAtivo);
     let historico=(data||[]).filter(item=>!ehAtivo(item));
-
-    ativos.sort((a,b)=>{
-        const h=horarioValor(a.horario)-horarioValor(b.horario);
-        return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo);
-    });
-
-    ativos=ativos.slice(0,3);
-    historico=historico.slice(0,20);
-
+    ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo);});
+    ativos=ativos.slice(0,3);historico=historico.slice(0,20);
     atualizarResumoFechados(historico);
-
-    let classe="ativos-grid";
-    if(ativos.length===2)classe+=" dois";
-    if(ativos.length===3)classe+=" tres";
-
-    const avisoOperacional = avisoOperacionalHTML();
-
-    document.getElementById("ativos").innerHTML=
-        ativos.length
-        ? `${avisoOperacional}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`
-        : (
-            avisoOperacional
-            ? avisoOperacional
-            : "<div class='vazio'>Nenhum sinal ativo no momento</div>"
-        );
-
-    document.getElementById("historico").innerHTML=
-        historico.length
-        ? historico.map(item=>`
-            <div class="historico-item">
-                <div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div>
-                <div>Origem: ${nomeCategoria(item)}</div>
-                <div>Horário previsto: ${item.horario||"não informado"}</div>
-                <div>Janela: ${item.janela||"não informada"}</div>
-                <div>Resultado: ${item.resultado||"pendente"}</div>
-                <div>Multiplicador: ${textoMultiplicador(item)}</div>
-            </div>
-        `).join("")
-        : "<div class='vazio'>Nenhum sinal encerrado ainda</div>";
+    let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";
+    const avisoOperacional=avisoOperacionalHTML();
+    document.getElementById("ativos").innerHTML=ativos.length?`${avisoOperacional}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:(avisoOperacional?avisoOperacional:"<div class='vazio'>Nenhum sinal ativo no momento</div>");
+    document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`<div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>";
 }
 
-db.auth.onAuthStateChange((event,session)=>{
-    if(event==="PASSWORD_RECOVERY"){
-        mostrarNovaSenha();
-    }
-});
-
-if(window.location.hash.includes("type=recovery")){
-    mostrarNovaSenha();
-}else{
-    mostrarLogin();
-}
-
-setInterval(()=>{
-    if(telaAtual==="aguardando" || telaAtual==="app"){
-        verificarAcesso(false);
-    }
-},10000);
-
+db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"){mostrarNovaSenha();}});
+if(window.location.hash.includes("type=recovery")){mostrarNovaSenha();}else{mostrarLogin();}
+setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app"){verificarAcesso(false);}},10000);
 setInterval(carregar,2000);
 setInterval(carregarLeitura,2000);
 setInterval(carregarProjecoes,60000);
