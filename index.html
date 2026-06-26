@@ -2,768 +2,106 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#060606">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MRG Sinais">
+<meta name="mobile-web-app-capable" content="yes">
 <title>MRG Sinais Alto Padrão</title>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
 <style>
-html,body{width:100%;max-width:100%;overflow-x:hidden;}
-*{box-sizing:border-box;}
-body{margin:0;background:#060606;color:white;font-family:Arial,sans-serif;}
-.container{width:100%;max-width:760px;margin:auto;padding:14px;position:relative;}
-
-/* Marca visual geral do app */
-#appBox{position:relative;}
-#appBox::before{
-    content:"";
-    position:absolute;
-    inset:-8px 0 auto 0;
-    height:360px;
-    background-image:
-        linear-gradient(to bottom,rgba(6,6,6,0.15),rgba(6,6,6,0.70),rgba(6,6,6,1)),
-        url('16037623-50c1-4b03-b31c-35b5261d38ac.jpg');
-    background-size:92%;
-    background-position:center top;
-    background-repeat:no-repeat;
-    opacity:0.20;
-    pointer-events:none;
-    z-index:0;
-}
-#appBox>*{position:relative;z-index:1;}
-
-.header{
-    text-align:center;
-    margin-bottom:14px;
-    position:relative;
-    padding-top:10px;
-    padding-bottom:8px;
-}
-.header::before{
-    content:"";
-    position:absolute;
-    left:50%;
-    top:-18px;
-    transform:translateX(-50%);
-    width:100%;
-    height:160px;
-    background-image:
-        linear-gradient(to bottom,rgba(6,6,6,0.1),rgba(6,6,6,0.75)),
-        url('16037623-50c1-4b03-b31c-35b5261d38ac.jpg');
-    background-size:92%;
-    background-position:center top;
-    background-repeat:no-repeat;
-    opacity:0.16;
-    pointer-events:none;
-    z-index:0;
-}
-.header>*{position:relative;z-index:1;}
-.header h1{margin:0;font-size:24px;color:#00ff88;text-shadow:0 0 8px rgba(0,255,136,0.18);}
-.header .linha{margin-top:5px;color:#ddd;font-size:15px;}
-.header .sub{margin-top:5px;color:#ffaa00;font-weight:bold;font-size:14px;text-shadow:0 0 7px rgba(255,170,0,0.18);}
-
-.card{background:rgba(23,23,23,0.92);border:1px solid #333;border-radius:16px;padding:14px;margin-bottom:12px;}
-.titulo{color:#aaa;font-size:13px;margin-bottom:8px;letter-spacing:1px;}
-input{width:100%;margin:7px 0;padding:14px;border-radius:10px;border:1px solid #444;background:#0b0b0b;color:white;font-size:16px;}
-button{width:100%;padding:14px;margin-top:8px;border:0;border-radius:10px;background:#00ff88;color:#000;font-weight:bold;font-size:16px;}
-button.sec{background:#333;color:white;}
-button.sair{background:#7a2020;color:white;}
-.msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4;}
-.erro{color:#ff6666;}
-.escondido{display:none!important;}
-.leitura{border:1px solid #555;text-align:center;background:rgba(23,23,23,0.86);}
-#leitura{white-space:pre-wrap;line-height:1.4;word-break:break-word;}
-.ativos-grid{display:grid;grid-template-columns:1fr;gap:10px;}
-.ativos-grid.dois{grid-template-columns:1fr 1fr;}
-.ativos-grid.tres{grid-template-columns:1fr 1fr;}
-.ativos-grid.tres .sinal-card:nth-child(3){grid-column:1 / 3;}
-
-.sinal-card{
-    background:rgba(32,32,32,0.90);
-    border:2px solid #00ff88;
-    border-radius:16px;
-    padding:14px;
-    text-align:center;
-    position:relative;
-    overflow:hidden;
-    box-shadow:0 0 10px rgba(0,255,136,0.10);
-}
-.sinal-card::before{
-    content:"";
-    position:absolute;
-    inset:0;
-    background-image:
-        linear-gradient(to right,rgba(32,32,32,0.15),rgba(32,32,32,0.72)),
-        url('16037623-50c1-4b03-b31c-35b5261d38ac.jpg');
-    background-size:92%;
-    background-position:center center;
-    background-repeat:no-repeat;
-    opacity:0.24;
-    pointer-events:none;
-    z-index:0;
-}
-.sinal-card::after{
-    content:"MRG";
-    position:absolute;
-    right:8%;
-    top:50%;
-    transform:translateY(-50%);
-    font-size:86px;
-    line-height:1;
-    font-weight:900;
-    letter-spacing:-5px;
-    color:rgba(255,255,255,0.045);
-    pointer-events:none;
-    z-index:0;
-}
-.sinal-card>*{position:relative;z-index:1;}
-
-.cat{color:#80c7ff;font-weight:bold;font-size:16px;text-shadow:0 0 6px rgba(0,0,0,0.8);}
-.alvo{font-size:42px;color:#00ff88;font-weight:bold;margin:6px 0;text-shadow:0 0 8px rgba(0,0,0,0.85);}
-.status{font-size:18px;color:#ffaa00;font-weight:bold;text-shadow:0 0 7px rgba(0,0,0,0.85);}
-.info{font-size:14px;color:#ddd;margin-top:4px;text-shadow:0 0 6px rgba(0,0,0,0.9);}
-.historico-item{border-bottom:1px solid #333;padding:9px 0;text-align:left;}
-.badge{color:#00ff88;font-weight:bold;}
-.vazio{color:#aaa;text-align:center;padding:10px;}
-.usuario-topo{text-align:center;color:#aaa;font-size:13px;margin-bottom:10px;}
-.btn-projecoes{width:auto;display:inline-block;margin:0 0 0 8px;padding:4px 9px;font-size:12px;line-height:1.1;background:#00ff88;color:#000;border-radius:8px;font-weight:bold;vertical-align:middle;}
-.resumo-fechados{text-align:center;border:1px solid #444;background:rgba(23,23,23,0.88);}
-.resumo-linha{font-size:14px;color:#ddd;margin:4px 0;}
-.resumo-destaque{color:#00ff88;font-weight:bold;}
-.resumo-protecao{color:#ffaa00;font-weight:bold;}
-.resumo-erro{color:#ff6666;font-weight:bold;}
-.modal-projecoes{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:9999;display:flex;align-items:center;justify-content:center;padding:14px;}
-.modal-caixa{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:#111;border:2px solid #00ff88;border-radius:16px;padding:14px;}
-.projecoes-texto{white-space:pre-wrap;font-family:Consolas,monospace;font-size:13px;line-height:1.35;color:#eee;background:#050505;border:1px solid #333;border-radius:12px;padding:12px;text-align:left;}
-
-.aviso-operacional{
-    background:rgba(255,170,0,0.10);
-    border:2px solid #ffaa00;
-    border-radius:16px;
-    padding:14px;
-    margin-bottom:10px;
-    text-align:center;
-    color:#ffaa00;
-    font-weight:bold;
-    line-height:1.45;
-    white-space:pre-wrap;
-    box-shadow:0 0 12px rgba(255,170,0,0.12);
-    animation:piscaOperacional 1.7s infinite;
-}
-@keyframes piscaOperacional{
-    0%{opacity:1;}
-    50%{opacity:0.68;}
-    100%{opacity:1;}
-}
-
-@media(max-width:600px){
-.container{padding:12px;}
-.header h1{font-size:22px;}
-.card{padding:13px;}
-.ativos-grid.dois,.ativos-grid.tres{grid-template-columns:1fr;}
-.ativos-grid.tres .sinal-card:nth-child(3){grid-column:auto;}
-.alvo{font-size:38px;}
-.btn-projecoes{font-size:11px;padding:4px 8px;}
-.sinal-card::after{font-size:78px;right:7%;}
-.sinal-card::before{background-size:105%;opacity:0.26;}
-#appBox::before{background-size:110%;opacity:0.17;}
-.header::before{background-size:110%;opacity:0.14;}
-}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;max-width:100%;overflow-x:hidden;background:#060606;color:#fff;font-family:Arial,sans-serif}
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.container{width:100%;max-width:760px;margin:auto;padding:12px;position:relative}
+.header{text-align:center;margin-bottom:12px;position:relative;padding-top:8px;padding-bottom:6px}
+.header:before{content:"";position:absolute;left:50%;top:-18px;transform:translateX(-50%);width:100%;height:160px;background-image:linear-gradient(to bottom,rgba(6,6,6,.1),rgba(6,6,6,.75)),url('16037623-50c1-4b03-b31c-35b5261d38ac.jpg');background-size:105%;background-position:center top;background-repeat:no-repeat;opacity:.15;pointer-events:none;z-index:0}
+.header>*{position:relative;z-index:1}
+.header h1{margin:0;font-size:22px;color:#00ff88;text-shadow:0 0 8px rgba(0,255,136,.18)}
+.header .linha{margin-top:5px;color:#ddd;font-size:13px}.header .sub{margin-top:5px;color:#ffaa00;font-weight:900;font-size:13px}
+.card{background:rgba(23,23,23,.92);border:1px solid #333;border-radius:16px;padding:13px;margin-bottom:12px}
+.titulo{color:#aaa;font-size:13px;margin-bottom:8px;letter-spacing:1px}
+input{width:100%;margin:7px 0;padding:14px;border-radius:10px;border:1px solid #444;background:#0b0b0b;color:#fff;font-size:16px}
+button{width:100%;padding:14px;margin-top:8px;border:0;border-radius:10px;background:#00ff88;color:#000;font-weight:900;font-size:16px}
+button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
+.msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4}.erro{color:#ff6666}.escondido{display:none!important}.vazio{color:#aaa;text-align:center;padding:10px}
+.pwa-hint{display:none;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.45);border-radius:12px;padding:10px;margin-bottom:10px;color:#ddd;font-size:12px;line-height:1.35;text-align:center}.ios-safari .pwa-hint{display:block}.standalone .pwa-hint{display:none!important}
+#appBox{position:relative}#appBox:before{content:"";position:absolute;inset:-8px 0 auto 0;height:360px;background-image:linear-gradient(to bottom,rgba(6,6,6,.15),rgba(6,6,6,.70),rgba(6,6,6,1)),url('16037623-50c1-4b03-b31c-35b5261d38ac.jpg');background-size:110%;background-position:center top;background-repeat:no-repeat;opacity:.17;pointer-events:none;z-index:0}#appBox>*{position:relative;z-index:1}
+.top-app-mobile{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:10px}.usuario-topo{color:#aaa;font-size:12px;line-height:1.3;min-width:0;word-break:break-word}.btn-projecoes{width:auto;margin:0;padding:8px 10px;font-size:11px;line-height:1.1;border-radius:10px;white-space:nowrap}
+.mobile-status{display:grid;grid-template-columns:1fr 72px;gap:8px;margin-bottom:10px}.mobile-live{background:rgba(8,8,8,.92);border:1px solid #00ff88;border-radius:12px;padding:8px;min-height:56px;position:relative}.mobile-live .tag{position:absolute;left:8px;top:4px;color:#ff3860;font-size:8px;font-weight:900;letter-spacing:.5px}.mobile-live #leituraCompacta{white-space:pre-wrap;font-size:11px;line-height:1.35;padding-top:10px;color:#fff}.rosas-mini{background:rgba(8,8,8,.92);border:1px solid #00ff88;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#ff50be;font-size:18px;font-weight:900;min-height:56px}
+.leitura{border:1px solid #555;text-align:center;background:rgba(23,23,23,.86)}#leitura{white-space:pre-wrap;line-height:1.4;word-break:break-word}
+.ativos-grid{display:grid;grid-template-columns:1fr;gap:10px}.ativos-grid.dois,.ativos-grid.tres{grid-template-columns:1fr}.ativos-grid.tres .sinal-card:nth-child(3){grid-column:auto}
+.sinal-card{background:rgba(32,32,32,.90);border:2px solid #00ff88;border-radius:16px;padding:14px;text-align:center;position:relative;overflow:hidden;box-shadow:0 0 10px rgba(0,255,136,.10)}
+.sinal-card:before{content:"";position:absolute;inset:0;background-image:linear-gradient(to right,rgba(32,32,32,.15),rgba(32,32,32,.72)),url('16037623-50c1-4b03-b31c-35b5261d38ac.jpg');background-size:105%;background-position:center;background-repeat:no-repeat;opacity:.26;pointer-events:none;z-index:0}.sinal-card:after{content:"MRG";position:absolute;right:7%;top:50%;transform:translateY(-50%);font-size:78px;line-height:1;font-weight:900;letter-spacing:-5px;color:rgba(255,255,255,.045);pointer-events:none;z-index:0}.sinal-card>*{position:relative;z-index:1}
+.cat{color:#80c7ff;font-weight:900;font-size:16px;text-shadow:0 0 6px #000}.alvo{font-size:38px;color:#00ff88;font-weight:900;margin:6px 0;text-shadow:0 0 8px #000}.status{font-size:18px;color:#ffaa00;font-weight:900}.info{font-size:14px;color:#ddd;margin-top:4px}.historico-item{border-bottom:1px solid #333;padding:9px 0;text-align:left}.badge{color:#00ff88;font-weight:900}
+.resumo-fechados{text-align:center;border:1px solid #444;background:rgba(23,23,23,.88)}.resumo-linha{font-size:14px;color:#ddd;margin:4px 0}.resumo-destaque{color:#00ff88;font-weight:900}.resumo-protecao{color:#ffaa00;font-weight:900}.resumo-erro{color:#ff6666;font-weight:900}
+.modal-projecoes{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9999;display:flex;align-items:center;justify-content:center;padding:14px}.modal-caixa{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:#111;border:2px solid #00ff88;border-radius:16px;padding:14px}.projecoes-texto{white-space:pre-wrap;font-family:Consolas,monospace;font-size:13px;line-height:1.35;color:#eee;background:#050505;border:1px solid #333;border-radius:12px;padding:12px;text-align:left}
+.aviso-operacional{background:rgba(255,170,0,.10);border:2px solid #ffaa00;border-radius:16px;padding:14px;margin-bottom:10px;text-align:center;color:#ffaa00;font-weight:900;line-height:1.45;white-space:pre-wrap;box-shadow:0 0 12px rgba(255,170,0,.12);animation:piscaOperacional 1.7s infinite}@keyframes piscaOperacional{0%{opacity:1}50%{opacity:.68}100%{opacity:1}}
 </style>
 </head>
-
 <body>
 <div class="container">
-
-<div class="header">
-<h1>MRG SINAIS ALTO PADRÃO</h1>
-<div class="linha">G1 SORTE NA BET | G2 BETOU</div>
-<div class="sub">MRG EXTERMINADOR DE SINAIS</div>
-</div>
-
-<div id="loginBox" class="card">
-<div class="titulo">ENTRAR</div>
-<input id="loginEmail" type="email" placeholder="E-mail">
-<input id="loginSenha" type="password" placeholder="Senha">
-<button type="button" onclick="entrar()">ENTRAR</button>
-<button type="button" class="sec" onclick="mostrarCadastro()">CRIAR CONTA</button>
-<button type="button" class="sec" onclick="mostrarRecuperar()">ESQUECI MINHA SENHA</button>
-<div id="loginMsg" class="msg">Entre com seu e-mail e senha.</div>
-</div>
-
-<div id="cadastroBox" class="card escondido">
-<div class="titulo">CRIAR CONTA</div>
-<input id="cadNome" placeholder="Seu nome">
-<input id="cadEmail" type="email" placeholder="E-mail">
-<input id="cadTelefone" placeholder="Telefone / WhatsApp">
-<input id="cadSenha" type="password" placeholder="Criar senha">
-<button type="button" onclick="criarConta()">CRIAR CONTA</button>
-<button type="button" class="sec" onclick="mostrarLogin()">JÁ TENHO CADASTRO / ENTRAR</button>
-<div id="cadMsg" class="msg">Use um e-mail válido. Ele será usado para recuperar sua senha.</div>
-</div>
-
-<div id="recuperarBox" class="card escondido">
-<div class="titulo">RECUPERAR SENHA</div>
-<input id="recEmail" type="email" placeholder="Digite seu e-mail cadastrado">
-<button type="button" onclick="recuperarSenha()">ENVIAR LINK DE RECUPERAÇÃO</button>
-<button type="button" class="sec" onclick="mostrarLogin()">VOLTAR PARA LOGIN</button>
-<div id="recMsg" class="msg">Você receberá um link no e-mail para criar nova senha.</div>
-</div>
-
-<div id="novaSenhaBox" class="card escondido">
-<div class="titulo">CRIAR NOVA SENHA</div>
-<input id="novaSenha" type="password" placeholder="Nova senha">
-<button type="button" onclick="salvarNovaSenha()">SALVAR NOVA SENHA</button>
-<div id="novaSenhaMsg" class="msg">Digite sua nova senha.</div>
-</div>
-
-<div id="aguardandoBox" class="card escondido">
-<div class="titulo">AGUARDANDO LIBERAÇÃO</div>
-<div class="msg">
-Seu cadastro foi recebido.<br><br>
-Chame o administrador no WhatsApp do grupo que você participa e envie o e-mail usado no cadastro:
-<br><br>
-<b id="emailAguardando"></b>
-<br><br>
-Após a liberação, seu acesso será ativado automaticamente.
-</div>
-<button type="button" class="sair" onclick="sair()">SAIR</button>
-</div>
-
+<div class="header"><h1>MRG SINAIS ALTO PADRÃO</h1><div class="linha">G1 SORTE NA BET | G2 BETOU</div><div class="sub">MRG EXTERMINADOR DE SINAIS</div></div>
+<div class="pwa-hint">Para instalar no iPhone: abra no Safari, toque em <b>Compartilhar</b> e depois <b>Adicionar à Tela de Início</b>.</div>
+<div id="loginBox" class="card"><div class="titulo">ENTRAR</div><input id="loginEmail" type="email" placeholder="E-mail"><input id="loginSenha" type="password" placeholder="Senha"><button type="button" onclick="entrar()">ENTRAR</button><button type="button" class="sec" onclick="mostrarCadastro()">CRIAR CONTA</button><button type="button" class="sec" onclick="mostrarRecuperar()">ESQUECI MINHA SENHA</button><div id="loginMsg" class="msg">Entre com seu e-mail e senha.</div></div>
+<div id="cadastroBox" class="card escondido"><div class="titulo">CRIAR CONTA</div><input id="cadNome" placeholder="Seu nome"><input id="cadEmail" type="email" placeholder="E-mail"><input id="cadTelefone" placeholder="Telefone / WhatsApp"><input id="cadSenha" type="password" placeholder="Criar senha"><button type="button" onclick="criarConta()">CRIAR CONTA</button><button type="button" class="sec" onclick="mostrarLogin()">JÁ TENHO CADASTRO / ENTRAR</button><div id="cadMsg" class="msg">Use um e-mail válido. Ele será usado para recuperar sua senha.</div></div>
+<div id="recuperarBox" class="card escondido"><div class="titulo">RECUPERAR SENHA</div><input id="recEmail" type="email" placeholder="Digite seu e-mail cadastrado"><button type="button" onclick="recuperarSenha()">ENVIAR LINK DE RECUPERAÇÃO</button><button type="button" class="sec" onclick="mostrarLogin()">VOLTAR PARA LOGIN</button><div id="recMsg" class="msg">Você receberá um link no e-mail para criar nova senha.</div></div>
+<div id="novaSenhaBox" class="card escondido"><div class="titulo">CRIAR NOVA SENHA</div><input id="novaSenha" type="password" placeholder="Nova senha"><button type="button" onclick="salvarNovaSenha()">SALVAR NOVA SENHA</button><div id="novaSenhaMsg" class="msg">Digite sua nova senha.</div></div>
+<div id="aguardandoBox" class="card escondido"><div class="titulo">AGUARDANDO LIBERAÇÃO</div><div class="msg">Seu cadastro foi recebido.<br><br>Chame o administrador no WhatsApp do grupo que você participa e envie o e-mail usado no cadastro:<br><br><b id="emailAguardando"></b><br><br>Após a liberação, seu acesso será ativado automaticamente.</div><button type="button" class="sair" onclick="sair()">SAIR</button></div>
 <div id="appBox" class="escondido">
-<div class="usuario-topo">
-Acesso liberado: <span id="usuarioEmail"></span>
-<button type="button" class="btn-projecoes" onclick="abrirProjecoes()">📈 Projeções Futuras</button>
-</div>
-
-<div id="modalProjecoes" class="modal-projecoes escondido" onclick="fecharProjecoes()">
-    <div class="modal-caixa" onclick="event.stopPropagation()">
-        <div class="titulo">PROJEÇÕES FUTURAS DE MERCADO</div>
-        <div id="conteudoProjecoes" class="projecoes-texto">Aguardando projeções...</div>
-        <button type="button" class="sec" onclick="fecharProjecoes()">FECHAR</button>
-    </div>
-</div>
-
-<div class="card leitura">
-<div class="titulo">LEITURA AO VIVO</div>
-<div id="leitura">Aguardando leitura do Exterminador de Sinais...</div>
-</div>
-
-<div class="card">
-<div class="titulo">SINAIS ATIVOS</div>
-<div id="ativos">Carregando sinais...</div>
-</div>
-
-<div class="card resumo-fechados">
-<div class="titulo">RESUMO DOS ÚLTIMOS 5 FECHADOS</div>
-<div id="resumoFechados" class="vazio">Aguardando histórico...</div>
-</div>
-
-<div class="card">
-<div class="titulo">HISTÓRICO RECENTE</div>
-<div id="historico">Carregando histórico...</div>
-</div>
-
+<div class="top-app-mobile"><div class="usuario-topo">Acesso liberado:<br><span id="usuarioEmail"></span></div><button type="button" class="btn-projecoes" onclick="abrirProjecoes()">📈 Projeções</button></div>
+<div class="mobile-status"><div class="mobile-live" onclick="document.getElementById('leituraCard').scrollIntoView({behavior:'smooth',block:'center'})"><div class="tag">AO VIVO</div><div id="leituraCompacta">Aguardando leitura...</div></div><div id="rosasMini" class="rosas-mini" onclick="abrirRosas()">🌹 0</div></div>
+<div id="modalProjecoes" class="modal-projecoes escondido" onclick="fecharProjecoes()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">PROJEÇÕES FUTURAS DE MERCADO</div><div id="conteudoProjecoes" class="projecoes-texto">Aguardando projeções...</div><button type="button" class="sec" onclick="fecharProjecoes()">FECHAR</button></div></div>
+<div id="modalRosas" class="modal-projecoes escondido" onclick="fecharRosas()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">🌹 ROSAS POR HORA</div><div id="conteudoRosas" class="projecoes-texto">Aguardando contagem...</div><button type="button" class="sec" onclick="fecharRosas()">FECHAR</button></div></div>
+<div id="leituraCard" class="card leitura"><div class="titulo">LEITURA AO VIVO</div><div id="leitura">Aguardando leitura do Exterminador de Sinais...</div></div>
+<div class="card"><div class="titulo">SINAIS ATIVOS</div><div id="ativos">Carregando sinais...</div></div>
+<div class="card resumo-fechados"><div class="titulo">RESUMO DOS ÚLTIMOS 5 FECHADOS</div><div id="resumoFechados" class="vazio">Aguardando histórico...</div></div>
+<div class="card"><div class="titulo">HISTÓRICO RECENTE</div><div id="historico">Carregando histórico...</div></div>
 <button type="button" class="sair" onclick="sair()">SAIR</button>
 </div>
-
 </div>
 
 <script>
-const SUPABASE_URL = "https://bflptqejltvwfjhixwpj.supabase.co";
-const SUPABASE_KEY = "sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
-const SITE_URL = "https://mrg-app-sinais.vercel.app";
-
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-let painelAtivo = false;
-let telaAtual = "login";
-
-let CONTROLE_ENVIO = {
-    snarpy_ativo: true,
-    hyper_ativo: true,
-    mensagem: ""
-};
-
-function esconderTudo(){
-    ["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>{
-        document.getElementById(id).classList.add("escondido");
-    });
-}
-
-function mostrarLogin(msg=""){
-    painelAtivo=false;
-    telaAtual="login";
-    esconderTudo();
-    document.getElementById("loginBox").classList.remove("escondido");
-    if(msg) document.getElementById("loginMsg").innerHTML=msg;
-}
-
-function mostrarCadastro(){
-    painelAtivo=false;
-    telaAtual="cadastro";
-    esconderTudo();
-    document.getElementById("cadastroBox").classList.remove("escondido");
-}
-
-function mostrarRecuperar(){
-    painelAtivo=false;
-    telaAtual="recuperar";
-    esconderTudo();
-    document.getElementById("recuperarBox").classList.remove("escondido");
-}
-
-function mostrarNovaSenha(){
-    painelAtivo=false;
-    telaAtual="novaSenha";
-    esconderTudo();
-    document.getElementById("novaSenhaBox").classList.remove("escondido");
-}
-
-function mostrarAguardando(email){
-    painelAtivo=false;
-    telaAtual="aguardando";
-    esconderTudo();
-    document.getElementById("aguardandoBox").classList.remove("escondido");
-    document.getElementById("emailAguardando").innerText=email||"";
-}
-
-function mostrarApp(email){
-    telaAtual="app";
-    esconderTudo();
-    document.getElementById("appBox").classList.remove("escondido");
-    document.getElementById("usuarioEmail").innerText=email||"";
-    painelAtivo=true;
-    carregarControleEnvio();
-    carregar();
-    carregarLeitura();
-    carregarProjecoes();
-}
-
-async function criarConta(){
-    const nome=document.getElementById("cadNome").value.trim();
-    const email=document.getElementById("cadEmail").value.trim();
-    const telefone=document.getElementById("cadTelefone").value.trim();
-    const senha=document.getElementById("cadSenha").value.trim();
-
-    if(!nome||!email||!telefone||!senha){
-        document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";
-        return;
-    }
-
-    document.getElementById("cadMsg").innerHTML="Criando cadastro...";
-
-    const {data,error}=await db.auth.signUp({
-        email:email,
-        password:senha,
-        options:{
-            emailRedirectTo:SITE_URL,
-            data:{nome:nome,telefone:telefone}
-        }
-    });
-
-    if(error){
-        document.getElementById("cadMsg").innerHTML="<span class='erro'>"+error.message+"</span>";
-        return;
-    }
-
-    if(data && data.user){
-        await db.from("perfis").upsert({
-            id:data.user.id,
-            nome:nome,
-            email:email,
-            telefone:telefone,
-            liberado:false
-        });
-    }
-
-    telaAtual="cadastro";
-    document.getElementById("cadMsg").innerHTML=
-    "Cadastro criado. Confirme seu e-mail. Depois volte aqui e clique em <b>JÁ TENHO CADASTRO / ENTRAR</b>.";
-}
-
-async function entrar(){
-    const email=document.getElementById("loginEmail").value.trim();
-    const senha=document.getElementById("loginSenha").value.trim();
-
-    if(!email||!senha){
-        document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";
-        return;
-    }
-
-    const {error}=await db.auth.signInWithPassword({email:email,password:senha});
-
-    if(error){
-        document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";
-        return;
-    }
-
-    await verificarAcesso(true);
-}
-
-async function recuperarSenha(){
-    const email=document.getElementById("recEmail").value.trim();
-
-    if(!email){
-        document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";
-        return;
-    }
-
-    const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});
-
-    if(error){
-        document.getElementById("recMsg").innerHTML="<span class='erro'>"+error.message+"</span>";
-        return;
-    }
-
-    document.getElementById("recMsg").innerHTML="Link de recuperação enviado. Verifique seu e-mail.";
-}
-
-async function salvarNovaSenha(){
-    const senha=document.getElementById("novaSenha").value.trim();
-
-    if(!senha){
-        document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";
-        return;
-    }
-
-    const {error}=await db.auth.updateUser({password:senha});
-
-    if(error){
-        document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";
-        return;
-    }
-
-    document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";
-    setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000);
-}
-
-async function verificarAcesso(redirecionarSemSessao=false){
-    if(telaAtual==="cadastro" || telaAtual==="recuperar" || telaAtual==="novaSenha"){
-        return;
-    }
-
-    const {data:sessionData}=await db.auth.getSession();
-
-    if(!sessionData||!sessionData.session||!sessionData.session.user){
-        painelAtivo=false;
-        if(redirecionarSemSessao) mostrarLogin();
-        return;
-    }
-
-    const user=sessionData.session.user;
-
-    const {data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();
-
-    if(error||!perfil){
-        await db.from("perfis").insert({
-            id:user.id,
-            nome:user.user_metadata?.nome || user.email,
-            email:user.email,
-            telefone:user.user_metadata?.telefone || "",
-            liberado:false
-        });
-        mostrarAguardando(user.email);
-        return;
-    }
-
-    if(perfil.liberado===true){
-        mostrarApp(user.email);
-    }else{
-        mostrarAguardando(user.email);
-    }
-}
-
-async function sair(){
-    painelAtivo=false;
-    await db.auth.signOut();
-    mostrarLogin("Sessão encerrada.");
-}
-
-function alvoNumero(alvo){
-    return Number(String(alvo||"").replace("x","").replace("X","").trim())||0;
-}
-
-function horarioValor(h){
-    if(!h)return 999999;
-    const p=String(h).split(":").map(Number);
-    return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
-}
-
-function ehAtivo(item){
-    return item.ativo===true;
-}
-
-function nomeCategoria(item){
-    return item.categoria||item.origem||item.tipo||"MRG";
-}
-
-function textoMultiplicador(item){
-    if(!item.multiplicador_real)return "-";
-    return item.horario_real ? `${item.multiplicador_real} às ${item.horario_real}` : item.multiplicador_real;
-}
-
-function cardAtivo(item){
-    return `<div class="sinal-card">
-        <div class="cat">${nomeCategoria(item)}</div>
-        <div class="alvo">${item.alvo||"-"}</div>
-        <div class="status">${item.status||"-"}</div>
-        <div class="info">Horário: ${item.horario||"não informado"}</div>
-        <div class="info">VAR: ${item.variacao||"não informado"}</div>
-        <div class="info">Janela: ${item.janela||"não informada"}</div>
-        <div class="info">Score: ${item.score||"-"}</div>
-    </div>`;
-}
-
-function statusNormalizado(item){
-    const texto = String((item.status || "") + " " + (item.resultado || "")).toUpperCase();
-
-    if(texto.includes("PROTECAO") || texto.includes("PROTEÇÃO") || texto.includes("PARCIAL")){
-        return "PROTECAO";
-    }
-
-    if(texto.includes("ACERTO")){
-        return "ACERTO";
-    }
-
-    if(texto.includes("ERRO")){
-        return "ERRO";
-    }
-
-    if(texto.includes("RETIDO") || texto.includes("PRESSAO") || texto.includes("PRESSÃO")){
-        return "RETIDO";
-    }
-
-    if(texto.includes("CANCEL")){
-        return "CANCELADO";
-    }
-
-    return "OUTRO";
-}
-
-function atualizarResumoFechados(historico){
-    const ultimos = historico.slice(0,5);
-
-    if(ultimos.length === 0){
-        document.getElementById("resumoFechados").innerHTML =
-            "<div class='vazio'>Nenhum sinal fechado ainda</div>";
-        return;
-    }
-
-    let acertos = 0;
-    let protecoes = 0;
-    let erros = 0;
-    let retidos = 0;
-
-    ultimos.forEach(item => {
-        const st = statusNormalizado(item);
-
-        if(st === "ACERTO") acertos++;
-        else if(st === "PROTECAO") protecoes++;
-        else if(st === "ERRO") erros++;
-        else if(st === "RETIDO" || st === "CANCELADO") retidos++;
-    });
-
-    const total = ultimos.length;
-    const taxaCheia = Math.round((acertos / total) * 100);
-    const taxaOperacional = Math.round(((acertos + protecoes) / total) * 100);
-
-    document.getElementById("resumoFechados").innerHTML = `
-        <div class="resumo-linha">
-            ✅ <span class="resumo-destaque">Acertos: ${acertos}</span>
-            &nbsp;|&nbsp;
-            🟡 <span class="resumo-protecao">Proteções: ${protecoes}</span>
-            &nbsp;|&nbsp;
-            ❌ <span class="resumo-erro">Erros: ${erros}</span>
-        </div>
-        <div class="resumo-linha">
-            🟠 Retidos/Cancelados: ${retidos}
-        </div>
-        <div class="resumo-linha">
-            🎯 Taxa cheia: <span class="resumo-destaque">${taxaCheia}%</span>
-            &nbsp;|&nbsp;
-            📌 Operacional: <span class="resumo-destaque">${taxaOperacional}%</span>
-        </div>
-    `;
-}
-
-
-async function carregarControleEnvio(){
-    if(!painelAtivo)return;
-
-    const {data,error}=await db
-        .from("controle_envio")
-        .select("*")
-        .eq("id",1)
-        .single();
-
-    if(error || !data){
-        return;
-    }
-
-    CONTROLE_ENVIO = {
-        snarpy_ativo: data.snarpy_ativo === true,
-        hyper_ativo: data.hyper_ativo === true,
-        mensagem: data.mensagem || ""
-    };
-}
-
-function existePausaOperacional(){
-    return !(CONTROLE_ENVIO.snarpy_ativo === true && CONTROLE_ENVIO.hyper_ativo === true);
-}
-
-function mensagemPausaOperacional(){
-    if(CONTROLE_ENVIO.mensagem && String(CONTROLE_ENVIO.mensagem).trim()){
-        return String(CONTROLE_ENVIO.mensagem).trim();
-    }
-
-    return "⚠️ MERCADO EM OBSERVAÇÃO\n\nNovas entradas estão temporariamente pausadas.\nOs sinais já enviados continuam sendo acompanhados até o fechamento.";
-}
-
-function avisoOperacionalHTML(){
-    if(!existePausaOperacional()){
-        return "";
-    }
-
-    let detalhe = "";
-
-    if(CONTROLE_ENVIO.snarpy_ativo !== true && CONTROLE_ENVIO.hyper_ativo !== true){
-        detalhe = "\n\nSNARPY e HYPER pausados temporariamente.";
-    }else if(CONTROLE_ENVIO.snarpy_ativo !== true){
-        detalhe = "\n\nSNARPY pausado temporariamente.";
-    }else if(CONTROLE_ENVIO.hyper_ativo !== true){
-        detalhe = "\n\nHYPER pausado temporariamente.";
-    }
-
-    return `<div class="aviso-operacional">${mensagemPausaOperacional()}${detalhe}</div>`;
-}
-
-async function carregarLeitura(){
-    if(!painelAtivo)return;
-
-    const {data,error}=await db
-        .from("leituras_ao_vivo")
-        .select("*")
-        .eq("ativo",true)
-        .order("id",{ascending:false})
-        .limit(1);
-
-    document.getElementById("leitura").innerHTML=
-        (error||!data||data.length===0)
-        ? "Aguardando leitura do Exterminador de Sinais..."
-        : (data[0].mensagem||"Aguardando leitura do Exterminador de Sinais...");
-}
-
-async function carregarProjecoes(){
-    const alvo = document.getElementById("conteudoProjecoes");
-    if(!alvo)return;
-
-    const {data,error}=await db
-        .from("projecoes_mercado")
-        .select("*")
-        .eq("ativo",true)
-        .order("id",{ascending:false})
-        .limit(1);
-
-    if(error || !data || data.length===0){
-        alvo.innerText = "Aguardando projeções...";
-        return;
-    }
-
-    alvo.innerText = data[0].mensagem || "Aguardando projeções...";
-}
-
-function abrirProjecoes(){
-    carregarProjecoes();
-    document.getElementById("modalProjecoes").classList.remove("escondido");
-}
-
-function fecharProjecoes(){
-    document.getElementById("modalProjecoes").classList.add("escondido");
-}
-
-async function carregar(){
-    if(!painelAtivo)return;
-
-    await carregarControleEnvio();
-
-    const {data,error}=await db
-        .from("sinais")
-        .select("*")
-        .order("id",{ascending:false})
-        .limit(60);
-
-    if(error){
-        document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";
-        document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Verificar Supabase</div>";
-        document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";
-        return;
-    }
-
-    let ativos=(data||[]).filter(ehAtivo);
-    let historico=(data||[]).filter(item=>!ehAtivo(item));
-
-    ativos.sort((a,b)=>{
-        const h=horarioValor(a.horario)-horarioValor(b.horario);
-        return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo);
-    });
-
-    ativos=ativos.slice(0,3);
-    historico=historico.slice(0,20);
-
-    atualizarResumoFechados(historico);
-
-    let classe="ativos-grid";
-    if(ativos.length===2)classe+=" dois";
-    if(ativos.length===3)classe+=" tres";
-
-    const avisoOperacional = avisoOperacionalHTML();
-
-    document.getElementById("ativos").innerHTML=
-        ativos.length
-        ? `${avisoOperacional}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`
-        : (
-            avisoOperacional
-            ? avisoOperacional
-            : "<div class='vazio'>Nenhum sinal ativo no momento</div>"
-        );
-
-    document.getElementById("historico").innerHTML=
-        historico.length
-        ? historico.map(item=>`
-            <div class="historico-item">
-                <div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div>
-                <div>Origem: ${nomeCategoria(item)}</div>
-                <div>Horário previsto: ${item.horario||"não informado"}</div>
-                <div>Janela: ${item.janela||"não informada"}</div>
-                <div>Resultado: ${item.resultado||"pendente"}</div>
-                <div>Multiplicador: ${textoMultiplicador(item)}</div>
-            </div>
-        `).join("")
-        : "<div class='vazio'>Nenhum sinal encerrado ainda</div>";
-}
-
-db.auth.onAuthStateChange((event,session)=>{
-    if(event==="PASSWORD_RECOVERY"){
-        mostrarNovaSenha();
-    }
-});
-
-if(window.location.hash.includes("type=recovery")){
-    mostrarNovaSenha();
-}else{
-    mostrarLogin();
-}
-
-setInterval(()=>{
-    if(telaAtual==="aguardando" || telaAtual==="app"){
-        verificarAcesso(false);
-    }
-},10000);
-
-setInterval(carregar,2000);
-setInterval(carregarLeitura,2000);
-setInterval(carregarProjecoes,60000);
-setInterval(carregarControleEnvio,5000);
+const SUPABASE_URL="https://bflptqejltvwfjhixwpj.supabase.co";
+const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
+const SITE_URL="https://mrg-app-sinais.vercel.app";
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let painelAtivo=false,telaAtual="login",historicoRosasTexto="Aguardando contagem de rosas...";
+let CONTROLE_ENVIO={snarpy_ativo:true,hyper_ativo:true,mensagem:""};
+function aplicarClassePwa(){const ua=navigator.userAgent||"";const ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);const standalone=window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches;if(ios&&!standalone)document.body.classList.add("ios-safari");if(standalone)document.body.classList.add("standalone")}aplicarClassePwa();
+function esconderTudo(){["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>document.getElementById(id).classList.add("escondido"))}
+function mostrarLogin(msg=""){painelAtivo=false;telaAtual="login";esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg}
+function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";esconderTudo();document.getElementById("cadastroBox").classList.remove("escondido")}
+function mostrarRecuperar(){painelAtivo=false;telaAtual="recuperar";esconderTudo();document.getElementById("recuperarBox").classList.remove("escondido")}
+function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";esconderTudo();document.getElementById("novaSenhaBox").classList.remove("escondido")}
+function mostrarAguardando(email){painelAtivo=false;telaAtual="aguardando";esconderTudo();document.getElementById("aguardandoBox").classList.remove("escondido");document.getElementById("emailAguardando").innerText=email||""}
+function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;carregarControleEnvio();carregar();carregarLeitura();carregarProjecoes();carregarRosas()}
+async function criarConta(){const nome=document.getElementById("cadNome").value.trim(),email=document.getElementById("cadEmail").value.trim(),telefone=document.getElementById("cadTelefone").value.trim(),senha=document.getElementById("cadSenha").value.trim();if(!nome||!email||!telefone||!senha){document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";return}document.getElementById("cadMsg").innerHTML="Criando cadastro...";const{data,error}=await db.auth.signUp({email,password:senha,options:{emailRedirectTo:SITE_URL,data:{nome,telefone}}});if(error){document.getElementById("cadMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}if(data&&data.user){await db.from("perfis").upsert({id:data.user.id,nome,email,telefone,liberado:false})}telaAtual="cadastro";document.getElementById("cadMsg").innerHTML="Cadastro criado. Confirme seu e-mail. Depois volte aqui e clique em <b>JÁ TENHO CADASTRO / ENTRAR</b>."}
+async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}await verificarAcesso(true)}
+async function recuperarSenha(){const email=document.getElementById("recEmail").value.trim();if(!email){document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";return}const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});document.getElementById("recMsg").innerHTML=error?"<span class='erro'>"+error.message+"</span>":"Link de recuperação enviado. Verifique seu e-mail."}
+async function salvarNovaSenha(){const senha=document.getElementById("novaSenha").value.trim();if(!senha){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";return}const{error}=await db.auth.updateUser({password:senha});if(error){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000)}
+async function verificarAcesso(redirecionarSemSessao=false){if(["cadastro","recuperar","novaSenha"].includes(telaAtual))return;const{data:sessionData}=await db.auth.getSession();if(!sessionData||!sessionData.session||!sessionData.session.user){painelAtivo=false;if(redirecionarSemSessao)mostrarLogin();return}const user=sessionData.session.user;const{data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();if(error||!perfil){await db.from("perfis").insert({id:user.id,nome:user.user_metadata?.nome||user.email,email:user.email,telefone:user.user_metadata?.telefone||"",liberado:false});mostrarAguardando(user.email);return}perfil.liberado===true?mostrarApp(user.email):mostrarAguardando(user.email)}
+async function sair(){painelAtivo=false;await db.auth.signOut();mostrarLogin("Sessão encerrada.")}
+function alvoNumero(alvo){return Number(String(alvo||"").replace("x","").replace("X","").trim())||0}
+function horarioValor(h){if(!h)return 999999;const p=String(h).split(":").map(Number);return(p[0]||0)*3600+(p[1]||0)*60+(p[2]||0)}
+function ehAtivo(item){return item.ativo===true}
+function nomeCategoria(item){return item.categoria||item.origem||item.tipo||"MRG"}
+function textoMultiplicador(item){if(!item.multiplicador_real)return"-";return item.horario_real?`${item.multiplicador_real} às ${item.horario_real}`:item.multiplicador_real}
+function cardAtivo(item){return `<div class="sinal-card"><div class="cat">${nomeCategoria(item)}</div><div class="alvo">${item.alvo||"-"}</div><div class="status">${item.status||"-"}</div><div class="info">Horário: ${item.horario||"não informado"}</div><div class="info">VAR: ${item.variacao||"não informado"}</div><div class="info">Janela: ${item.janela||"não informada"}</div><div class="info">Score: ${item.score||"-"}</div></div>`}
+function statusNormalizado(item){const texto=String((item.status||"")+" "+(item.resultado||"")).toUpperCase();if(texto.includes("PROTECAO")||texto.includes("PROTEÇÃO")||texto.includes("PARCIAL"))return"PROTECAO";if(texto.includes("ACERTO"))return"ACERTO";if(texto.includes("ERRO"))return"ERRO";if(texto.includes("RETIDO")||texto.includes("PRESSAO")||texto.includes("PRESSÃO"))return"RETIDO";if(texto.includes("CANCEL"))return"CANCELADO";return"OUTRO"}
+function atualizarResumoFechados(historico){const ultimos=historico.slice(0,5);if(!ultimos.length){document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Nenhum sinal fechado ainda</div>";return}let acertos=0,protecoes=0,erros=0,retidos=0;ultimos.forEach(item=>{const st=statusNormalizado(item);if(st==="ACERTO")acertos++;else if(st==="PROTECAO")protecoes++;else if(st==="ERRO")erros++;else if(st==="RETIDO"||st==="CANCELADO")retidos++});const total=ultimos.length,tc=Math.round(acertos/total*100),to=Math.round((acertos+protecoes)/total*100);document.getElementById("resumoFechados").innerHTML=`<div class="resumo-linha">✅ <span class="resumo-destaque">Acertos: ${acertos}</span> | 🟡 <span class="resumo-protecao">Proteções: ${protecoes}</span> | ❌ <span class="resumo-erro">Erros: ${erros}</span></div><div class="resumo-linha">🟠 Retidos/Cancelados: ${retidos}</div><div class="resumo-linha">🎯 Taxa cheia: <span class="resumo-destaque">${tc}%</span> | 📌 Operacional: <span class="resumo-destaque">${to}%</span></div>`}
+async function carregarControleEnvio(){if(!painelAtivo)return;const{data,error}=await db.from("controle_envio").select("*").eq("id",1).single();if(error||!data)return;CONTROLE_ENVIO={snarpy_ativo:data.snarpy_ativo===true,hyper_ativo:data.hyper_ativo===true,mensagem:data.mensagem||""}}
+function existePausaOperacional(){return!(CONTROLE_ENVIO.snarpy_ativo===true&&CONTROLE_ENVIO.hyper_ativo===true)}
+function mensagemPausaOperacional(){if(CONTROLE_ENVIO.mensagem&&String(CONTROLE_ENVIO.mensagem).trim())return String(CONTROLE_ENVIO.mensagem).trim();return"⚠️ MERCADO EM OBSERVAÇÃO\n\nNovas entradas estão temporariamente pausadas.\nOs sinais já enviados continuam sendo acompanhados até o fechamento."}
+function avisoOperacionalHTML(){if(!existePausaOperacional())return"";let detalhe="";if(CONTROLE_ENVIO.snarpy_ativo!==true&&CONTROLE_ENVIO.hyper_ativo!==true)detalhe="\n\nSNARPY e HYPER pausados temporariamente.";else if(CONTROLE_ENVIO.snarpy_ativo!==true)detalhe="\n\nSNARPY pausado temporariamente.";else if(CONTROLE_ENVIO.hyper_ativo!==true)detalhe="\n\nHYPER pausado temporariamente.";return`<div class="aviso-operacional">${mensagemPausaOperacional()}${detalhe}</div>`}
+async function carregarLeitura(){if(!painelAtivo)return;const{data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(3);let texto="Aguardando leitura do Exterminador de Sinais...";if(!error&&data&&data.length){texto=data.map(x=>(x.mensagem||"").trim()).filter(Boolean).slice(0,3).join("\n")||texto}document.getElementById("leitura").innerText=texto;document.getElementById("leituraCompacta").innerText=texto.replace(/\n+/g,"\n").split("\n").slice(0,3).join("\n")}
+async function carregarProjecoes(){const alvo=document.getElementById("conteudoProjecoes");if(!alvo)return;const{data,error}=await db.from("projecoes_mercado").select("*").eq("ativo",true).order("id",{ascending:false}).limit(1);alvo.innerText=(error||!data||!data.length)?"Aguardando projeções...":(data[0].mensagem||"Aguardando projeções...")}
+async function carregarRosas(){if(!painelAtivo)return;try{const{data,error}=await db.from("rosas_por_hora_app").select("*").order("hora_inicio",{ascending:false}).limit(12);if(error||!data||!data.length){document.getElementById("rosasMini").innerText="🌹 0";historicoRosasTexto="Aguardando contagem de rosas...";return}const agora=new Date(),chaveAtual=agora.getFullYear()+"-"+String(agora.getMonth()+1).padStart(2,"0")+"-"+String(agora.getDate()).padStart(2,"0")+" "+String(agora.getHours()).padStart(2,"0");let qtdAtual=0;const linhas=[];data.forEach(row=>{const horaInicio=String(row.hora_inicio||row.hora||row.faixa||""),qtd=Number(row.quantidade||row.total||row.qtd||0);if(horaInicio.substring(0,13)===chaveAtual)qtdAtual=qtd;let horaCurta="--:--";if(row.faixa&&String(row.faixa).length>=5)horaCurta=String(row.faixa).substring(0,5);else if(horaInicio.length>=13)horaCurta=horaInicio.substring(11,13)+":00";else if(horaInicio.length>=2)horaCurta=horaInicio.substring(0,2)+":00";linhas.push(`${horaCurta}    ➜    🌹 ${qtd}`)});document.getElementById("rosasMini").innerText=`🌹 ${qtdAtual}`;historicoRosasTexto=linhas.join("\n")||"Aguardando contagem de rosas..."}catch(e){document.getElementById("rosasMini").innerText="🌹 0";historicoRosasTexto="Erro ao carregar rosas."}}
+function abrirRosas(){document.getElementById("conteudoRosas").innerText=historicoRosasTexto;document.getElementById("modalRosas").classList.remove("escondido")}function fecharRosas(){document.getElementById("modalRosas").classList.add("escondido")}function abrirProjecoes(){carregarProjecoes();document.getElementById("modalProjecoes").classList.remove("escondido")}function fecharProjecoes(){document.getElementById("modalProjecoes").classList.add("escondido")}
+async function carregar(){if(!painelAtivo)return;await carregarControleEnvio();const{data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Verificar Supabase</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";return}let ativos=(data||[]).filter(ehAtivo),historico=(data||[]).filter(item=>!ehAtivo(item));ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo)});ativos=ativos.slice(0,3);historico=historico.slice(0,20);atualizarResumoFechados(historico);let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";const aviso=avisoOperacionalHTML();document.getElementById("ativos").innerHTML=ativos.length?`${aviso}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:(aviso?aviso:"<div class='vazio'>Nenhum sinal ativo no momento</div>");document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`<div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>"}
+db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY")mostrarNovaSenha()});if(window.location.hash.includes("type=recovery"))mostrarNovaSenha();else mostrarLogin();
+setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},10000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);
 </script>
 </body>
 </html>
