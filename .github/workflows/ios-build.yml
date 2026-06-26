@@ -17,7 +17,7 @@ jobs:
       - name: Build unsigned app for simulator
         run: |
           xcodebuild \
-            -project MRGAviatorIPhone/MRGAviatorIPhone/MRGAviatorIPhone.xcodeproj \
+            -project MRGAviatorIPhone/MRGAviatorIPhone/MRGAviatorIPhone/MRGAviatorIPhone.xcodeproj/project.pbxproj \
             -scheme MRGAviatorIPhone \
             -sdk iphonesimulator \
             -configuration Debug \
