@@ -64,7 +64,6 @@ button.pequeno{width:auto;padding:8px 10px;margin:4px;font-size:13px;}
 textarea{width:100%;min-height:100px;margin-top:10px;padding:12px;border-radius:10px;border:1px solid #444;background:#0b0b0b;color:white;font-size:14px;font-family:Arial,sans-serif;resize:vertical;}
 .status-controle{margin-top:8px;font-size:13px;color:#aaa;text-align:center;}
 
-
 @media(max-width:600px){
 .container{padding:12px;}
 .header h1{font-size:21px;}
@@ -101,7 +100,7 @@ Administrador: <span id="adminEmail"></span>
 <div class="titulo">RESUMO FINANCEIRO DO MÊS</div>
 <div id="resumoFinanceiro" class="vazio">Carregando resumo...</div>
 <button type="button" class="bloquear" onclick="bloquearAtrasados()">BLOQUEAR ATRASADOS</button>
-<button type="button" class="cobranca" onclick="abrirModalManutencao()">⚠️ MANUTENÇÃO / AVISO</button>
+<button type="button" class="cobranca" onclick="abrirModalManutencao()">⚠️ MANUTENÇÃO</button>
 </div>
 
 <div class="card">
@@ -146,7 +145,7 @@ Administrador: <span id="adminEmail"></span>
 
 <div id="modalManutencao" class="modal-fundo escondido" onclick="fecharModalManutencao()">
     <div class="modal-caixa" onclick="event.stopPropagation()">
-        <div class="titulo">MANUTENÇÃO / AVISO NO APP</div>
+        <div class="titulo">MANUTENÇÃO PROGRAMADA</div>
 
         <div class="linha"><b>Previsão de início:</b></div>
         <input id="horaInicioManutencao" placeholder="23:40">
@@ -154,8 +153,8 @@ Administrador: <span id="adminEmail"></span>
         <div class="linha"><b>Previsão de retorno:</b></div>
         <input id="horaFimManutencao" placeholder="07:30">
 
-        <div class="linha"><b>Mensagem personalizada:</b></div>
-        <textarea id="mensagemManutencao" placeholder="Digite aqui exatamente o texto que deve aparecer no app. Se deixar vazio, será enviada a mensagem padrão de manutenção."></textarea>
+        <div class="linha"><b>Mensagem que vai aparecer no app:</b></div>
+        <textarea id="mensagemManutencao" placeholder="Digite aqui exatamente a mensagem que deve aparecer no aplicativo."></textarea>
 
         <button type="button" class="cobranca" onclick="enviarManutencao()">ENVIAR AVISO</button>
         <button type="button" class="bloquear" onclick="removerManutencao()">REMOVER AVISO</button>
@@ -244,7 +243,6 @@ function statusFinanceiroReal(u){
 
     return "PENDENTE";
 }
-
 
 async function carregarControleEnvio(){
     const {data,error} = await db
@@ -802,29 +800,10 @@ async function recarregarMantendoBusca(){
     }
 }
 
-
 function abrirModalManutencao(){
     document.getElementById("horaInicioManutencao").value = "23:40";
     document.getElementById("horaFimManutencao").value = "07:30";
-    const campoMsg = document.getElementById("mensagemManutencao");
-    if(campoMsg){
-        campoMsg.value =
-`⚠️ MANUTENÇÃO PROGRAMADA
-
-O sistema entrará em manutenção programada.
-
-Previsão de início:
-23:40
-
-Previsão de retorno:
-07:30
-
-Durante este período os sinais poderão ficar temporariamente indisponíveis.
-
-Agradeço a compreensão.
-
-MRG Exterminador de Sinais`;
-    }
+    document.getElementById("mensagemManutencao").value = "";
     document.getElementById("modalManutencao").classList.remove("escondido");
 }
 
@@ -842,32 +821,14 @@ async function desativarLeiturasAtivas(){
 async function enviarManutencao(){
     const inicio = document.getElementById("horaInicioManutencao").value.trim();
     const fim = document.getElementById("horaFimManutencao").value.trim();
-    const campoMsg = document.getElementById("mensagemManutencao");
-    const msgDigitada = campoMsg ? campoMsg.value.trim() : "";
+    const msg = document.getElementById("mensagemManutencao").value.trim();
 
-    if(!inicio || !fim){
-        alert("Informe o horário de início e retorno.");
+    if(!msg){
+        alert("Digite a mensagem que deve aparecer no aplicativo.");
         return;
     }
 
     await desativarLeiturasAtivas();
-
-    const msg = msgDigitada ||
-`⚠️ MANUTENÇÃO PROGRAMADA
-
-O sistema entrará em manutenção programada.
-
-Previsão de início:
-${inicio}
-
-Previsão de retorno:
-${fim}
-
-Durante este período os sinais poderão ficar temporariamente indisponíveis.
-
-Agradeço a compreensão.
-
-MRG Exterminador de Sinais`;
 
     const {error} = await db
         .from("leituras_ao_vivo")
@@ -884,7 +845,7 @@ MRG Exterminador de Sinais`;
         return;
     }
 
-    alert("Aviso enviado.");
+    alert("Aviso de manutenção enviado.");
     fecharModalManutencao();
 }
 
