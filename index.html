@@ -95,7 +95,29 @@ async function carregarControleEnvio(){if(!painelAtivo)return;const{data,error}=
 function existePausaOperacional(){return!(CONTROLE_ENVIO.snarpy_ativo===true&&CONTROLE_ENVIO.hyper_ativo===true)}
 function mensagemPausaOperacional(){if(CONTROLE_ENVIO.mensagem&&String(CONTROLE_ENVIO.mensagem).trim())return String(CONTROLE_ENVIO.mensagem).trim();return"⚠️ MERCADO EM OBSERVAÇÃO\n\nNovas entradas estão temporariamente pausadas.\nOs sinais já enviados continuam sendo acompanhados até o fechamento."}
 function avisoOperacionalHTML(){if(!existePausaOperacional())return"";let detalhe="";if(CONTROLE_ENVIO.snarpy_ativo!==true&&CONTROLE_ENVIO.hyper_ativo!==true)detalhe="\n\nSNARPY e HYPER pausados temporariamente.";else if(CONTROLE_ENVIO.snarpy_ativo!==true)detalhe="\n\nSNARPY pausado temporariamente.";else if(CONTROLE_ENVIO.hyper_ativo!==true)detalhe="\n\nHYPER pausado temporariamente.";return`<div class="aviso-operacional">${mensagemPausaOperacional()}${detalhe}</div>`}
-async function carregarLeitura(){if(!painelAtivo)return;const{data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(3);let texto="Aguardando leitura do Exterminador de Sinais...";if(!error&&data&&data.length){texto=data.map(x=>(x.mensagem||"").trim()).filter(Boolean).slice(0,3).join("\n")||texto}document.getElementById("leitura").innerText=texto;document.getElementById("leituraCompacta").innerText=texto.replace(/\n+/g,"\n").split("\n").slice(0,3).join("\n")}
+async function carregarLeitura(){
+    if(!painelAtivo)return;
+
+    const {data,error}=await db
+        .from("leituras_ao_vivo")
+        .select("*")
+        .eq("ativo",true)
+        .order("id",{ascending:false})
+        .limit(3);
+
+    let texto="Aguardando leitura do Exterminador de Sinais...";
+
+    if(!error && data && data.length){
+        texto = data
+            .map(x => String(x.mensagem || x.texto || "").trim())
+            .filter(Boolean)
+            .slice(0,3)
+            .join("\n") || texto;
+    }
+
+    document.getElementById("leitura").innerText = texto;
+    document.getElementById("leituraCompacta").innerText = texto.replace(/\n+/g,"\n").split("\n").slice(0,3).join("\n");
+}
 async function carregarProjecoes(){const alvo=document.getElementById("conteudoProjecoes");if(!alvo)return;const{data,error}=await db.from("projecoes_mercado").select("*").eq("ativo",true).order("id",{ascending:false}).limit(1);alvo.innerText=(error||!data||!data.length)?"Aguardando projeções...":(data[0].mensagem||"Aguardando projeções...")}
 async function carregarRosas(){if(!painelAtivo)return;try{const{data,error}=await db.from("rosas_por_hora_app").select("*").order("hora_inicio",{ascending:false}).limit(12);if(error||!data||!data.length){document.getElementById("rosasMini").innerText="🌹 0";historicoRosasTexto="Aguardando contagem de rosas...";return}const agora=new Date(),chaveAtual=agora.getFullYear()+"-"+String(agora.getMonth()+1).padStart(2,"0")+"-"+String(agora.getDate()).padStart(2,"0")+" "+String(agora.getHours()).padStart(2,"0");let qtdAtual=0;const linhas=[];data.forEach(row=>{const horaInicio=String(row.hora_inicio||row.hora||row.faixa||""),qtd=Number(row.quantidade||row.total||row.qtd||0);if(horaInicio.substring(0,13)===chaveAtual)qtdAtual=qtd;let horaCurta="--:--";if(row.faixa&&String(row.faixa).length>=5)horaCurta=String(row.faixa).substring(0,5);else if(horaInicio.length>=13)horaCurta=horaInicio.substring(11,13)+":00";else if(horaInicio.length>=2)horaCurta=horaInicio.substring(0,2)+":00";linhas.push(`${horaCurta}    ➜    🌹 ${qtd}`)});document.getElementById("rosasMini").innerText=`🌹 ${qtdAtual}`;historicoRosasTexto=linhas.join("\n")||"Aguardando contagem de rosas..."}catch(e){document.getElementById("rosasMini").innerText="🌹 0";historicoRosasTexto="Erro ao carregar rosas."}}
 function abrirRosas(){document.getElementById("conteudoRosas").innerText=historicoRosasTexto;document.getElementById("modalRosas").classList.remove("escondido")}function fecharRosas(){document.getElementById("modalRosas").classList.add("escondido")}function abrirProjecoes(){carregarProjecoes();document.getElementById("modalProjecoes").classList.remove("escondido")}function fecharProjecoes(){document.getElementById("modalProjecoes").classList.add("escondido")}
