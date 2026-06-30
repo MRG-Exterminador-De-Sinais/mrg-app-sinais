@@ -396,24 +396,51 @@ async function salvarMensagemControle(){
     const campo = document.getElementById("mensagemControleEnvio");
     const msg = campo ? campo.value.trim() : "";
 
-    const c = window.CONTROLE_ENVIO || {};
-    const okControle = await salvarControleEnvio(c.snarpy_ativo === true, c.hyper_ativo === true, msg);
+    // Remove aviso ADMIN antigo
+    const {error: erroRemove} = await db
+        .from("sinais")
+        .update({
+            ativo: false,
+            resultado: "REMOVIDO_ADMIN"
+        })
+        .eq("origem", "ADMIN")
+        .eq("categoria", "COMUNICADO")
+        .eq("ativo", true);
 
-    if(!okControle){
+    if(erroRemove){
+        alert("ERRO AO REMOVER AVISO ADMIN: " + erroRemove.message);
         return;
     }
 
+    // Campo vazio = só remove
     if(!msg){
-        await desativarAvisoAdmin();
-        alert("Mensagem removida do app.");
+        alert("Aviso removido dos sinais ativos.");
         return;
     }
 
-    const okAviso = await publicarAvisoAdmin(msg);
+    // Campo preenchido = cria aviso como sinal ativo
+    const {error: erroInsere} = await db
+        .from("sinais")
+        .insert({
+            categoria: "COMUNICADO",
+            origem: "ADMIN",
+            tipo: "COMUNICADO",
+            alvo: "AVISO",
+            status: "ATENÇÃO",
+            horario: "ADMIN",
+            variacao: "-",
+            janela: msg,
+            score: 100,
+            resultado: msg,
+            ativo: true
+        });
 
-    if(okAviso){
-        alert("Mensagem publicada como aviso nos sinais ativos.");
+    if(erroInsere){
+        alert("ERRO AO CRIAR AVISO EM SINAIS: " + erroInsere.message);
+        return;
     }
+
+    alert("Aviso publicado nos sinais ativos.");
 }
 
 function abrirWhatsapp(telefone,nome,email){
