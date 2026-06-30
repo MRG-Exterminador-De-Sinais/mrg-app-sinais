@@ -44,34 +44,23 @@ button.pequeno{width:auto;padding:8px 10px;margin:4px;font-size:13px;}
 .topo-controle{display:flex;justify-content:space-between;align-items:center;gap:10px;}
 .btn-lupa{width:34px;height:34px;margin:0;padding:0;border-radius:8px;background:#00ff88;color:#000;font-size:16px;font-weight:bold;flex:0 0 auto;}
 #campoBusca{display:none;margin-top:10px;margin-bottom:10px;width:100%;padding:10px;border-radius:8px;border:1px solid #444;background:#0b0b0b;color:white;font-size:15px;}
-
 .resumo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
 .resumo-item{background:#202020;border:1px solid #444;border-radius:12px;padding:10px;text-align:center;}
 .resumo-num{font-size:22px;font-weight:bold;color:#00ff88;}
 .resumo-label{font-size:12px;color:#aaa;margin-top:3px;}
 .receita{margin-top:10px;text-align:center;color:#ffaa00;font-weight:bold;font-size:15px;}
-
 .modal-fundo{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:9999;display:flex;align-items:center;justify-content:center;padding:14px;}
 .modal-caixa{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:#111;border:2px solid #00ff88;border-radius:16px;padding:14px;}
 .historico-item{border-bottom:1px solid #333;padding:9px 0;color:#ddd;font-size:14px;}
 .historico-data{color:#00ff88;font-weight:bold;}
 .btn-fechar{background:#7a2020;color:white;}
-
 .controle-operacional-botoes{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
 .btn-toggle{flex:1 1 30%;min-width:95px;padding:10px 8px;margin:0;border-radius:10px;font-size:13px;}
 .btn-toggle.ativo{background:#00ff88;color:#000;}
 .btn-toggle.pausado{background:#7a2020;color:white;}
 textarea{width:100%;min-height:100px;margin-top:10px;padding:12px;border-radius:10px;border:1px solid #444;background:#0b0b0b;color:white;font-size:14px;font-family:Arial,sans-serif;resize:vertical;}
 .status-controle{margin-top:8px;font-size:13px;color:#aaa;text-align:center;}
-
-@media(max-width:600px){
-.container{padding:12px;}
-.header h1{font-size:21px;}
-.card{padding:13px;}
-.acoes button{flex:1 1 100%;}
-button.pequeno{width:100%;margin:4px 0;}
-.resumo-grid{grid-template-columns:1fr 1fr;}
-}
+@media(max-width:600px){.container{padding:12px;}.header h1{font-size:21px;}.card{padding:13px;}.acoes button{flex:1 1 100%;}button.pequeno{width:100%;margin:4px 0;}.resumo-grid{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
 
@@ -92,9 +81,7 @@ button.pequeno{width:100%;margin:4px 0;}
 </div>
 
 <div id="adminBox" class="escondido">
-<div class="usuario-admin">
-Administrador: <span id="adminEmail"></span>
-</div>
+<div class="usuario-admin">Administrador: <span id="adminEmail"></span></div>
 
 <div class="card">
 <div class="titulo">RESUMO FINANCEIRO DO MÊS</div>
@@ -105,61 +92,46 @@ Administrador: <span id="adminEmail"></span>
 
 <div class="card">
 <div class="titulo">CONTROLE OPERACIONAL</div>
-
 <div class="controle-operacional-botoes">
-    <button type="button" id="btnSnarpy" class="btn-toggle ativo" onclick="alternarSnarpy()">🟢 SNARPY</button>
-    <button type="button" id="btnHyper" class="btn-toggle ativo" onclick="alternarHyper()">🟢 HYPER</button>
-    <button type="button" id="btnTodos" class="btn-toggle ativo" onclick="alternarTodos()">🟢 TODOS</button>
+<button type="button" id="btnSnarpy" class="btn-toggle ativo" onclick="alternarSnarpy()">🟢 SNARPY</button>
+<button type="button" id="btnHyper" class="btn-toggle ativo" onclick="alternarHyper()">🟢 HYPER</button>
+<button type="button" id="btnTodos" class="btn-toggle ativo" onclick="alternarTodos()">🟢 TODOS</button>
 </div>
-
 <div class="status-controle" id="statusControleEnvio">Carregando controle...</div>
-
-<textarea id="mensagemControleEnvio" placeholder="Mensagem exibida quando o envio estiver pausado"></textarea>
+<textarea id="mensagemControleEnvio" placeholder="Mensagem livre para aparecer como caixinha de aviso no app. Deixe vazio e clique em SALVAR MENSAGEM para remover o aviso."></textarea>
 <button type="button" onclick="salvarMensagemControle()">SALVAR MENSAGEM</button>
 </div>
 
 <div class="card">
-<div class="topo-controle">
-    <div class="titulo">CONTROLE DE USUÁRIOS</div>
-    <button type="button" class="btn-lupa" onclick="toggleBusca()">🔍</button>
-</div>
-
+<div class="topo-controle"><div class="titulo">CONTROLE DE USUÁRIOS</div><button type="button" class="btn-lupa" onclick="toggleBusca()">🔍</button></div>
 <input id="campoBusca" placeholder="Nome, e-mail, telefone ou status" onkeyup="filtrarUsuarios()">
-
 <button type="button" onclick="carregarUsuarios()">ATUALIZAR LISTA</button>
 <div id="listaUsuarios" class="vazio">Carregando usuários...</div>
 </div>
 
 <button type="button" class="bloquear" onclick="sair()">SAIR DO ADMIN</button>
 </div>
-
 </div>
 
 <div id="modalHistorico" class="modal-fundo escondido" onclick="fecharHistorico()">
-    <div class="modal-caixa" onclick="event.stopPropagation()">
-        <div class="titulo">HISTÓRICO FINANCEIRO</div>
-        <div id="conteudoHistorico" class="vazio">Carregando histórico...</div>
-        <button type="button" class="btn-fechar" onclick="fecharHistorico()">FECHAR</button>
-    </div>
+<div class="modal-caixa" onclick="event.stopPropagation()">
+<div class="titulo">HISTÓRICO FINANCEIRO</div>
+<div id="conteudoHistorico" class="vazio">Carregando histórico...</div>
+<button type="button" class="btn-fechar" onclick="fecharHistorico()">FECHAR</button>
+</div>
 </div>
 
 <div id="modalManutencao" class="modal-fundo escondido" onclick="fecharModalManutencao()">
-    <div class="modal-caixa" onclick="event.stopPropagation()">
-        <div class="titulo">MANUTENÇÃO PROGRAMADA</div>
-
-        <div class="linha"><b>Previsão de início:</b></div>
-        <input id="horaInicioManutencao" placeholder="23:40">
-
-        <div class="linha"><b>Previsão de retorno:</b></div>
-        <input id="horaFimManutencao" placeholder="07:30">
-
-        <div class="linha"><b>Mensagem que vai aparecer no app:</b></div>
-        <textarea id="mensagemManutencao" placeholder="Digite aqui exatamente a mensagem que deve aparecer no aplicativo."></textarea>
-
-        <button type="button" class="cobranca" onclick="enviarManutencao()">ENVIAR AVISO</button>
-        <button type="button" class="bloquear" onclick="removerManutencao()">REMOVER AVISO</button>
-        <button type="button" class="btn-fechar" onclick="fecharModalManutencao()">FECHAR</button>
-    </div>
+<div class="modal-caixa" onclick="event.stopPropagation()">
+<div class="titulo">MANUTENÇÃO PROGRAMADA</div>
+<div class="linha"><b>Previsão de início:</b></div>
+<input id="horaInicioManutencao" placeholder="23:40">
+<div class="linha"><b>Previsão de retorno:</b></div>
+<input id="horaFimManutencao" placeholder="07:30">
+<button type="button" class="cobranca" onclick="enviarManutencao()">ENVIAR AVISO</button>
+<button type="button" class="bloquear" onclick="removerManutencao()">REMOVER AVISO</button>
+<button type="button" class="btn-fechar" onclick="fecharModalManutencao()">FECHAR</button>
+</div>
 </div>
 
 <script>
@@ -168,709 +140,110 @@ const SUPABASE_KEY = "sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const ADMIN_EMAIL = "maiconrodrigoguth@gmail.com";
 const VALOR_MENSAL = 30;
 const VALOR_MENSAL_TXT = "R$ 30,00";
-
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 window.USUARIOS_CACHE = [];
-window.CONTROLE_ENVIO = {
-    snarpy_ativo: true,
-    hyper_ativo: true,
-    mensagem: ""
-};
+window.CONTROLE_ENVIO = {snarpy_ativo:true,hyper_ativo:true,mensagem:""};
 
-function texto(v){
-    if(v === null || v === undefined || v === "") return "-";
-    return String(v);
-}
-
-function limparTelefone(tel){
-    return String(tel||"").replace(/\D/g,"");
-}
-
-function hojeISO(){
-    const d = new Date();
-    const ano = d.getFullYear();
-    const mes = String(d.getMonth()+1).padStart(2,"0");
-    const dia = String(d.getDate()).padStart(2,"0");
-    return `${ano}-${mes}-${dia}`;
-}
-
-function agoraISO(){
-    return new Date().toISOString();
-}
-
-function formatarDataBR(data){
-    if(!data)return "-";
-    const p = String(data).split("-");
-    if(p.length !== 3)return data;
-    return `${p[2]}/${p[1]}/${p[0]}`;
-}
-
-function formatarDataHoraBR(data){
-    if(!data)return "-";
-    try{
-        const d = new Date(data);
-        return d.toLocaleString("pt-BR");
-    }catch(e){
-        return data;
-    }
-}
-
-function mesmoMesAtual(data){
-    if(!data)return false;
-    const d = new Date(String(data) + "T12:00:00");
-    const agora = new Date();
-
-    return d.getFullYear() === agora.getFullYear() &&
-           d.getMonth() === agora.getMonth();
-}
-
-function statusFinanceiroReal(u){
-    const status = String(u.status_pagamento || "PENDENTE").toUpperCase();
-    const diaAtual = new Date().getDate();
-
-    if(status === "PAGO" && mesmoMesAtual(u.data_ultimo_pagamento)){
-        return "PAGO";
-    }
-
-    if(status === "FREE" && mesmoMesAtual(u.data_free)){
-        return "FREE";
-    }
-
-    if(diaAtual >= 6){
-        return "ATRASADO";
-    }
-
-    return "PENDENTE";
-}
+function texto(v){if(v === null || v === undefined || v === "") return "-";return String(v);}
+function limparTelefone(tel){return String(tel||"").replace(/\D/g,"");}
+function hojeISO(){const d = new Date();const ano = d.getFullYear();const mes = String(d.getMonth()+1).padStart(2,"0");const dia = String(d.getDate()).padStart(2,"0");return `${ano}-${mes}-${dia}`;}
+function agoraISO(){return new Date().toISOString();}
+function formatarDataBR(data){if(!data)return "-";const p = String(data).split("-");if(p.length !== 3)return data;return `${p[2]}/${p[1]}/${p[0]}`;}
+function formatarDataHoraBR(data){if(!data)return "-";try{const d = new Date(data);return d.toLocaleString("pt-BR");}catch(e){return data;}}
+function mesmoMesAtual(data){if(!data)return false;const d = new Date(String(data) + "T12:00:00");const agora = new Date();return d.getFullYear() === agora.getFullYear() && d.getMonth() === agora.getMonth();}
+function statusFinanceiroReal(u){const status = String(u.status_pagamento || "PENDENTE").toUpperCase();const diaAtual = new Date().getDate();if(status === "PAGO" && mesmoMesAtual(u.data_ultimo_pagamento))return "PAGO";if(status === "FREE" && mesmoMesAtual(u.data_free))return "FREE";if(diaAtual >= 6)return "ATRASADO";return "PENDENTE";}
 
 async function carregarControleEnvio(){
-    const {data,error} = await db
-        .from("controle_envio")
-        .select("*")
-        .eq("id",1)
-        .single();
-
-    if(error || !data){
-        document.getElementById("statusControleEnvio").innerText = "Erro ao carregar controle operacional.";
-        return;
-    }
-
-    window.CONTROLE_ENVIO = data;
-
-    if(!window.CONTROLE_ENVIO.mensagem){
-        window.CONTROLE_ENVIO.mensagem =
-`⚠️ MERCADO EM OBSERVAÇÃO
-
-Novas entradas estão temporariamente pausadas.
-Os sinais já enviados continuam sendo acompanhados até o fechamento.`;
-    }
-
-    const campo = document.getElementById("mensagemControleEnvio");
-    if(campo){
-        campo.value = window.CONTROLE_ENVIO.mensagem || "";
-    }
-
-    atualizarBotoesControle();
+const {data,error}=await db.from("controle_envio").select("*").eq("id",1).single();
+if(error||!data){document.getElementById("statusControleEnvio").innerText="Erro ao carregar controle operacional.";return;}
+window.CONTROLE_ENVIO=data;
+const campo=document.getElementById("mensagemControleEnvio");
+if(campo){campo.value=window.CONTROLE_ENVIO.mensagem||"";}
+atualizarBotoesControle();
 }
 
 function atualizarBotoesControle(){
-    const c = window.CONTROLE_ENVIO || {};
-    const snarpyAtivo = c.snarpy_ativo === true;
-    const hyperAtivo = c.hyper_ativo === true;
-    const todosAtivos = snarpyAtivo && hyperAtivo;
-
-    const btnSnarpy = document.getElementById("btnSnarpy");
-    const btnHyper = document.getElementById("btnHyper");
-    const btnTodos = document.getElementById("btnTodos");
-
-    if(btnSnarpy){
-        btnSnarpy.innerText = (snarpyAtivo ? "🟢 " : "🔴 ") + "SNARPY";
-        btnSnarpy.className = "btn-toggle " + (snarpyAtivo ? "ativo" : "pausado");
-    }
-
-    if(btnHyper){
-        btnHyper.innerText = (hyperAtivo ? "🟢 " : "🔴 ") + "HYPER";
-        btnHyper.className = "btn-toggle " + (hyperAtivo ? "ativo" : "pausado");
-    }
-
-    if(btnTodos){
-        btnTodos.innerText = (todosAtivos ? "🟢 " : "🔴 ") + "TODOS";
-        btnTodos.className = "btn-toggle " + (todosAtivos ? "ativo" : "pausado");
-    }
-
-    const status = document.getElementById("statusControleEnvio");
-    if(status){
-        if(todosAtivos){
-            status.innerText = "Envio de novos sinais liberado.";
-        }else if(!snarpyAtivo && !hyperAtivo){
-            status.innerText = "Novos sinais pausados para SNARPY e HYPER.";
-        }else if(!snarpyAtivo){
-            status.innerText = "Novos sinais SNARPY pausados. HYPER liberado.";
-        }else{
-            status.innerText = "Novos sinais HYPER pausados. SNARPY liberado.";
-        }
-    }
+const c=window.CONTROLE_ENVIO||{};const snarpyAtivo=c.snarpy_ativo===true;const hyperAtivo=c.hyper_ativo===true;const todosAtivos=snarpyAtivo&&hyperAtivo;
+const btnSnarpy=document.getElementById("btnSnarpy"),btnHyper=document.getElementById("btnHyper"),btnTodos=document.getElementById("btnTodos");
+if(btnSnarpy){btnSnarpy.innerText=(snarpyAtivo?"🟢 ":"🔴 ")+"SNARPY";btnSnarpy.className="btn-toggle "+(snarpyAtivo?"ativo":"pausado");}
+if(btnHyper){btnHyper.innerText=(hyperAtivo?"🟢 ":"🔴 ")+"HYPER";btnHyper.className="btn-toggle "+(hyperAtivo?"ativo":"pausado");}
+if(btnTodos){btnTodos.innerText=(todosAtivos?"🟢 ":"🔴 ")+"TODOS";btnTodos.className="btn-toggle "+(todosAtivos?"ativo":"pausado");}
+const status=document.getElementById("statusControleEnvio");
+if(status){if(todosAtivos){status.innerText="Envio de novos sinais liberado.";}else if(!snarpyAtivo&&!hyperAtivo){status.innerText="Novos sinais pausados para SNARPY e HYPER.";}else if(!snarpyAtivo){status.innerText="Novos sinais SNARPY pausados. HYPER liberado.";}else{status.innerText="Novos sinais HYPER pausados. SNARPY liberado.";}}
 }
 
-async function salvarControleEnvio(snarpyAtivo, hyperAtivo, mensagem=null){
-    const payload = {
-        snarpy_ativo: snarpyAtivo,
-        hyper_ativo: hyperAtivo,
-        atualizado_em: new Date().toISOString()
-    };
-
-    if(mensagem !== null){
-        payload.mensagem = mensagem;
-    }
-
-    const {error} = await db
-        .from("controle_envio")
-        .update(payload)
-        .eq("id",1);
-
-    if(error){
-        alert("Erro ao atualizar controle operacional.");
-        return false;
-    }
-
-    window.CONTROLE_ENVIO.snarpy_ativo = snarpyAtivo;
-    window.CONTROLE_ENVIO.hyper_ativo = hyperAtivo;
-    if(mensagem !== null){
-        window.CONTROLE_ENVIO.mensagem = mensagem;
-    }
-
-    atualizarBotoesControle();
-    return true;
+async function salvarControleEnvio(snarpyAtivo,hyperAtivo,mensagem=null){
+const payload={snarpy_ativo:snarpyAtivo,hyper_ativo:hyperAtivo,atualizado_em:new Date().toISOString()};
+if(mensagem!==null){payload.mensagem=mensagem;}
+const {error}=await db.from("controle_envio").update(payload).eq("id",1);
+if(error){alert("Erro ao atualizar controle operacional.");return false;}
+window.CONTROLE_ENVIO.snarpy_ativo=snarpyAtivo;window.CONTROLE_ENVIO.hyper_ativo=hyperAtivo;if(mensagem!==null){window.CONTROLE_ENVIO.mensagem=mensagem;}
+atualizarBotoesControle();return true;
 }
-
-async function alternarSnarpy(){
-    const c = window.CONTROLE_ENVIO || {};
-    await salvarControleEnvio(!(c.snarpy_ativo === true), c.hyper_ativo === true);
-}
-
-async function alternarHyper(){
-    const c = window.CONTROLE_ENVIO || {};
-    await salvarControleEnvio(c.snarpy_ativo === true, !(c.hyper_ativo === true));
-}
-
-async function alternarTodos(){
-    const c = window.CONTROLE_ENVIO || {};
-    const todosAtivos = c.snarpy_ativo === true && c.hyper_ativo === true;
-
-    if(todosAtivos){
-        await salvarControleEnvio(false, false);
-    }else{
-        await salvarControleEnvio(true, true);
-    }
-}
-
+async function alternarSnarpy(){const c=window.CONTROLE_ENVIO||{};await salvarControleEnvio(!(c.snarpy_ativo===true),c.hyper_ativo===true);}
+async function alternarHyper(){const c=window.CONTROLE_ENVIO||{};await salvarControleEnvio(c.snarpy_ativo===true,!(c.hyper_ativo===true));}
+async function alternarTodos(){const c=window.CONTROLE_ENVIO||{};const todosAtivos=c.snarpy_ativo===true&&c.hyper_ativo===true;if(todosAtivos){await salvarControleEnvio(false,false);}else{await salvarControleEnvio(true,true);}}
 async function salvarMensagemControle(){
-    const campo = document.getElementById("mensagemControleEnvio");
-    const msg = campo ? campo.value.trim() : "";
-
-    if(!msg){
-        alert("Digite uma mensagem para exibir quando pausar sinais.");
-        return;
-    }
-
-    const c = window.CONTROLE_ENVIO || {};
-    const ok = await salvarControleEnvio(c.snarpy_ativo === true, c.hyper_ativo === true, msg);
-
-    if(ok){
-        alert("Mensagem salva.");
-    }
+const campo=document.getElementById("mensagemControleEnvio");
+const msg=campo?campo.value.trim():"";
+const c=window.CONTROLE_ENVIO||{};
+const ok=await salvarControleEnvio(c.snarpy_ativo===true,c.hyper_ativo===true,msg);
+if(ok){alert(msg?"Mensagem publicada no app.":"Mensagem removida do app.");}
 }
 
-function abrirWhatsapp(telefone,nome,email){
-    let tel = limparTelefone(telefone);
+function abrirWhatsapp(telefone,nome,email){let tel=limparTelefone(telefone);if(!tel){alert("Este usuário não tem telefone cadastrado.");return;}if(tel.length===10||tel.length===11){tel="55"+tel;}const msg="Olá "+(nome||"")+", seu cadastro no MRG Sinais Alto Padrão foi localizado. Seu e-mail de acesso é: "+(email||")+".";const url="https://wa.me/"+tel+"?text="+encodeURIComponent(msg);window.open(url,"_blank");}
+function abrirCobranca(telefone,nome,email){let tel=limparTelefone(telefone);if(!tel){alert("Este usuário não tem telefone cadastrado.");return;}if(tel.length===10||tel.length===11){tel="55"+tel;}const msg="Olá "+(nome||"")+", tudo bem?
 
-    if(!tel){
-        alert("Este usuário não tem telefone cadastrado.");
-        return;
-    }
+Eu espero que você esteja gostando de utilizar o sistema MRG Sinais Alto Padrão e aproveitando os recursos disponibilizados.
 
-    if(tel.length === 10 || tel.length === 11){
-        tel = "55" + tel;
-    }
+Passando para lembrar que a mensalidade de acesso encontra-se pendente. Para continuar utilizando o aplicativo e receber as atualizações normalmente, é importante manter a contribuição em dia.
 
-    const msg =
-        "Olá " + (nome || "") + ", seu cadastro no MRG Sinais Alto Padrão foi localizado. " +
-        "Seu e-mail de acesso é: " + (email || "") + ".";
+Valor mensal: "+VALOR_MENSAL_TXT+"
 
-    const url = "https://wa.me/" + tel + "?text=" + encodeURIComponent(msg);
-    window.open(url, "_blank");
-}
+E-mail cadastrado: "+(email||"")+"
 
-function abrirCobranca(telefone,nome,email){
-    let tel = limparTelefone(telefone);
+Caso o pagamento já tenha sido realizado, desconsidere esta mensagem.
 
-    if(!tel){
-        alert("Este usuário não tem telefone cadastrado.");
-        return;
-    }
+Qualquer dúvida, estou à disposição.";const url="https://wa.me/"+tel+"?text="+encodeURIComponent(msg);window.open(url,"_blank");}
+function badgeLiberado(liberado){return liberado===true?"<span class='badge liberado'>LIBERADO</span>":"<span class='badge bloqueado'>BLOQUEADO / AGUARDANDO</span>";}
+function badgeFinanceiro(status){const st=String(status||"PENDENTE").toUpperCase();if(st==="PAGO")return "<span class='badge financeiro-pago'>PAGO</span>";if(st==="FREE")return "<span class='badge financeiro-free'>FREE</span>";if(st==="ATRASADO")return "<span class='badge financeiro-atrasado'>ATRASADO</span>";return "<span class='badge financeiro-pendente'>PENDENTE</span>";}
 
-    if(tel.length === 10 || tel.length === 11){
-        tel = "55" + tel;
-    }
+async function entrar(){const email=document.getElementById("loginEmail").value.trim();const senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return;}if(email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){document.getElementById("loginMsg").innerHTML="<span class='erro'>Este e-mail não é administrador.</span>";return;}const {error}=await db.auth.signInWithPassword({email:email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login inválido ou e-mail não confirmado.</span>";return;}await verificarAdmin();}
+async function verificarAdmin(){const {data:sessionData}=await db.auth.getSession();if(!sessionData||!sessionData.session||!sessionData.session.user){document.getElementById("loginBox").classList.remove("escondido");document.getElementById("adminBox").classList.add("escondido");return;}const user=sessionData.session.user;if(String(user.email).toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await db.auth.signOut();document.getElementById("loginMsg").innerHTML="<span class='erro'>Acesso negado.</span>";return;}document.getElementById("loginBox").classList.add("escondido");document.getElementById("adminBox").classList.remove("escondido");document.getElementById("adminEmail").innerText=user.email;await carregarUsuarios();await carregarControleEnvio();}
 
-    const msg =
-        "Olá " + (nome || "") + ", tudo bem?\n\n" +
-        "Eu espero que você esteja gostando de utilizar o sistema MRG Sinais Alto Padrão e aproveitando os recursos disponibilizados.\n\n" +
-        "Passando para lembrar que a mensalidade de acesso encontra-se pendente. Para continuar utilizando o aplicativo e receber as atualizações normalmente, é importante manter a contribuição em dia.\n\n" +
-        "Valor mensal: " + VALOR_MENSAL_TXT + "\n\n" +
-        "E-mail cadastrado: " + (email || "") + "\n\n" +
-        "Caso o pagamento já tenha sido realizado, desconsidere esta mensagem.\n\n" +
-        "Qualquer dúvida, estou à disposição.";
+async function carregarUsuarios(){document.getElementById("listaUsuarios").innerHTML="<div class='vazio'>Carregando usuários...</div>";const {data,error}=await db.from("perfis").select("*").order("nome",{ascending:true});if(error){document.getElementById("listaUsuarios").innerHTML="<div class='erro'>Erro ao carregar perfis. Verifique permissões no Supabase.</div>";return;}if(!data||data.length===0){window.USUARIOS_CACHE=[];document.getElementById("listaUsuarios").innerHTML="<div class='vazio'>Nenhum usuário encontrado.</div>";atualizarResumoFinanceiro([]);return;}window.USUARIOS_CACHE=data;atualizarResumoFinanceiro(data);renderizarUsuarios(data);}
+function atualizarResumoFinanceiro(lista){let pagos=0,pendentes=0,atrasados=0,free=0,liberados=0,bloqueados=0;(lista||[]).forEach(u=>{const st=statusFinanceiroReal(u);if(st==="PAGO")pagos++;else if(st==="FREE")free++;else if(st==="ATRASADO")atrasados++;else pendentes++;if(u.liberado===true)liberados++;else bloqueados++;});const receita=pagos*VALOR_MENSAL;document.getElementById("resumoFinanceiro").innerHTML=`<div class="resumo-grid"><div class="resumo-item"><div class="resumo-num">${pagos}</div><div class="resumo-label">PAGOS</div></div><div class="resumo-item"><div class="resumo-num">${pendentes}</div><div class="resumo-label">PENDENTES</div></div><div class="resumo-item"><div class="resumo-num">${atrasados}</div><div class="resumo-label">ATRASADOS</div></div><div class="resumo-item"><div class="resumo-num">${free}</div><div class="resumo-label">FREE</div></div><div class="resumo-item"><div class="resumo-num">${liberados}</div><div class="resumo-label">LIBERADOS</div></div><div class="resumo-item"><div class="resumo-num">${bloqueados}</div><div class="resumo-label">BLOQUEADOS</div></div></div><div class="receita">Receita do mês: R$ ${receita.toFixed(2).replace(".",",")}</div>`;}
+function renderizarUsuarios(lista){if(!lista||lista.length===0){document.getElementById("listaUsuarios").innerHTML="<div class='vazio'>Nenhum usuário encontrado.</div>";return;}let html="";lista.forEach(u=>{const nome=texto(u.nome),email=texto(u.email),telefone=texto(u.telefone),liberado=u.liberado===true,statusReal=statusFinanceiroReal(u);html+=`<div class="usuario-card"><div class="nome">${nome}</div><div class="linha"><b>E-mail:</b> ${email}</div><div class="linha"><b>Telefone:</b> ${telefone}</div><div class="linha"><b>Acesso:</b> ${badgeLiberado(liberado)}</div><div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(statusReal)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Último free:</b> ${formatarDataBR(u.data_free)}</div><div class="acoes"><button type="button" class="pequeno pago" onclick="marcarPago('${u.id}','${nome}','${email}')">PAGO</button><button type="button" class="pequeno free" onclick="marcarFree('${u.id}','${nome}','${email}')">FREE</button><button type="button" class="pequeno bloquear" onclick="bloquearUsuario('${u.id}','${nome}','${email}')">BLOQUEAR</button></div><div class="acoes"><button type="button" class="pequeno whats" onclick="abrirWhatsapp('${telefone}','${nome}','${email}')">WHATSAPP</button><button type="button" class="pequeno cobranca" onclick="abrirCobranca('${telefone}','${nome}','${email}')">COBRANÇA</button><button type="button" class="pequeno hist" onclick="abrirHistorico('${u.id}','${nome}')">HISTÓRICO</button></div></div>`;});document.getElementById("listaUsuarios").innerHTML=html;}
+function toggleBusca(){const campo=document.getElementById("campoBusca");if(campo.style.display==="none"||campo.style.display===""){campo.style.display="block";campo.focus();}else{campo.value="";campo.style.display="none";renderizarUsuarios(window.USUARIOS_CACHE||[]);}}
+function filtrarUsuarios(){const termo=document.getElementById("campoBusca").value.toLowerCase().trim();if(!termo){renderizarUsuarios(window.USUARIOS_CACHE||[]);return;}const filtrados=(window.USUARIOS_CACHE||[]).filter(u=>{const nome=String(u.nome||"").toLowerCase();const email=String(u.email||"").toLowerCase();const telefone=String(u.telefone||"").toLowerCase();const status=statusFinanceiroReal(u).toLowerCase();return nome.includes(termo)||email.includes(termo)||telefone.includes(termo)||status.includes(termo);});renderizarUsuarios(filtrados);}
+async function registrarHistorico(perfilId,nome,email,acao,valor){try{await db.from("historico_financeiro").insert({perfil_id:perfilId,nome:nome,email:email,acao:acao,valor:valor,criado_em:agoraISO()});}catch(e){}}
+async function marcarPago(id,nome,email){const {error}=await db.from("perfis").update({liberado:true,status_pagamento:"PAGO",data_ultimo_pagamento:hojeISO()}).eq("id",id);if(error){alert("Erro ao marcar como pago.");return;}await registrarHistorico(id,nome,email,"PAGO",VALOR_MENSAL);await recarregarMantendoBusca();}
+async function marcarFree(id,nome,email){const {error}=await db.from("perfis").update({liberado:true,status_pagamento:"FREE",data_free:hojeISO()}).eq("id",id);if(error){alert("Erro ao marcar como free.");return;}await registrarHistorico(id,nome,email,"FREE",0);await recarregarMantendoBusca();}
+async function bloquearUsuario(id,nome,email){const confirmar=confirm("Confirmar bloqueio deste usuário?");if(!confirmar)return;const {error}=await db.from("perfis").update({liberado:false,status_pagamento:"PENDENTE"}).eq("id",id);if(error){alert("Erro ao bloquear usuário.");return;}await registrarHistorico(id,nome,email,"BLOQUEADO",0);await recarregarMantendoBusca();}
+async function bloquearAtrasados(){const atrasados=(window.USUARIOS_CACHE||[]).filter(u=>statusFinanceiroReal(u)==="ATRASADO"&&u.liberado===true);if(atrasados.length===0){alert("Nenhum usuário atrasado liberado para bloquear.");return;}const confirmar=confirm("Bloquear "+atrasados.length+" usuário(s) atrasado(s)?");if(!confirmar)return;for(const u of atrasados){await db.from("perfis").update({liberado:false,status_pagamento:"PENDENTE"}).eq("id",u.id);await registrarHistorico(u.id,u.nome,u.email,"BLOQUEADO_ATRASADO",0);}await carregarUsuarios();}
+async function abrirHistorico(id,nome){document.getElementById("modalHistorico").classList.remove("escondido");document.getElementById("conteudoHistorico").innerHTML="<div class='vazio'>Carregando histórico...</div>";const {data,error}=await db.from("historico_financeiro").select("*").eq("perfil_id",id).order("criado_em",{ascending:false}).limit(50);if(error){document.getElementById("conteudoHistorico").innerHTML="<div class='erro'>Erro ao carregar histórico.</div>";return;}if(!data||data.length===0){document.getElementById("conteudoHistorico").innerHTML="<div class='vazio'>Nenhum histórico para "+nome+".</div>";return;}let html="";data.forEach(h=>{html+=`<div class="historico-item"><div class="historico-data">${formatarDataHoraBR(h.criado_em)}</div><div><b>Ação:</b> ${texto(h.acao)}</div><div><b>Valor:</b> R$ ${Number(h.valor||0).toFixed(2).replace(".",",")}</div></div>`;});document.getElementById("conteudoHistorico").innerHTML=html;}
+function fecharHistorico(){document.getElementById("modalHistorico").classList.add("escondido");}
+async function recarregarMantendoBusca(){const campo=document.getElementById("campoBusca");const termo=campo?campo.value:"";const aberto=campo&&campo.style.display!=="none";await carregarUsuarios();if(aberto&&termo.trim()){campo.value=termo;filtrarUsuarios();}}
+function abrirModalManutencao(){document.getElementById("horaInicioManutencao").value="23:40";document.getElementById("horaFimManutencao").value="07:30";document.getElementById("modalManutencao").classList.remove("escondido");}
+function fecharModalManutencao(){document.getElementById("modalManutencao").classList.add("escondido");}
+async function desativarLeiturasAtivas(){await db.from("leituras_ao_vivo").update({ativo:false}).eq("ativo",true);}
+async function enviarManutencao(){const inicio=document.getElementById("horaInicioManutencao").value.trim();const fim=document.getElementById("horaFimManutencao").value.trim();if(!inicio||!fim){alert("Informe o horário de início e retorno.");return;}await desativarLeiturasAtivas();const msg=`⚠️ MANUTENÇÃO PROGRAMADA
 
-    const url = "https://wa.me/" + tel + "?text=" + encodeURIComponent(msg);
-    window.open(url, "_blank");
-}
+O sistema entrará em manutenção programada.
 
-function badgeLiberado(liberado){
-    if(liberado === true){
-        return "<span class='badge liberado'>LIBERADO</span>";
-    }
-    return "<span class='badge bloqueado'>BLOQUEADO / AGUARDANDO</span>";
-}
+Previsão de início:
+${inicio}
 
-function badgeFinanceiro(status){
-    const st = String(status || "PENDENTE").toUpperCase();
+Previsão de retorno:
+${fim}
 
-    if(st === "PAGO"){
-        return "<span class='badge financeiro-pago'>PAGO</span>";
-    }
+Durante este período os sinais poderão ficar temporariamente indisponíveis.
 
-    if(st === "FREE"){
-        return "<span class='badge financeiro-free'>FREE</span>";
-    }
+Agradeço a compreensão.
 
-    if(st === "ATRASADO"){
-        return "<span class='badge financeiro-atrasado'>ATRASADO</span>";
-    }
-
-    return "<span class='badge financeiro-pendente'>PENDENTE</span>";
-}
-
-async function entrar(){
-    const email = document.getElementById("loginEmail").value.trim();
-    const senha = document.getElementById("loginSenha").value.trim();
-
-    if(!email || !senha){
-        document.getElementById("loginMsg").innerHTML = "<span class='erro'>Informe e-mail e senha.</span>";
-        return;
-    }
-
-    if(email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()){
-        document.getElementById("loginMsg").innerHTML = "<span class='erro'>Este e-mail não é administrador.</span>";
-        return;
-    }
-
-    const {error} = await db.auth.signInWithPassword({email:email,password:senha});
-
-    if(error){
-        document.getElementById("loginMsg").innerHTML = "<span class='erro'>Login inválido ou e-mail não confirmado.</span>";
-        return;
-    }
-
-    await verificarAdmin();
-}
-
-async function verificarAdmin(){
-    const {data:sessionData} = await db.auth.getSession();
-
-    if(!sessionData || !sessionData.session || !sessionData.session.user){
-        document.getElementById("loginBox").classList.remove("escondido");
-        document.getElementById("adminBox").classList.add("escondido");
-        return;
-    }
-
-    const user = sessionData.session.user;
-
-    if(String(user.email).toLowerCase() !== ADMIN_EMAIL.toLowerCase()){
-        await db.auth.signOut();
-        document.getElementById("loginMsg").innerHTML = "<span class='erro'>Acesso negado.</span>";
-        return;
-    }
-
-    document.getElementById("loginBox").classList.add("escondido");
-    document.getElementById("adminBox").classList.remove("escondido");
-    document.getElementById("adminEmail").innerText = user.email;
-
-    await carregarUsuarios();
-    await carregarControleEnvio();
-}
-
-async function carregarUsuarios(){
-    document.getElementById("listaUsuarios").innerHTML = "<div class='vazio'>Carregando usuários...</div>";
-
-    const {data,error} = await db
-        .from("perfis")
-        .select("*")
-        .order("nome",{ascending:true});
-
-    if(error){
-        document.getElementById("listaUsuarios").innerHTML =
-            "<div class='erro'>Erro ao carregar perfis. Verifique permissões no Supabase.</div>";
-        return;
-    }
-
-    if(!data || data.length === 0){
-        window.USUARIOS_CACHE = [];
-        document.getElementById("listaUsuarios").innerHTML =
-            "<div class='vazio'>Nenhum usuário encontrado.</div>";
-        atualizarResumoFinanceiro([]);
-        return;
-    }
-
-    window.USUARIOS_CACHE = data;
-    atualizarResumoFinanceiro(data);
-    renderizarUsuarios(data);
-}
-
-function atualizarResumoFinanceiro(lista){
-    let pagos = 0;
-    let pendentes = 0;
-    let atrasados = 0;
-    let free = 0;
-    let liberados = 0;
-    let bloqueados = 0;
-
-    (lista || []).forEach(u=>{
-        const st = statusFinanceiroReal(u);
-
-        if(st === "PAGO") pagos++;
-        else if(st === "FREE") free++;
-        else if(st === "ATRASADO") atrasados++;
-        else pendentes++;
-
-        if(u.liberado === true) liberados++;
-        else bloqueados++;
-    });
-
-    const receita = pagos * VALOR_MENSAL;
-
-    document.getElementById("resumoFinanceiro").innerHTML = `
-        <div class="resumo-grid">
-            <div class="resumo-item"><div class="resumo-num">${pagos}</div><div class="resumo-label">PAGOS</div></div>
-            <div class="resumo-item"><div class="resumo-num">${pendentes}</div><div class="resumo-label">PENDENTES</div></div>
-            <div class="resumo-item"><div class="resumo-num">${atrasados}</div><div class="resumo-label">ATRASADOS</div></div>
-            <div class="resumo-item"><div class="resumo-num">${free}</div><div class="resumo-label">FREE</div></div>
-            <div class="resumo-item"><div class="resumo-num">${liberados}</div><div class="resumo-label">LIBERADOS</div></div>
-            <div class="resumo-item"><div class="resumo-num">${bloqueados}</div><div class="resumo-label">BLOQUEADOS</div></div>
-        </div>
-        <div class="receita">Receita do mês: R$ ${receita.toFixed(2).replace(".",",")}</div>
-    `;
-}
-
-function renderizarUsuarios(lista){
-    if(!lista || lista.length === 0){
-        document.getElementById("listaUsuarios").innerHTML =
-            "<div class='vazio'>Nenhum usuário encontrado.</div>";
-        return;
-    }
-
-    let html = "";
-
-    lista.forEach(u=>{
-        const nome = texto(u.nome);
-        const email = texto(u.email);
-        const telefone = texto(u.telefone);
-        const liberado = u.liberado === true;
-        const statusReal = statusFinanceiroReal(u);
-
-        html += `
-            <div class="usuario-card">
-                <div class="nome">${nome}</div>
-                <div class="linha"><b>E-mail:</b> ${email}</div>
-                <div class="linha"><b>Telefone:</b> ${telefone}</div>
-                <div class="linha"><b>Acesso:</b> ${badgeLiberado(liberado)}</div>
-                <div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(statusReal)}</div>
-                <div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div>
-                <div class="linha"><b>Último free:</b> ${formatarDataBR(u.data_free)}</div>
-
-                <div class="acoes">
-                    <button type="button" class="pequeno pago" onclick="marcarPago('${u.id}','${nome}','${email}')">PAGO</button>
-                    <button type="button" class="pequeno free" onclick="marcarFree('${u.id}','${nome}','${email}')">FREE</button>
-                    <button type="button" class="pequeno bloquear" onclick="bloquearUsuario('${u.id}','${nome}','${email}')">BLOQUEAR</button>
-                </div>
-
-                <div class="acoes">
-                    <button type="button" class="pequeno whats" onclick="abrirWhatsapp('${telefone}','${nome}','${email}')">WHATSAPP</button>
-                    <button type="button" class="pequeno cobranca" onclick="abrirCobranca('${telefone}','${nome}','${email}')">COBRANÇA</button>
-                    <button type="button" class="pequeno hist" onclick="abrirHistorico('${u.id}','${nome}')">HISTÓRICO</button>
-                </div>
-            </div>
-        `;
-    });
-
-    document.getElementById("listaUsuarios").innerHTML = html;
-}
-
-function toggleBusca(){
-    const campo = document.getElementById("campoBusca");
-
-    if(campo.style.display === "none" || campo.style.display === ""){
-        campo.style.display = "block";
-        campo.focus();
-    }else{
-        campo.value = "";
-        campo.style.display = "none";
-        renderizarUsuarios(window.USUARIOS_CACHE || []);
-    }
-}
-
-function filtrarUsuarios(){
-    const termo = document
-        .getElementById("campoBusca")
-        .value
-        .toLowerCase()
-        .trim();
-
-    if(!termo){
-        renderizarUsuarios(window.USUARIOS_CACHE || []);
-        return;
-    }
-
-    const filtrados = (window.USUARIOS_CACHE || []).filter(u => {
-        const nome = String(u.nome || "").toLowerCase();
-        const email = String(u.email || "").toLowerCase();
-        const telefone = String(u.telefone || "").toLowerCase();
-        const status = statusFinanceiroReal(u).toLowerCase();
-
-        return (
-            nome.includes(termo) ||
-            email.includes(termo) ||
-            telefone.includes(termo) ||
-            status.includes(termo)
-        );
-    });
-
-    renderizarUsuarios(filtrados);
-}
-
-async function registrarHistorico(perfilId,nome,email,acao,valor){
-    try{
-        await db.from("historico_financeiro").insert({
-            perfil_id: perfilId,
-            nome: nome,
-            email: email,
-            acao: acao,
-            valor: valor,
-            criado_em: agoraISO()
-        });
-    }catch(e){}
-}
-
-async function marcarPago(id,nome,email){
-    const {error} = await db
-        .from("perfis")
-        .update({
-            liberado: true,
-            status_pagamento: "PAGO",
-            data_ultimo_pagamento: hojeISO()
-        })
-        .eq("id", id);
-
-    if(error){
-        alert("Erro ao marcar como pago.");
-        return;
-    }
-
-    await registrarHistorico(id,nome,email,"PAGO",VALOR_MENSAL);
-    await recarregarMantendoBusca();
-}
-
-async function marcarFree(id,nome,email){
-    const {error} = await db
-        .from("perfis")
-        .update({
-            liberado: true,
-            status_pagamento: "FREE",
-            data_free: hojeISO()
-        })
-        .eq("id", id);
-
-    if(error){
-        alert("Erro ao marcar como free.");
-        return;
-    }
-
-    await registrarHistorico(id,nome,email,"FREE",0);
-    await recarregarMantendoBusca();
-}
-
-async function bloquearUsuario(id,nome,email){
-    const confirmar = confirm("Confirmar bloqueio deste usuário?");
-    if(!confirmar)return;
-
-    const {error} = await db
-        .from("perfis")
-        .update({
-            liberado: false,
-            status_pagamento: "PENDENTE"
-        })
-        .eq("id", id);
-
-    if(error){
-        alert("Erro ao bloquear usuário.");
-        return;
-    }
-
-    await registrarHistorico(id,nome,email,"BLOQUEADO",0);
-    await recarregarMantendoBusca();
-}
-
-async function bloquearAtrasados(){
-    const atrasados = (window.USUARIOS_CACHE || []).filter(u => {
-        return statusFinanceiroReal(u) === "ATRASADO" && u.liberado === true;
-    });
-
-    if(atrasados.length === 0){
-        alert("Nenhum usuário atrasado liberado para bloquear.");
-        return;
-    }
-
-    const confirmar = confirm("Bloquear " + atrasados.length + " usuário(s) atrasado(s)?");
-    if(!confirmar)return;
-
-    for(const u of atrasados){
-        await db.from("perfis")
-            .update({liberado:false,status_pagamento:"PENDENTE"})
-            .eq("id", u.id);
-
-        await registrarHistorico(u.id,u.nome,u.email,"BLOQUEADO_ATRASADO",0);
-    }
-
-    await carregarUsuarios();
-}
-
-async function abrirHistorico(id,nome){
-    document.getElementById("modalHistorico").classList.remove("escondido");
-    document.getElementById("conteudoHistorico").innerHTML = "<div class='vazio'>Carregando histórico...</div>";
-
-    const {data,error} = await db
-        .from("historico_financeiro")
-        .select("*")
-        .eq("perfil_id", id)
-        .order("criado_em",{ascending:false})
-        .limit(50);
-
-    if(error){
-        document.getElementById("conteudoHistorico").innerHTML =
-            "<div class='erro'>Erro ao carregar histórico.</div>";
-        return;
-    }
-
-    if(!data || data.length === 0){
-        document.getElementById("conteudoHistorico").innerHTML =
-            "<div class='vazio'>Nenhum histórico para " + nome + ".</div>";
-        return;
-    }
-
-    let html = "";
-
-    data.forEach(h=>{
-        html += `
-            <div class="historico-item">
-                <div class="historico-data">${formatarDataHoraBR(h.criado_em)}</div>
-                <div><b>Ação:</b> ${texto(h.acao)}</div>
-                <div><b>Valor:</b> R$ ${Number(h.valor || 0).toFixed(2).replace(".",",")}</div>
-            </div>
-        `;
-    });
-
-    document.getElementById("conteudoHistorico").innerHTML = html;
-}
-
-function fecharHistorico(){
-    document.getElementById("modalHistorico").classList.add("escondido");
-}
-
-async function recarregarMantendoBusca(){
-    const campo = document.getElementById("campoBusca");
-    const termo = campo ? campo.value : "";
-    const aberto = campo && campo.style.display !== "none";
-
-    await carregarUsuarios();
-
-    if(aberto && termo.trim()){
-        campo.value = termo;
-        filtrarUsuarios();
-    }
-}
-
-function abrirModalManutencao(){
-    document.getElementById("horaInicioManutencao").value = "23:40";
-    document.getElementById("horaFimManutencao").value = "07:30";
-    document.getElementById("mensagemManutencao").value = "";
-    document.getElementById("modalManutencao").classList.remove("escondido");
-}
-
-function fecharModalManutencao(){
-    document.getElementById("modalManutencao").classList.add("escondido");
-}
-
-async function desativarLeiturasAtivas(){
-    await db
-        .from("leituras_ao_vivo")
-        .update({ativo:false})
-        .eq("ativo",true);
-}
-
-async function enviarManutencao(){
-    const inicio = document.getElementById("horaInicioManutencao").value.trim();
-    const fim = document.getElementById("horaFimManutencao").value.trim();
-    const msg = document.getElementById("mensagemManutencao").value.trim();
-
-    if(!msg){
-        alert("Digite a mensagem que deve aparecer no aplicativo.");
-        return;
-    }
-
-    await desativarLeiturasAtivas();
-
-    const {error} = await db
-        .from("leituras_ao_vivo")
-        .insert({
-            mensagem: msg,
-            texto: msg,
-            tipo: "MANUTENCAO",
-            origem: "ADMIN",
-            ativo: true
-        });
-
-    if(error){
-        alert("Erro ao enviar aviso de manutenção.");
-        return;
-    }
-
-    alert("Aviso de manutenção enviado.");
-    fecharModalManutencao();
-}
-
-async function removerManutencao(){
-    const {error} = await db
-        .from("leituras_ao_vivo")
-        .update({ativo:false})
-        .eq("tipo","MANUTENCAO");
-
-    if(error){
-        alert("Erro ao remover aviso.");
-        return;
-    }
-
-    alert("Aviso de manutenção removido.");
-    fecharModalManutencao();
-}
-
-async function sair(){
-    await db.auth.signOut();
-    document.getElementById("adminBox").classList.add("escondido");
-    document.getElementById("loginBox").classList.remove("escondido");
-    document.getElementById("loginMsg").innerHTML = "Sessão encerrada.";
-}
-
+MRG Exterminador de Sinais`;const {error}=await db.from("leituras_ao_vivo").insert({mensagem:msg,tipo:"MANUTENCAO",origem:"ADMIN",ativo:true});if(error){alert("Erro ao enviar aviso de manutenção.");return;}alert("Aviso de manutenção enviado.");fecharModalManutencao();}
+async function removerManutencao(){const {error}=await db.from("leituras_ao_vivo").update({ativo:false}).eq("tipo","MANUTENCAO");if(error){alert("Erro ao remover aviso.");return;}alert("Aviso de manutenção removido.");fecharModalManutencao();}
+async function sair(){await db.auth.signOut();document.getElementById("adminBox").classList.add("escondido");document.getElementById("loginBox").classList.remove("escondido");document.getElementById("loginMsg").innerHTML="Sessão encerrada.";}
 verificarAdmin();
 </script>
 </body>
