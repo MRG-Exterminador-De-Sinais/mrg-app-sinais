@@ -115,7 +115,7 @@ Administrador: <span id="adminEmail"></span>
 
 <div class="status-controle" id="statusControleEnvio">Carregando controle...</div>
 
-<textarea id="mensagemControleEnvio" placeholder="Mensagem exibida quando o envio estiver pausado"></textarea>
+<textarea id="mensagemControleEnvio" placeholder="Mensagem livre para aparecer como uma caixinha de aviso nos SINAIS ATIVOS. Deixe vazio e clique em SALVAR MENSAGEM para remover."></textarea>
 <button type="button" onclick="salvarMensagemControle()">SALVAR MENSAGEM</button>
 </div>
 
@@ -257,14 +257,6 @@ async function carregarControleEnvio(){
 
     window.CONTROLE_ENVIO = data;
 
-    if(!window.CONTROLE_ENVIO.mensagem){
-        window.CONTROLE_ENVIO.mensagem =
-`⚠️ MERCADO EM OBSERVAÇÃO
-
-Novas entradas estão temporariamente pausadas.
-Os sinais já enviados continuam sendo acompanhados até o fechamento.`;
-    }
-
     const campo = document.getElementById("mensagemControleEnvio");
     if(campo){
         campo.value = window.CONTROLE_ENVIO.mensagem || "";
@@ -364,20 +356,63 @@ async function alternarTodos(){
     }
 }
 
+async function desativarAvisoAdmin(){
+    await db
+        .from("sinais")
+        .update({ativo:false, resultado:"REMOVIDO_ADMIN"})
+        .eq("origem","ADMIN")
+        .eq("tipo","COMUNICADO")
+        .eq("ativo",true);
+}
+
+async function publicarAvisoAdmin(msg){
+    await desativarAvisoAdmin();
+
+    const {error} = await db
+        .from("sinais")
+        .insert({
+            categoria: "COMUNICADO",
+            origem: "ADMIN",
+            tipo: "COMUNICADO",
+            alvo: "AVISO",
+            status: "ATENÇÃO",
+            horario: "ADMIN",
+            variacao: "-",
+            janela: msg,
+            score: 100,
+            resultado: msg,
+            ativo: true
+        });
+
+    if(error){
+        alert("Erro ao publicar aviso na tabela sinais.");
+        return false;
+    }
+
+    return true;
+}
+
 async function salvarMensagemControle(){
     const campo = document.getElementById("mensagemControleEnvio");
     const msg = campo ? campo.value.trim() : "";
 
-    if(!msg){
-        alert("Digite uma mensagem para exibir quando pausar sinais.");
+    const c = window.CONTROLE_ENVIO || {};
+    const okControle = await salvarControleEnvio(c.snarpy_ativo === true, c.hyper_ativo === true, msg);
+
+    if(!okControle){
         return;
     }
 
-    const c = window.CONTROLE_ENVIO || {};
-    const ok = await salvarControleEnvio(c.snarpy_ativo === true, c.hyper_ativo === true, msg);
+    if(!msg){
+        await desativarAvisoAdmin();
+        alert("Mensagem removida do app.");
+        return;
+    }
 
-    if(ok){
-        alert("Mensagem salva.");
+    const okAviso = await publicarAvisoAdmin(msg);
+
+    if(okAviso){
+        alert("Mensagem publicada como aviso nos sinais ativos.");
     }
 }
 
