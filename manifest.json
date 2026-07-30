@@ -1,0 +1,18 @@
+{
+  "name": "MRG Sinais Alto Padrão",
+  "short_name": "MRG Sinais",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#060606",
+  "theme_color": "#060606",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/16037623-50c1-4b03-b31c-35b5261d38ac.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
