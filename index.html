@@ -122,6 +122,18 @@ async function salvarAssinaturaPush(subscription,ativo=true){
     user_agent:navigator.userAgent||"",
     atualizado_em:new Date().toISOString()
   };
+  // Desativa todas as assinaturas anteriores deste usuário.
+  const { error: desativarError } = await db
+    .from(PUSH_TABLE)
+    .update({
+      ativo: false,
+      atualizado_em: new Date().toISOString()
+    })
+    .eq("user_id", user.id);
+
+  if (desativarError) throw desativarError;
+
+  // Ativa (ou atualiza) apenas o aparelho atual.
   const{error}=await db.from(PUSH_TABLE).upsert(payload,{onConflict:"endpoint"});
   if(error)throw error;
 }
