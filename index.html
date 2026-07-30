@@ -28,7 +28,7 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 .msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4}.erro{color:#ff6666}.escondido{display:none!important}.vazio{color:#aaa;text-align:center;padding:10px}
 .pwa-hint{display:none;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.45);border-radius:12px;padding:10px;margin-bottom:10px;color:#ddd;font-size:12px;line-height:1.35;text-align:center}.ios-safari .pwa-hint{display:block}.standalone .pwa-hint{display:none!important}
 #appBox{position:relative}#appBox:before{content:"";position:absolute;inset:-8px 0 auto 0;height:360px;background-image:linear-gradient(to bottom,rgba(6,6,6,.15),rgba(6,6,6,.70),rgba(6,6,6,1)),url('16037623-50c1-4b03-b31c-35b5261d38ac.jpg');background-size:110%;background-position:center top;background-repeat:no-repeat;opacity:.17;pointer-events:none;z-index:0}#appBox>*{position:relative;z-index:1}
-.top-app-mobile{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:10px}.usuario-topo{color:#aaa;font-size:12px;line-height:1.3;min-width:0;word-break:break-word}.btn-projecoes{width:auto;margin:0;padding:8px 10px;font-size:11px;line-height:1.1;border-radius:10px;white-space:nowrap}
+.top-app-mobile{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:10px}.usuario-topo{color:#aaa;font-size:12px;line-height:1.3;min-width:0;word-break:break-word}.btn-projecoes{width:auto;margin:0;padding:8px 10px;font-size:11px;line-height:1.1;border-radius:10px;white-space:nowrap}.top-acoes{display:flex;gap:6px;align-items:center}.btn-notificacoes{width:auto;margin:0;padding:8px 10px;font-size:11px;line-height:1.1;border-radius:10px;white-space:nowrap;background:#333;color:#fff;border:1px solid #555}.btn-notificacoes.ativa{background:#00ff88;color:#000;border-color:#00ff88}.btn-notificacoes:disabled{opacity:.55;cursor:not-allowed}
 .mobile-status{display:grid;grid-template-columns:1fr 72px;gap:8px;margin-bottom:10px}.mobile-live{background:rgba(8,8,8,.92);border:1px solid #00ff88;border-radius:12px;padding:8px;min-height:56px;position:relative;cursor:pointer;transition:.15s}.mobile-live:active,.rosas-mini:active{transform:scale(.985);filter:brightness(1.16)}.mobile-live .tag{position:absolute;left:8px;top:4px;color:#ff3860;font-size:8px;font-weight:900;letter-spacing:.5px}.mobile-live #leituraCompacta{white-space:pre-wrap;font-size:11px;line-height:1.35;padding-top:10px;color:#fff}.rosas-mini{background:rgba(8,8,8,.92);border:1px solid #00ff88;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#ff50be;font-size:18px;font-weight:900;min-height:56px;cursor:pointer;transition:.15s}
 .leitura{border:1px solid #555;text-align:center;background:rgba(23,23,23,.86)}#leitura{white-space:pre-wrap;line-height:1.4;word-break:break-word}
 .ativos-grid{display:grid;grid-template-columns:1fr;gap:10px}.ativos-grid.dois,.ativos-grid.tres{grid-template-columns:1fr}.ativos-grid.tres .sinal-card:nth-child(3){grid-column:auto}
@@ -55,7 +55,7 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 <div id="novaSenhaBox" class="card escondido"><div class="titulo">CRIAR NOVA SENHA</div><input id="novaSenha" type="password" placeholder="Nova senha"><button type="button" onclick="salvarNovaSenha()">SALVAR NOVA SENHA</button><div id="novaSenhaMsg" class="msg">Digite sua nova senha.</div></div>
 <div id="aguardandoBox" class="card escondido"><div class="titulo">AGUARDANDO LIBERAÇÃO</div><div class="msg">Seu cadastro foi recebido.<br><br>Chame o administrador no WhatsApp do grupo que você participa e envie o e-mail usado no cadastro:<br><br><b id="emailAguardando"></b><br><br>Após a liberação, seu acesso será ativado automaticamente.</div><button type="button" class="sair" onclick="sair()">SAIR</button></div>
 <div id="appBox" class="escondido">
-<div class="top-app-mobile"><div class="usuario-topo">Acesso liberado:<br><span id="usuarioEmail"></span></div><button type="button" class="btn-projecoes" onclick="abrirProjecoes()">📈 Projeções</button></div>
+<div class="top-app-mobile"><div class="usuario-topo">Acesso liberado:<br><span id="usuarioEmail"></span></div><div class="top-acoes"><button id="btnNotificacoes" type="button" class="btn-notificacoes" onclick="alternarNotificacoes()">🔔 ATIVAR</button><button type="button" class="btn-projecoes" onclick="abrirProjecoes()">📈 Projeções</button></div></div>
 <div class="mobile-status"><div class="mobile-live" onclick="abrirAoVivo()"><div class="tag">AO VIVO</div><div id="leituraCompacta">Aguardando leitura...</div></div><div id="rosasMini" class="rosas-mini" onclick="abrirRosas()">🌹 0</div></div>
 <div id="modalProjecoes" class="modal-projecoes escondido" onclick="fecharProjecoes()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">PROJEÇÕES FUTURAS DE MERCADO</div><div id="conteudoProjecoes" class="projecoes-texto">Aguardando projeções...</div><button type="button" class="sec" onclick="fecharProjecoes()">FECHAR</button></div></div>
 <div id="modalAoVivo" class="modal-projecoes escondido" onclick="fecharAoVivo()"><div class="modal-caixa surf" onclick="event.stopPropagation()"><div class="titulo">🟣 RESULTADOS DO SURF ROXO</div><div class="modal-subtitulo">Últimas chamadas, horários e resultados</div><div id="conteudoAoVivo" class="lista-surf"><div class="vazio">Carregando resultados...</div></div><button type="button" class="sec" onclick="fecharAoVivo()">FECHAR</button></div></div>
@@ -72,18 +72,137 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 const SUPABASE_URL="https://bflptqejltvwfjhixwpj.supabase.co";
 const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const SITE_URL="https://mrg-app-sinais.vercel.app";
+const PUSH_TABLE="push_assinaturas";
+const PUSH_FUNCTION="enviar-push-sinal";
+// Esta chave pública será preenchida na etapa do Supabase/VAPID.
+const VAPID_PUBLIC_KEY="";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let painelAtivo=false,telaAtual="login";
 let ROSAS_HORAS=[];
 let CONTROLE_ENVIO={snarpy_ativo:true,hyper_ativo:true,mensagem:""};
 function aplicarClassePwa(){const ua=navigator.userAgent||"";const ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);const standalone=window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches;if(ios&&!standalone)document.body.classList.add("ios-safari");if(standalone)document.body.classList.add("standalone")}aplicarClassePwa();
+
+function base64UrlParaUint8Array(base64String){
+  const padding="=".repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+  const rawData=window.atob(base64);
+  return Uint8Array.from([...rawData].map(c=>c.charCodeAt(0)));
+}
+function pushDisponivel(){return "serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window}
+async function registrarServiceWorker(){
+  if(!pushDisponivel())return null;
+  try{return await navigator.serviceWorker.register("/service-worker.js",{scope:"/"})}catch(e){console.error("Falha ao registrar service worker",e);return null}
+}
+async function obterAssinaturaPush(){
+  if(!pushDisponivel())return null;
+  const registro=await navigator.serviceWorker.ready;
+  return await registro.pushManager.getSubscription();
+}
+function atualizarBotaoNotificacoes(ativa=false,mensagem=""){
+  const btn=document.getElementById("btnNotificacoes");
+  if(!btn)return;
+  btn.disabled=false;
+  btn.classList.toggle("ativa",ativa);
+  btn.textContent=ativa?"🔕 DESATIVAR":"🔔 ATIVAR";
+  btn.title=mensagem|| (ativa?"Desativar notificações neste aparelho":"Ativar notificações neste aparelho");
+}
+async function salvarAssinaturaPush(subscription,ativo=true){
+  const{data:sessionData}=await db.auth.getSession();
+  const user=sessionData?.session?.user;
+  if(!user)throw new Error("Usuário sem sessão ativa.");
+  const json=subscription.toJSON();
+  const payload={
+    user_id:user.id,
+    email:user.email||"",
+    endpoint:json.endpoint,
+    p256dh:json.keys?.p256dh||"",
+    auth:json.keys?.auth||"",
+    ativo:ativo===true,
+    user_agent:navigator.userAgent||"",
+    atualizado_em:new Date().toISOString()
+  };
+  const{error}=await db.from(PUSH_TABLE).upsert(payload,{onConflict:"endpoint"});
+  if(error)throw error;
+}
+async function marcarAssinaturaInativa(subscription){
+  const endpoint=subscription?.endpoint||"";
+  if(!endpoint)return;
+  const{error}=await db.from(PUSH_TABLE).update({ativo:false,atualizado_em:new Date().toISOString()}).eq("endpoint",endpoint);
+  if(error)throw error;
+}
+async function consultarEstadoNotificacoes(){
+  const btn=document.getElementById("btnNotificacoes");
+  if(!btn)return;
+  if(!pushDisponivel()){
+    btn.disabled=true;
+    btn.textContent="🔕 INDISPONÍVEL";
+    btn.title="Este aparelho ou navegador não oferece suporte a notificações Push.";
+    return;
+  }
+  try{
+    await registrarServiceWorker();
+    const assinatura=await obterAssinaturaPush();
+    atualizarBotaoNotificacoes(Boolean(assinatura&&Notification.permission==="granted"));
+  }catch(e){
+    console.error(e);
+    atualizarBotaoNotificacoes(false,"Não foi possível consultar as notificações.");
+  }
+}
+async function ativarNotificacoes(){
+  const btn=document.getElementById("btnNotificacoes");
+  if(btn){btn.disabled=true;btn.textContent="ATIVANDO..."}
+  try{
+    if(!pushDisponivel())throw new Error("Notificações Push não são compatíveis com este aparelho ou navegador.");
+    if(!VAPID_PUBLIC_KEY)throw new Error("A chave pública de notificações ainda não foi configurada.");
+    const permissao=await Notification.requestPermission();
+    if(permissao!=="granted")throw new Error("A permissão de notificações não foi autorizada.");
+    const registro=await registrarServiceWorker();
+    if(!registro)throw new Error("Não foi possível registrar o serviço de notificações.");
+    let assinatura=await registro.pushManager.getSubscription();
+    if(!assinatura){
+      assinatura=await registro.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:base64UrlParaUint8Array(VAPID_PUBLIC_KEY)});
+    }
+    await salvarAssinaturaPush(assinatura,true);
+    atualizarBotaoNotificacoes(true);
+    alert("Notificações ativadas neste aparelho.");
+  }catch(e){
+    console.error(e);
+    atualizarBotaoNotificacoes(false);
+    alert(e?.message||"Não foi possível ativar as notificações.");
+  }
+}
+async function desativarNotificacoes(){
+  const btn=document.getElementById("btnNotificacoes");
+  if(btn){btn.disabled=true;btn.textContent="DESATIVANDO..."}
+  try{
+    const assinatura=await obterAssinaturaPush();
+    if(assinatura){
+      await marcarAssinaturaInativa(assinatura);
+      await assinatura.unsubscribe();
+    }
+    atualizarBotaoNotificacoes(false);
+    alert("Notificações desativadas neste aparelho.");
+  }catch(e){
+    console.error(e);
+    atualizarBotaoNotificacoes(Boolean(await obterAssinaturaPush()));
+    alert(e?.message||"Não foi possível desativar as notificações.");
+  }
+}
+async function alternarNotificacoes(){
+  try{
+    const assinatura=await obterAssinaturaPush();
+    if(assinatura&&Notification.permission==="granted")await desativarNotificacoes();
+    else await ativarNotificacoes();
+  }catch(e){await ativarNotificacoes()}
+}
+
 function esconderTudo(){["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>document.getElementById(id).classList.add("escondido"))}
 function mostrarLogin(msg=""){painelAtivo=false;telaAtual="login";esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg}
 function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";esconderTudo();document.getElementById("cadastroBox").classList.remove("escondido")}
 function mostrarRecuperar(){painelAtivo=false;telaAtual="recuperar";esconderTudo();document.getElementById("recuperarBox").classList.remove("escondido")}
 function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";esconderTudo();document.getElementById("novaSenhaBox").classList.remove("escondido")}
 function mostrarAguardando(email){painelAtivo=false;telaAtual="aguardando";esconderTudo();document.getElementById("aguardandoBox").classList.remove("escondido");document.getElementById("emailAguardando").innerText=email||""}
-function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;carregarControleEnvio();carregar();carregarLeitura();carregarProjecoes();carregarRosas()}
+function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;carregarControleEnvio();carregar();carregarLeitura();carregarProjecoes();carregarRosas();consultarEstadoNotificacoes()}
 async function criarConta(){const nome=document.getElementById("cadNome").value.trim(),email=document.getElementById("cadEmail").value.trim(),telefone=document.getElementById("cadTelefone").value.trim(),senha=document.getElementById("cadSenha").value.trim();if(!nome||!email||!telefone||!senha){document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";return}document.getElementById("cadMsg").innerHTML="Criando cadastro...";const{data,error}=await db.auth.signUp({email,password:senha,options:{emailRedirectTo:SITE_URL,data:{nome,telefone}}});if(error){document.getElementById("cadMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}if(data&&data.user){await db.from("perfis").upsert({id:data.user.id,nome,email,telefone,liberado:false})}telaAtual="cadastro";document.getElementById("cadMsg").innerHTML="Cadastro criado. Confirme seu e-mail. Depois volte aqui e clique em <b>JÁ TENHO CADASTRO / ENTRAR</b>."}
 async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}await verificarAcesso(true)}
 async function recuperarSenha(){const email=document.getElementById("recEmail").value.trim();if(!email){document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";return}const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});document.getElementById("recMsg").innerHTML=error?"<span class='erro'>"+error.message+"</span>":"Link de recuperação enviado. Verifique seu e-mail."}
@@ -126,6 +245,7 @@ function fecharDetalhesRosas(){document.getElementById("modalRosasDetalhes").cla
 function abrirProjecoes(){carregarProjecoes();document.getElementById("modalProjecoes").classList.remove("escondido")}
 function fecharProjecoes(){document.getElementById("modalProjecoes").classList.add("escondido")}
 async function carregar(){if(!painelAtivo)return;await carregarControleEnvio();const{data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Verificar Supabase</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";return}let ativos=(data||[]).filter(ehAtivo),historico=(data||[]).filter(item=>!ehAtivo(item));ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo)});ativos=ativos.slice(0,3);historico=historico.slice(0,20);atualizarResumoFechados(historico);let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";const aviso=avisoOperacionalHTML();document.getElementById("ativos").innerHTML=ativos.length?`${aviso}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:(aviso?aviso:"<div class='vazio'>Nenhum sinal ativo no momento</div>");document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`<div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>"}
+registrarServiceWorker();
 db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY")mostrarNovaSenha()});if(window.location.hash.includes("type=recovery"))mostrarNovaSenha();else mostrarLogin();
 setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},10000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);
 </script>
