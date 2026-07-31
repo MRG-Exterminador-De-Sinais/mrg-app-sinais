@@ -127,17 +127,23 @@ async function salvarAssinaturaPush(subscription,ativo=true){
 
 async function sincronizarPushNoLogin(){
   if(!pushDisponivel())return;
+  if(Notification.permission!=="granted")return;
 
   await registrarServiceWorker();
 
+  // No iPhone/PWA, a assinatura pode demorar alguns instantes para reaparecer.
+  // Tentamos algumas vezes, mas nunca enviamos assinatura nula ao Supabase.
   let assinatura=null;
-  if(Notification.permission==="granted"){
+  for(let tentativa=0;tentativa<5&&!assinatura;tentativa++){
     assinatura=await obterAssinaturaPush();
+    if(!assinatura)await new Promise(resolve=>setTimeout(resolve,700));
   }
 
-  // No login, desativa todos os aparelhos anteriores.
-  // Se este aparelho já tiver uma assinatura Push, ele passa a ser o único ativo.
-  await salvarAssinaturaPush(assinatura,Boolean(assinatura));
+  // Só define este aparelho como o único ativo quando existe
+  // uma assinatura Push válida neste aparelho.
+  if(assinatura){
+    await salvarAssinaturaPush(assinatura,true);
+  }
 }
 async function marcarAssinaturaInativa(subscription){
   const endpoint=subscription?.endpoint||"";
