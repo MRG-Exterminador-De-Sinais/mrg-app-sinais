@@ -75,6 +75,7 @@ const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const SITE_URL="https://mrg-app-sinais.vercel.app";
 const PUSH_TABLE="push_assinaturas";
 const PUSH_FUNCTION="enviar-push-sinal";
+const APP_SESSION_KEY="mrg_app_session_id";
 // Esta chave pública será preenchida na etapa do Supabase/VAPID.
 const VAPID_PUBLIC_KEY="BI96HF-7c3gZQ1K3EPsco9IBQ39Yqaz3adgvyCLArpUrGXrMjAqYDTtm4wCDEWzIyxi6eSgbPOFT7D-iwccN4HM";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -217,6 +218,60 @@ async function alternarNotificacoes(){
   }catch(e){await ativarNotificacoes()}
 }
 
+
+function gerarIdSessaoApp(){
+  if(window.crypto&&typeof window.crypto.randomUUID==="function")return window.crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+}
+function obterIdSessaoApp(){return localStorage.getItem(APP_SESSION_KEY)||""}
+function criarNovaSessaoApp(){
+  const sessionId=gerarIdSessaoApp();
+  localStorage.setItem(APP_SESSION_KEY,sessionId);
+  return sessionId;
+}
+async function registrarSessaoAppAtual(){
+  const sessionId=criarNovaSessaoApp();
+  const{error}=await db.rpc("registrar_sessao_app_atual",{p_session_id:sessionId});
+  if(error){
+    localStorage.removeItem(APP_SESSION_KEY);
+    throw error;
+  }
+  return sessionId;
+}
+async function sessaoAppContinuaAtual(){
+  const sessionId=obterIdSessaoApp();
+  if(!sessionId)return false;
+  const{data,error}=await db.rpc("sessao_app_eh_atual",{p_session_id:sessionId});
+  if(error){
+    console.error("Falha ao validar sessão exclusiva:",error);
+    return true;
+  }
+  return data===true;
+}
+async function encerrarSessaoPorOutroAparelho(){
+  painelAtivo=false;
+
+  // Desativa imediatamente o Push deste aparelho antes de remover a sessão local.
+  try{
+    if(pushDisponivel()){
+      const assinatura=await obterAssinaturaPush();
+      if(assinatura){
+        const{error}=await db.rpc("desativar_push_deste_aparelho",{
+          p_endpoint:assinatura.endpoint
+        });
+        if(error)console.error("Falha ao desativar Push do aparelho anterior:",error);
+      }
+    }
+  }catch(e){
+    console.error("Falha ao localizar/desativar Push do aparelho anterior:",e);
+  }
+
+  localStorage.removeItem(APP_SESSION_KEY);
+  await db.auth.signOut({scope:"local"});
+  atualizarBotaoNotificacoes(false);
+  mostrarLogin("Esta conta foi aberta em outro aparelho. O acesso e as notificações deste dispositivo foram desativados.");
+}
+
 function esconderTudo(){["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>document.getElementById(id).classList.add("escondido"))}
 function mostrarLogin(msg=""){painelAtivo=false;telaAtual="login";esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg}
 function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";esconderTudo();document.getElementById("cadastroBox").classList.remove("escondido")}
@@ -225,11 +280,11 @@ function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";esconderTudo
 function mostrarAguardando(email){painelAtivo=false;telaAtual="aguardando";esconderTudo();document.getElementById("aguardandoBox").classList.remove("escondido");document.getElementById("emailAguardando").innerText=email||""}
 function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;carregarControleEnvio();carregar();carregarLeitura();carregarProjecoes();carregarRosas();consultarEstadoNotificacoes()}
 async function criarConta(){const nome=document.getElementById("cadNome").value.trim(),email=document.getElementById("cadEmail").value.trim(),telefone=document.getElementById("cadTelefone").value.trim(),senha=document.getElementById("cadSenha").value.trim();if(!nome||!email||!telefone||!senha){document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";return}document.getElementById("cadMsg").innerHTML="Criando cadastro...";const{data,error}=await db.auth.signUp({email,password:senha,options:{emailRedirectTo:SITE_URL,data:{nome,telefone}}});if(error){document.getElementById("cadMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}if(data&&data.user){await db.from("perfis").upsert({id:data.user.id,nome,email,telefone,liberado:false})}telaAtual="cadastro";document.getElementById("cadMsg").innerHTML="Cadastro criado. Confirme seu e-mail. Depois volte aqui e clique em <b>JÁ TENHO CADASTRO / ENTRAR</b>."}
-async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}try{await sincronizarPushNoLogin()}catch(e){console.error("Falha ao definir o aparelho atual para Push:",e)}await verificarAcesso(true)}
+async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}try{await registrarSessaoAppAtual()}catch(e){console.error(e);await db.auth.signOut({scope:"local"});document.getElementById("loginMsg").innerHTML="<span class='erro'>Não foi possível registrar este aparelho como sessão atual.</span>";return}try{await sincronizarPushNoLogin()}catch(e){console.error("Falha ao definir o aparelho atual para Push:",e)}await verificarAcesso(true)}
 async function recuperarSenha(){const email=document.getElementById("recEmail").value.trim();if(!email){document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";return}const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});document.getElementById("recMsg").innerHTML=error?"<span class='erro'>"+error.message+"</span>":"Link de recuperação enviado. Verifique seu e-mail."}
 async function salvarNovaSenha(){const senha=document.getElementById("novaSenha").value.trim();if(!senha){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";return}const{error}=await db.auth.updateUser({password:senha});if(error){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000)}
-async function verificarAcesso(redirecionarSemSessao=false){if(["cadastro","recuperar","novaSenha"].includes(telaAtual))return;const{data:sessionData}=await db.auth.getSession();if(!sessionData||!sessionData.session||!sessionData.session.user){painelAtivo=false;if(redirecionarSemSessao)mostrarLogin();return}const user=sessionData.session.user;const{data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();if(error||!perfil){await db.from("perfis").insert({id:user.id,nome:user.user_metadata?.nome||user.email,email:user.email,telefone:user.user_metadata?.telefone||"",liberado:false});mostrarAguardando(user.email);return}perfil.liberado===true?mostrarApp(user.email):mostrarAguardando(user.email)}
-async function sair(){painelAtivo=false;await db.auth.signOut();mostrarLogin("Sessão encerrada.")}
+async function verificarAcesso(redirecionarSemSessao=false){if(["cadastro","recuperar","novaSenha"].includes(telaAtual))return;const{data:sessionData}=await db.auth.getSession();if(!sessionData||!sessionData.session||!sessionData.session.user){painelAtivo=false;if(redirecionarSemSessao)mostrarLogin();return}const user=sessionData.session.user;if(telaAtual==="app"||telaAtual==="aguardando"){const sessaoAtual=await sessaoAppContinuaAtual();if(!sessaoAtual){await encerrarSessaoPorOutroAparelho();return}}const{data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();if(error||!perfil){await db.from("perfis").insert({id:user.id,nome:user.user_metadata?.nome||user.email,email:user.email,telefone:user.user_metadata?.telefone||"",liberado:false});mostrarAguardando(user.email);return}perfil.liberado===true?mostrarApp(user.email):mostrarAguardando(user.email)}
+async function sair(){painelAtivo=false;localStorage.removeItem(APP_SESSION_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
 function alvoNumero(alvo){return Number(String(alvo||"").replace("x","").replace("X","").trim())||0}
 function horarioValor(h){if(!h)return 999999;const p=String(h).split(":").map(Number);return(p[0]||0)*3600+(p[1]||0)*60+(p[2]||0)}
 function ehAtivo(item){return item.ativo===true}
