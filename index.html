@@ -111,31 +111,33 @@ async function salvarAssinaturaPush(subscription,ativo=true){
   const{data:sessionData}=await db.auth.getSession();
   const user=sessionData?.session?.user;
   if(!user)throw new Error("Usuário sem sessão ativa.");
-  const json=subscription.toJSON();
-  const payload={
-    user_id:user.id,
-    email:user.email||"",
-    endpoint:json.endpoint,
-    p256dh:json.keys?.p256dh||"",
-    auth:json.keys?.auth||"",
-    ativo:ativo===true,
-    user_agent:navigator.userAgent||"",
-    atualizado_em:new Date().toISOString()
-  };
-  // Desativa todas as assinaturas anteriores deste usuário.
-  const { error: desativarError } = await db
-    .from(PUSH_TABLE)
-    .update({
-      ativo: false,
-      atualizado_em: new Date().toISOString()
-    })
-    .eq("user_id", user.id);
 
-  if (desativarError) throw desativarError;
+  const json=subscription?.toJSON?.()||null;
 
-  // Ativa (ou atualiza) apenas o aparelho atual.
-  const{error}=await db.from(PUSH_TABLE).upsert(payload,{onConflict:"endpoint"});
+  const{error}=await db.rpc("definir_assinatura_push_atual",{
+    p_endpoint:ativo===true?(json?.endpoint||null):null,
+    p_p256dh:ativo===true?(json?.keys?.p256dh||null):null,
+    p_auth:ativo===true?(json?.keys?.auth||null):null,
+    p_email:user.email||"",
+    p_user_agent:navigator.userAgent||""
+  });
+
   if(error)throw error;
+}
+
+async function sincronizarPushNoLogin(){
+  if(!pushDisponivel())return;
+
+  await registrarServiceWorker();
+
+  let assinatura=null;
+  if(Notification.permission==="granted"){
+    assinatura=await obterAssinaturaPush();
+  }
+
+  // No login, desativa todos os aparelhos anteriores.
+  // Se este aparelho já tiver uma assinatura Push, ele passa a ser o único ativo.
+  await salvarAssinaturaPush(assinatura,Boolean(assinatura));
 }
 async function marcarAssinaturaInativa(subscription){
   const endpoint=subscription?.endpoint||"";
@@ -217,7 +219,7 @@ function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";esconderTudo
 function mostrarAguardando(email){painelAtivo=false;telaAtual="aguardando";esconderTudo();document.getElementById("aguardandoBox").classList.remove("escondido");document.getElementById("emailAguardando").innerText=email||""}
 function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;carregarControleEnvio();carregar();carregarLeitura();carregarProjecoes();carregarRosas();consultarEstadoNotificacoes()}
 async function criarConta(){const nome=document.getElementById("cadNome").value.trim(),email=document.getElementById("cadEmail").value.trim(),telefone=document.getElementById("cadTelefone").value.trim(),senha=document.getElementById("cadSenha").value.trim();if(!nome||!email||!telefone||!senha){document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";return}document.getElementById("cadMsg").innerHTML="Criando cadastro...";const{data,error}=await db.auth.signUp({email,password:senha,options:{emailRedirectTo:SITE_URL,data:{nome,telefone}}});if(error){document.getElementById("cadMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}if(data&&data.user){await db.from("perfis").upsert({id:data.user.id,nome,email,telefone,liberado:false})}telaAtual="cadastro";document.getElementById("cadMsg").innerHTML="Cadastro criado. Confirme seu e-mail. Depois volte aqui e clique em <b>JÁ TENHO CADASTRO / ENTRAR</b>."}
-async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}await verificarAcesso(true)}
+async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}try{await sincronizarPushNoLogin()}catch(e){console.error("Falha ao definir o aparelho atual para Push:",e)}await verificarAcesso(true)}
 async function recuperarSenha(){const email=document.getElementById("recEmail").value.trim();if(!email){document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";return}const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});document.getElementById("recMsg").innerHTML=error?"<span class='erro'>"+error.message+"</span>":"Link de recuperação enviado. Verifique seu e-mail."}
 async function salvarNovaSenha(){const senha=document.getElementById("novaSenha").value.trim();if(!senha){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";return}const{error}=await db.auth.updateUser({password:senha});if(error){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000)}
 async function verificarAcesso(redirecionarSemSessao=false){if(["cadastro","recuperar","novaSenha"].includes(telaAtual))return;const{data:sessionData}=await db.auth.getSession();if(!sessionData||!sessionData.session||!sessionData.session.user){painelAtivo=false;if(redirecionarSemSessao)mostrarLogin();return}const user=sessionData.session.user;const{data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();if(error||!perfil){await db.from("perfis").insert({id:user.id,nome:user.user_metadata?.nome||user.email,email:user.email,telefone:user.user_metadata?.telefone||"",liberado:false});mostrarAguardando(user.email);return}perfil.liberado===true?mostrarApp(user.email):mostrarAguardando(user.email)}
