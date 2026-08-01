@@ -44,6 +44,84 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 .lista-detalhes{display:grid;gap:8px}.detalhe-rosa{display:grid;grid-template-columns:34px 72px 28px 1fr;align-items:center;gap:8px;background:#080808;border:1px solid #ff50be;border-radius:11px;padding:10px 12px}.detalhe-rosa .num{color:#888;font-weight:900}.detalhe-rosa .hora{color:#fff;font-weight:900}.detalhe-rosa .seta{color:#ff50be;text-align:center}.detalhe-rosa .mult{color:#ff70c8;font-weight:900;text-align:right;font-size:16px}
 .lista-surf{display:grid;gap:9px}.surf-item{background:#080808;border:1px solid #56307c;border-radius:12px;padding:11px}.surf-topo{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin-bottom:7px}.surf-num{color:#888;font-weight:900}.surf-hora{color:#ddd;font-weight:900}.surf-status{font-weight:900;border-radius:999px;padding:4px 8px;font-size:11px}.surf-status.win{background:rgba(0,255,136,.12);color:#00ff88;border:1px solid #00ff88}.surf-status.loss{background:rgba(255,70,70,.12);color:#ff6666;border:1px solid #ff6666}.surf-status.outro{background:rgba(255,170,0,.10);color:#ffaa00;border:1px solid #ffaa00}.surf-info{font-size:12px;color:#ccc;line-height:1.55}.surf-info b{color:#fff}
 .modal-subtitulo{font-size:12px;color:#aaa;margin:-2px 0 10px;text-align:center}
+.central-aviso-modal{
+  position:fixed;
+  inset:0;
+  z-index:12000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:14px;
+  background:rgba(0,0,0,.84);
+  backdrop-filter:blur(4px);
+}
+
+.central-aviso-caixa{
+  width:100%;
+  max-width:520px;
+  max-height:86vh;
+  overflow:auto;
+  border-radius:18px;
+  padding:18px;
+  background:#111;
+  border:2px solid #ffaa00;
+  box-shadow:0 0 28px rgba(255,170,0,.22);
+}
+
+.central-aviso-caixa.prioridade-0{
+  border-color:#666;
+}
+
+.central-aviso-caixa.prioridade-1{
+  border-color:#00bfff;
+  box-shadow:0 0 28px rgba(0,191,255,.20);
+}
+
+.central-aviso-caixa.prioridade-2{
+  border-color:#ffaa00;
+  box-shadow:0 0 28px rgba(255,170,0,.22);
+}
+
+.central-aviso-caixa.prioridade-3{
+  border-color:#ff5a5a;
+  box-shadow:0 0 30px rgba(255,90,90,.25);
+}
+
+.central-aviso-titulo{
+  text-align:center;
+  font-size:20px;
+  font-weight:900;
+  color:#fff;
+  margin-bottom:12px;
+  word-break:break-word;
+}
+
+.central-aviso-mensagem{
+  white-space:pre-wrap;
+  line-height:1.55;
+  font-size:15px;
+  color:#eee;
+  text-align:left;
+  word-break:break-word;
+}
+
+.central-aviso-status{
+  margin-top:12px;
+  text-align:center;
+  color:#aaa;
+  font-size:12px;
+}
+
+.central-aviso-botao{
+  margin-top:16px;
+  background:#00ff88;
+  color:#000;
+}
+
+.central-aviso-botao:disabled{
+  opacity:.55;
+}
+
 </style>
 </head>
 <body>
@@ -66,6 +144,21 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 <div class="card"><div class="titulo">SINAIS ATIVOS</div><div id="ativos">Carregando sinais...</div></div>
 <div class="card resumo-fechados"><div class="titulo">RESUMO DOS ÚLTIMOS 5 FECHADOS</div><div id="resumoFechados" class="vazio">Aguardando histórico...</div></div>
 <div class="card"><div class="titulo">HISTÓRICO RECENTE</div><div id="historico">Carregando histórico...</div></div>
+
+<div id="modalCentralAvisos" class="central-aviso-modal escondido">
+  <div id="caixaCentralAvisos" class="central-aviso-caixa prioridade-0">
+    <div id="tituloCentralAvisos" class="central-aviso-titulo">AVISO</div>
+    <div id="mensagemCentralAvisos" class="central-aviso-mensagem"></div>
+    <div id="statusCentralAvisos" class="central-aviso-status"></div>
+    <button
+      id="btnConfirmarAviso"
+      type="button"
+      class="central-aviso-botao"
+      onclick="confirmarAvisoAtual()">
+      LI E FECHAR
+    </button>
+  </div>
+</div>
 <button type="button" class="sair" onclick="sair()">SAIR</button>
 </div>
 </div>
@@ -81,6 +174,9 @@ const VAPID_PUBLIC_KEY="BI96HF-7c3gZQ1K3EPsco9IBQ39Yqaz3adgvyCLArpUrGXrMjAqYDTtm
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let painelAtivo=false,telaAtual="login";
 let ROSAS_HORAS=[];
+let FILA_AVISOS=[];
+let AVISO_ATUAL=null;
+let BUSCANDO_AVISOS=false;
 let CONTROLE_ENVIO={snarpy_ativo:true,hyper_ativo:true,mensagem:""};
 function aplicarClassePwa(){const ua=navigator.userAgent||"";const ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);const standalone=window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches;if(ios&&!standalone)document.body.classList.add("ios-safari");if(standalone)document.body.classList.add("standalone")}aplicarClassePwa();
 
@@ -219,6 +315,134 @@ async function alternarNotificacoes(){
 }
 
 
+async function carregarAvisos(){
+  if(!painelAtivo)return;
+  if(BUSCANDO_AVISOS)return;
+  if(AVISO_ATUAL)return;
+
+  BUSCANDO_AVISOS=true;
+
+  try{
+    const{data,error}=await db.rpc("buscar_avisos_usuario");
+
+    if(error){
+      console.error("Erro ao buscar avisos:",error);
+      return;
+    }
+
+    FILA_AVISOS=Array.isArray(data)?data:[];
+
+    if(FILA_AVISOS.length){
+      exibirProximoAviso();
+    }
+  }catch(e){
+    console.error("Falha ao carregar avisos:",e);
+  }finally{
+    BUSCANDO_AVISOS=false;
+  }
+}
+
+function exibirProximoAviso(){
+  if(AVISO_ATUAL)return;
+
+  const proximo=FILA_AVISOS.shift();
+
+  if(!proximo)return;
+
+  AVISO_ATUAL=proximo;
+
+  const modal=document.getElementById("modalCentralAvisos");
+  const caixa=document.getElementById("caixaCentralAvisos");
+  const titulo=document.getElementById("tituloCentralAvisos");
+  const mensagem=document.getElementById("mensagemCentralAvisos");
+  const status=document.getElementById("statusCentralAvisos");
+  const botao=document.getElementById("btnConfirmarAviso");
+
+  caixa.classList.remove(
+    "prioridade-0",
+    "prioridade-1",
+    "prioridade-2",
+    "prioridade-3"
+  );
+
+  const prioridade=Math.max(
+    0,
+    Math.min(3,Number(proximo.prioridade||0))
+  );
+
+  caixa.classList.add(`prioridade-${prioridade}`);
+
+  titulo.innerText=proximo.titulo||"AVISO";
+  mensagem.innerText=proximo.mensagem||"";
+  status.innerText=proximo.obrigatorio===true
+    ?"Leitura obrigatória."
+    :"";
+
+  botao.disabled=false;
+  botao.innerText=proximo.obrigatorio===true
+    ?"ESTOU CIENTE"
+    :"LI E FECHAR";
+
+  modal.classList.remove("escondido");
+}
+
+function limparEstadoCentralAvisos(){
+  FILA_AVISOS=[];
+  AVISO_ATUAL=null;
+  BUSCANDO_AVISOS=false;
+
+  const modal=document.getElementById("modalCentralAvisos");
+  if(modal)modal.classList.add("escondido");
+}
+
+async function confirmarAvisoAtual(){
+  if(!AVISO_ATUAL)return;
+
+  const botao=document.getElementById("btnConfirmarAviso");
+  botao.disabled=true;
+  botao.innerText="SALVANDO...";
+
+  try{
+    const{data:sessionData}=await db.auth.getSession();
+    const user=sessionData?.session?.user;
+
+    if(!user){
+      throw new Error("Usuário sem sessão.");
+    }
+
+    if(AVISO_ATUAL.descartavel===true){
+      const{error}=await db
+        .from("avisos_lidos")
+        .upsert(
+          {
+            aviso_id:AVISO_ATUAL.id,
+            usuario_id:user.id,
+            lido_em:new Date().toISOString()
+          },
+          {
+            onConflict:"aviso_id,usuario_id"
+          }
+        );
+
+      if(error)throw error;
+    }
+
+    document
+      .getElementById("modalCentralAvisos")
+      .classList.add("escondido");
+
+    AVISO_ATUAL=null;
+
+    if(FILA_AVISOS.length){
+      setTimeout(exibirProximoAviso,250);
+    }
+  }catch(e){
+    console.error("Erro ao confirmar aviso:",e);
+    botao.disabled=false;
+    botao.innerText="TENTAR NOVAMENTE";
+  }
+}
+
 function gerarIdSessaoApp(){
   if(window.crypto&&typeof window.crypto.randomUUID==="function")return window.crypto.randomUUID();
   return `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
@@ -273,12 +497,12 @@ async function encerrarSessaoPorOutroAparelho(){
 }
 
 function esconderTudo(){["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>document.getElementById(id).classList.add("escondido"))}
-function mostrarLogin(msg=""){painelAtivo=false;telaAtual="login";esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg}
+function mostrarLogin(msg=""){painelAtivo=false;limparEstadoCentralAvisos();telaAtual="login";esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg}
 function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";esconderTudo();document.getElementById("cadastroBox").classList.remove("escondido")}
 function mostrarRecuperar(){painelAtivo=false;telaAtual="recuperar";esconderTudo();document.getElementById("recuperarBox").classList.remove("escondido")}
 function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";esconderTudo();document.getElementById("novaSenhaBox").classList.remove("escondido")}
 function mostrarAguardando(email){painelAtivo=false;telaAtual="aguardando";esconderTudo();document.getElementById("aguardandoBox").classList.remove("escondido");document.getElementById("emailAguardando").innerText=email||""}
-function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;carregarControleEnvio();carregar();carregarLeitura();carregarProjecoes();carregarRosas();consultarEstadoNotificacoes()}
+function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;carregarControleEnvio();carregar();carregarLeitura();carregarProjecoes();carregarRosas();consultarEstadoNotificacoes();carregarAvisos()}
 async function criarConta(){
   const nome=document.getElementById("cadNome").value.trim(),email=document.getElementById("cadEmail").value.trim(),telefone=document.getElementById("cadTelefone").value.trim(),senha=document.getElementById("cadSenha").value.trim();
   if(!nome||!email||!telefone||!senha){document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";return}
@@ -321,7 +545,7 @@ async function entrar(){const email=document.getElementById("loginEmail").value.
 async function recuperarSenha(){const email=document.getElementById("recEmail").value.trim();if(!email){document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";return}const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});document.getElementById("recMsg").innerHTML=error?"<span class='erro'>"+error.message+"</span>":"Link de recuperação enviado. Verifique seu e-mail."}
 async function salvarNovaSenha(){const senha=document.getElementById("novaSenha").value.trim();if(!senha){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";return}const{error}=await db.auth.updateUser({password:senha});if(error){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000)}
 async function verificarAcesso(redirecionarSemSessao=false){if(["cadastro","recuperar","novaSenha"].includes(telaAtual))return;const{data:sessionData}=await db.auth.getSession();if(!sessionData||!sessionData.session||!sessionData.session.user){painelAtivo=false;if(redirecionarSemSessao)mostrarLogin();return}const user=sessionData.session.user;if(telaAtual==="app"||telaAtual==="aguardando"){const sessaoAtual=await sessaoAppContinuaAtual();if(!sessaoAtual){await encerrarSessaoPorOutroAparelho();return}}const{data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();if(error||!perfil){await db.from("perfis").insert({id:user.id,nome:user.user_metadata?.nome||user.email,email:user.email,telefone:user.user_metadata?.telefone||"",liberado:false});mostrarAguardando(user.email);return}perfil.liberado===true?mostrarApp(user.email):mostrarAguardando(user.email)}
-async function sair(){painelAtivo=false;localStorage.removeItem(APP_SESSION_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
+async function sair(){painelAtivo=false;limparEstadoCentralAvisos();localStorage.removeItem(APP_SESSION_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
 function alvoNumero(alvo){return Number(String(alvo||"").replace("x","").replace("X","").trim())||0}
 function horarioValor(h){if(!h)return 999999;const p=String(h).split(":").map(Number);return(p[0]||0)*3600+(p[1]||0)*60+(p[2]||0)}
 function ehAtivo(item){return item.ativo===true}
@@ -360,7 +584,7 @@ function fecharProjecoes(){document.getElementById("modalProjecoes").classList.a
 async function carregar(){if(!painelAtivo)return;await carregarControleEnvio();const{data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Verificar Supabase</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";return}let ativos=(data||[]).filter(ehAtivo),historico=(data||[]).filter(item=>!ehAtivo(item));ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo)});ativos=ativos.slice(0,3);historico=historico.slice(0,20);atualizarResumoFechados(historico);let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";const aviso=avisoOperacionalHTML();document.getElementById("ativos").innerHTML=ativos.length?`${aviso}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:(aviso?aviso:"<div class='vazio'>Nenhum sinal ativo no momento</div>");document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`<div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>"}
 registrarServiceWorker();
 db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY")mostrarNovaSenha()});if(window.location.hash.includes("type=recovery"))mostrarNovaSenha();else mostrarLogin();
-setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},10000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);
+setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},10000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);setInterval(carregarAvisos,30000);
 </script>
 </body>
 </html>
