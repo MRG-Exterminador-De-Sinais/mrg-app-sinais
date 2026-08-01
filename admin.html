@@ -7,6 +7,32 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
 html,body{width:100%;max-width:100%;overflow-x:hidden}*{box-sizing:border-box}body{margin:0;background:#060606;color:#fff;font-family:Arial,sans-serif}.container{width:100%;max-width:860px;margin:auto;padding:14px}.header{text-align:center;margin-bottom:14px}.header h1{margin:0;font-size:24px;color:#00ff88}.header .sub{margin-top:5px;color:#ffaa00;font-weight:bold;font-size:14px}.card{background:#171717;border:1px solid #333;border-radius:16px;padding:14px;margin-bottom:12px}.titulo{color:#aaa;font-size:13px;margin-bottom:8px;letter-spacing:1px}input,textarea{width:100%;margin:7px 0;padding:14px;border-radius:10px;border:1px solid #444;background:#0b0b0b;color:#fff;font-size:16px}textarea{min-height:100px;font-family:Arial,sans-serif;resize:vertical}button{width:100%;padding:13px;margin-top:8px;border:0;border-radius:10px;background:#00ff88;color:#000;font-weight:bold;font-size:15px}button.bloquear{background:#7a2020;color:#fff}button.whats{background:#1fa855;color:#fff}button.cobranca{background:#ffaa00;color:#000}button.pago{background:#00ff88;color:#000}button.free{background:#2f80ff;color:#fff}button.hist{background:#333;color:#fff}button.pequeno{width:auto;padding:8px 10px;margin:4px;font-size:13px}.msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4}.erro{color:#ff6666}.escondido{display:none!important}.usuario-admin{text-align:center;color:#aaa;font-size:13px;margin-bottom:10px}.usuario-card{background:#202020;border:1px solid #444;border-radius:14px;padding:12px;margin-bottom:10px}.linha{font-size:14px;color:#ddd;margin:4px 0;word-break:break-word}.nome{font-size:16px;color:#00ff88;font-weight:bold;margin-bottom:6px}.badge{display:inline-block;padding:4px 8px;border-radius:8px;font-size:12px;font-weight:bold;margin-top:4px}.liberado,.financeiro-pago{background:#00ff88;color:#000}.bloqueado{background:#7a2020;color:#fff}.financeiro-pendente{background:#ffaa00;color:#000}.financeiro-free{background:#2f80ff;color:#fff}.financeiro-atrasado{background:#ff3333;color:#fff}.acoes{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}.vazio{text-align:center;color:#aaa;padding:12px}.topo-controle{display:flex;justify-content:space-between;align-items:center;gap:10px}.btn-lupa{width:34px;height:34px;margin:0;padding:0;border-radius:8px;background:#00ff88;color:#000;font-size:16px;flex:0 0 auto}#campoBusca{display:none;margin-top:10px}.resumo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.resumo-item{background:#202020;border:1px solid #444;border-radius:12px;padding:10px;text-align:center}.resumo-num{font-size:22px;font-weight:bold;color:#00ff88}.resumo-label{font-size:12px;color:#aaa;margin-top:3px}.receita{margin-top:10px;text-align:center;color:#ffaa00;font-weight:bold;font-size:15px}.modal-fundo{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9999;display:flex;align-items:center;justify-content:center;padding:14px}.modal-caixa{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:#111;border:2px solid #00ff88;border-radius:16px;padding:14px}.historico-item{border-bottom:1px solid #333;padding:9px 0;color:#ddd;font-size:14px}.historico-data{color:#00ff88;font-weight:bold}.btn-fechar{background:#7a2020;color:#fff}.controle-operacional-botoes{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}.btn-toggle{flex:1 1 30%;min-width:95px;padding:10px 8px;margin:0;border-radius:10px;font-size:13px}.btn-toggle.ativo{background:#00ff88;color:#000}.btn-toggle.pausado{background:#7a2020;color:#fff}.status-controle{margin-top:8px;font-size:13px;color:#aaa;text-align:center}.duas-colunas{display:grid;grid-template-columns:1fr 1fr;gap:10px}.aviso-modal{font-size:13px;color:#ffaa00;line-height:1.45;margin:8px 0}@media(max-width:600px){.container{padding:12px}.header h1{font-size:21px}.card{padding:13px}.acoes button{flex:1 1 100%}button.pequeno{width:100%;margin:4px 0}.duas-colunas{grid-template-columns:1fr}}
+
+select{
+  width:100%;
+  margin:7px 0;
+  padding:14px;
+  border-radius:10px;
+  border:1px solid #444;
+  background:#0b0b0b;
+  color:#fff;
+  font-size:16px;
+}
+.check-linha{display:flex;align-items:center;gap:10px;margin:10px 0;color:#ddd;font-size:14px}
+.check-linha input{width:auto;margin:0;transform:scale(1.2)}
+.aviso-admin-card{background:#202020;border:1px solid #444;border-radius:14px;padding:12px;margin-bottom:10px}
+.aviso-admin-topo{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.aviso-admin-titulo{color:#00ff88;font-weight:bold;font-size:16px;word-break:break-word}
+.aviso-admin-meta{font-size:12px;color:#aaa;line-height:1.5;margin-top:6px}
+.aviso-admin-msg{white-space:pre-wrap;color:#ddd;font-size:14px;line-height:1.45;margin-top:8px;word-break:break-word}
+.badge-aviso{display:inline-block;padding:4px 7px;border-radius:999px;font-size:11px;font-weight:bold}
+.badge-aviso.ativo{background:#00ff88;color:#000}
+.badge-aviso.inativo{background:#7a2020;color:#fff}
+.badge-aviso.prio0{background:#555;color:#fff}
+.badge-aviso.prio1{background:#2f80ff;color:#fff}
+.badge-aviso.prio2{background:#ffaa00;color:#000}
+.badge-aviso.prio3{background:#ff3333;color:#fff}
+
 </style>
 </head>
 <body>
@@ -17,6 +43,63 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}*{box-sizing:border-box}bo
 <div class="usuario-admin">Administrador: <span id="adminEmail"></span></div>
 <div class="card"><div class="titulo">RESUMO FINANCEIRO DO MÊS</div><div id="resumoFinanceiro" class="vazio">Carregando resumo...</div><button class="bloquear" onclick="bloquearAtrasados()">BLOQUEAR VENCIDOS FORA DA CARÊNCIA</button><button class="cobranca" onclick="abrirModalManutencao()">⚠️ MANUTENÇÃO</button></div>
 <div class="card"><div class="titulo">CONTROLE OPERACIONAL</div><div class="controle-operacional-botoes"><button id="btnSnarpy" class="btn-toggle ativo" onclick="alternarSnarpy()">🟢 SNARPY</button><button id="btnHyper" class="btn-toggle ativo" onclick="alternarHyper()">🟢 HYPER</button><button id="btnTodos" class="btn-toggle ativo" onclick="alternarTodos()">🟢 TODOS</button></div><div id="statusControleEnvio" class="status-controle">Carregando controle...</div><textarea id="mensagemControleEnvio" placeholder="Mensagem livre para aparecer como caixinha nos SINAIS ATIVOS."></textarea><button onclick="salvarMensagemControle()">SALVAR MENSAGEM</button></div>
+
+<div class="card">
+  <div class="titulo">CENTRAL DE AVISOS</div>
+  <input id="avisoId" type="hidden">
+  <input id="avisoTitulo" placeholder="Título do aviso">
+  <textarea id="avisoMensagem" placeholder="Mensagem que aparecerá no aplicativo"></textarea>
+
+  <div class="duas-colunas">
+    <div>
+      <div class="linha"><b>Destino:</b></div>
+      <select id="avisoDestino" onchange="atualizarDestinoAviso()">
+        <option value="todos">Todos os usuários</option>
+        <option value="usuario">Usuário específico</option>
+      </select>
+    </div>
+    <div>
+      <div class="linha"><b>Prioridade:</b></div>
+      <select id="avisoPrioridade">
+        <option value="0">0 - Informativo</option>
+        <option value="1">1 - Atenção</option>
+        <option value="2">2 - Importante</option>
+        <option value="3">3 - Crítico</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="avisoUsuarioBox" class="escondido">
+    <div class="linha"><b>Usuário:</b></div>
+    <select id="avisoUsuarioId">
+      <option value="">Selecione um usuário</option>
+    </select>
+  </div>
+
+  <div class="duas-colunas">
+    <div>
+      <div class="linha"><b>Início:</b></div>
+      <input id="avisoInicio" type="datetime-local">
+    </div>
+    <div>
+      <div class="linha"><b>Fim (opcional):</b></div>
+      <input id="avisoFim" type="datetime-local">
+    </div>
+  </div>
+
+  <label class="check-linha"><input id="avisoObrigatorio" type="checkbox"> Leitura obrigatória</label>
+  <label class="check-linha"><input id="avisoDescartavel" type="checkbox" checked> Sumir após o usuário confirmar</label>
+  <label class="check-linha"><input id="avisoAtivo" type="checkbox" checked> Publicar como ativo</label>
+
+  <button onclick="salvarAvisoAdmin()">PUBLICAR AVISO</button>
+  <button id="btnCancelarEdicaoAviso" class="hist escondido" onclick="limparFormularioAviso()">CANCELAR EDIÇÃO</button>
+  <div id="avisoAdminMsg" class="msg"></div>
+
+  <div class="titulo" style="margin-top:18px">AVISOS CADASTRADOS</div>
+  <button class="hist" onclick="carregarAvisosAdmin()">ATUALIZAR AVISOS</button>
+  <div id="listaAvisosAdmin" class="vazio">Carregando avisos...</div>
+</div>
+
 <div class="card"><div class="topo-controle"><div class="titulo">CONTROLE DE USUÁRIOS</div><button class="btn-lupa" onclick="toggleBusca()">🔍</button></div><input id="campoBusca" placeholder="Nome, e-mail, telefone ou status" onkeyup="filtrarUsuarios()"><button onclick="carregarUsuarios()">ATUALIZAR LISTA</button><div id="listaUsuarios" class="vazio">Carregando usuários...</div></div>
 <button class="bloquear" onclick="sair()">SAIR DO ADMIN</button>
 </div></div>
@@ -32,7 +115,7 @@ const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const ADMIN_EMAIL="maiconrodrigoguth@gmail.com";
 const DIAS_CARENCIA=5;
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-window.USUARIOS_CACHE=[];window.RECEITA_MES=0;window.CONTROLE_ENVIO={snarpy_ativo:true,hyper_ativo:true,mensagem:""};
+window.USUARIOS_CACHE=[];window.AVISOS_CACHE=[];window.RECEITA_MES=0;window.CONTROLE_ENVIO={snarpy_ativo:true,hyper_ativo:true,mensagem:""};
 const $=id=>document.getElementById(id);
 function texto(v){return v===null||v===undefined||v===""?"-":String(v)}
 function limparTelefone(v){return String(v||"").replace(/\D/g,"")}
@@ -53,14 +136,183 @@ function vencidoForaCarencia(u){if(u.liberado!==true)return false;const st=Strin
 function badgeLiberado(v){return v?"<span class='badge liberado'>LIBERADO</span>":"<span class='badge bloqueado'>BLOQUEADO / AGUARDANDO</span>"}
 function badgeFinanceiro(st){if(st==="PAGO")return"<span class='badge financeiro-pago'>PAGO</span>";if(st==="FREE")return"<span class='badge financeiro-free'>FREE</span>";if(st==="ATRASADO")return"<span class='badge financeiro-atrasado'>ATRASADO / CARÊNCIA</span>";if(st==="VENCIDO")return"<span class='badge financeiro-atrasado'>VENCIDO</span>";if(st==="BLOQUEADO")return"<span class='badge bloqueado'>BLOQUEADO</span>";return"<span class='badge financeiro-pendente'>PENDENTE</span>"}
 async function entrar(){const email=$("loginEmail").value.trim(),password=$("loginSenha").value.trim();if(!email||!password){$("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}if(email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){$("loginMsg").innerHTML="<span class='erro'>Este e-mail não é administrador.</span>";return}const{error}=await db.auth.signInWithPassword({email,password});if(error){$("loginMsg").innerHTML="<span class='erro'>Login inválido ou e-mail não confirmado.</span>";return}verificarAdmin()}
-async function verificarAdmin(){const{data}=await db.auth.getSession();const u=data?.session?.user;if(!u){$("loginBox").classList.remove("escondido");$("adminBox").classList.add("escondido");return}if(String(u.email).toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await db.auth.signOut();return}$("loginBox").classList.add("escondido");$("adminBox").classList.remove("escondido");$("adminEmail").innerText=u.email;await carregarUsuarios();await carregarControleEnvio()}
+async function verificarAdmin(){const{data}=await db.auth.getSession();const u=data?.session?.user;if(!u){$("loginBox").classList.remove("escondido");$("adminBox").classList.add("escondido");return}if(String(u.email).toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await db.auth.signOut();return}$("loginBox").classList.add("escondido");$("adminBox").classList.remove("escondido");$("adminEmail").innerText=u.email;await carregarUsuarios();await carregarControleEnvio();await carregarAvisosAdmin()}
 async function carregarControleEnvio(){const{data,error}=await db.from("controle_envio").select("*").eq("id",1).single();if(error||!data){$("statusControleEnvio").innerText="Erro ao carregar controle operacional.";return}window.CONTROLE_ENVIO=data;$("mensagemControleEnvio").value=data.mensagem||"";atualizarBotoesControle()}
 function atualizarBotoesControle(){const c=window.CONTROLE_ENVIO,s=c.snarpy_ativo===true,h=c.hyper_ativo===true,t=s&&h;[["btnSnarpy",s,"SNARPY"],["btnHyper",h,"HYPER"],["btnTodos",t,"TODOS"]].forEach(([id,on,n])=>{const b=$(id);b.innerText=(on?"🟢 ":"🔴 ")+n;b.className="btn-toggle "+(on?"ativo":"pausado")});$("statusControleEnvio").innerText=t?"Envio de novos sinais liberado.":!s&&!h?"Novos sinais pausados para SNARPY e HYPER.":!s?"Novos sinais SNARPY pausados. HYPER liberado.":"Novos sinais HYPER pausados. SNARPY liberado."}
 async function salvarControleEnvio(s,h,m=null){const p={snarpy_ativo:s,hyper_ativo:h,atualizado_em:agoraISO()};if(m!==null)p.mensagem=m;const{error}=await db.from("controle_envio").update(p).eq("id",1);if(error){alert(error.message);return false}Object.assign(window.CONTROLE_ENVIO,p);atualizarBotoesControle();return true}
 async function alternarSnarpy(){const c=window.CONTROLE_ENVIO;salvarControleEnvio(!c.snarpy_ativo,c.hyper_ativo)}async function alternarHyper(){const c=window.CONTROLE_ENVIO;salvarControleEnvio(c.snarpy_ativo,!c.hyper_ativo)}async function alternarTodos(){const c=window.CONTROLE_ENVIO,t=c.snarpy_ativo&&c.hyper_ativo;salvarControleEnvio(!t,!t)}
 async function salvarMensagemControle(){const msg=$("mensagemControleEnvio").value.trim();const{error:e1}=await db.from("sinais").update({ativo:false,resultado:"REMOVIDO_ADMIN"}).eq("origem","ADMIN").eq("categoria","COMUNICADO").eq("ativo",true);if(e1){alert(e1.message);return}await salvarControleEnvio(window.CONTROLE_ENVIO.snarpy_ativo,window.CONTROLE_ENVIO.hyper_ativo,msg);if(!msg){alert("Aviso removido.");return}const{error}=await db.from("sinais").insert({categoria:"COMUNICADO",origem:"ADMIN",tipo:"COMUNICADO",alvo:"AVISO",status:"ATENÇÃO",horario:"ADMIN",variacao:"-",janela:msg,score:100,resultado:msg,ativo:true});alert(error?error.message:"Aviso publicado nos sinais ativos.")}
+
+function escHtml(v){
+  return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+}
+function datetimeLocalAgora(){
+  const d=new Date(),off=d.getTimezoneOffset();
+  return new Date(d.getTime()-off*60000).toISOString().slice(0,16);
+}
+function isoParaDatetimeLocal(v){
+  if(!v)return"";
+  const d=new Date(v);
+  if(Number.isNaN(d.getTime()))return"";
+  const off=d.getTimezoneOffset();
+  return new Date(d.getTime()-off*60000).toISOString().slice(0,16);
+}
+function datetimeLocalParaISO(v){
+  if(!v)return null;
+  const d=new Date(v);
+  return Number.isNaN(d.getTime())?null:d.toISOString();
+}
+function preencherUsuariosAviso(){
+  const select=$("avisoUsuarioId");
+  if(!select)return;
+  const atual=select.value;
+  select.innerHTML='<option value="">Selecione um usuário</option>'+
+    window.USUARIOS_CACHE.map(u=>`<option value="${escHtml(u.id)}">${escHtml(u.nome||u.email)} — ${escHtml(u.email||"")}</option>`).join("");
+  if([...select.options].some(o=>o.value===atual))select.value=atual;
+}
+function atualizarDestinoAviso(){
+  const destino=$("avisoDestino").value;
+  $("avisoUsuarioBox").classList.toggle("escondido",destino!=="usuario");
+  if(destino!=="usuario")$("avisoUsuarioId").value="";
+}
+function limparFormularioAviso(){
+  $("avisoId").value="";
+  $("avisoTitulo").value="";
+  $("avisoMensagem").value="";
+  $("avisoDestino").value="todos";
+  $("avisoPrioridade").value="0";
+  $("avisoUsuarioId").value="";
+  $("avisoInicio").value=datetimeLocalAgora();
+  $("avisoFim").value="";
+  $("avisoObrigatorio").checked=false;
+  $("avisoDescartavel").checked=true;
+  $("avisoAtivo").checked=true;
+  $("avisoAdminMsg").innerText="";
+  $("btnCancelarEdicaoAviso").classList.add("escondido");
+  atualizarDestinoAviso();
+}
+function nomeDestinoAviso(a){
+  if(a.destino==="usuario"){
+    const u=usuario(a.usuario_id);
+    return u?`${u.nome||u.email}`:"Usuário específico";
+  }
+  return"Todos os usuários";
+}
+function nomePrioridadeAviso(p){
+  return["Informativo","Atenção","Importante","Crítico"][Number(p)||0]||"Informativo";
+}
+async function carregarAvisosAdmin(){
+  const alvo=$("listaAvisosAdmin");
+  if(!alvo)return;
+  alvo.innerHTML="<div class='vazio'>Carregando avisos...</div>";
+  const{data,error}=await db.from("avisos").select("*").order("created_at",{ascending:false}).limit(200);
+  if(error){
+    alvo.innerHTML=`<div class="erro">${escHtml(error.message)}</div>`;
+    return;
+  }
+  window.AVISOS_CACHE=data||[];
+  renderizarAvisosAdmin(window.AVISOS_CACHE);
+}
+function renderizarAvisosAdmin(lista){
+  const alvo=$("listaAvisosAdmin");
+  if(!lista.length){
+    alvo.innerHTML="<div class='vazio'>Nenhum aviso cadastrado.</div>";
+    return;
+  }
+  alvo.innerHTML=lista.map(a=>`
+    <div class="aviso-admin-card">
+      <div class="aviso-admin-topo">
+        <div class="aviso-admin-titulo">${escHtml(a.titulo||"AVISO")}</div>
+        <span class="badge-aviso ${a.ativo===true?"ativo":"inativo"}">${a.ativo===true?"ATIVO":"INATIVO"}</span>
+      </div>
+      <div class="aviso-admin-meta">
+        <span class="badge-aviso prio${Math.max(0,Math.min(3,Number(a.prioridade||0)))}">${escHtml(nomePrioridadeAviso(a.prioridade))}</span><br>
+        <b>Destino:</b> ${escHtml(nomeDestinoAviso(a))}<br>
+        <b>Início:</b> ${escHtml(formatarDataHoraBR(a.inicio))}<br>
+        <b>Fim:</b> ${escHtml(formatarDataHoraBR(a.fim))}<br>
+        <b>Obrigatório:</b> ${a.obrigatorio===true?"SIM":"NÃO"} |
+        <b>Descartável:</b> ${a.descartavel===true?"SIM":"NÃO"}
+      </div>
+      <div class="aviso-admin-msg">${escHtml(a.mensagem||"")}</div>
+      <div class="acoes">
+        <button class="pequeno hist" onclick="editarAvisoAdmin(${Number(a.id)})">EDITAR</button>
+        <button class="pequeno ${a.ativo===true?"bloquear":"pago"}" onclick="alternarAvisoAdmin(${Number(a.id)},${a.ativo===true?"false":"true"})">${a.ativo===true?"DESATIVAR":"ATIVAR"}</button>
+        <button class="pequeno bloquear" onclick="excluirAvisoAdmin(${Number(a.id)})">EXCLUIR</button>
+      </div>
+    </div>`).join("");
+}
+async function salvarAvisoAdmin(){
+  const id=$("avisoId").value;
+  const titulo=$("avisoTitulo").value.trim();
+  const mensagem=$("avisoMensagem").value.trim();
+  const destino=$("avisoDestino").value;
+  const usuarioId=$("avisoUsuarioId").value||null;
+  if(!titulo||!mensagem){
+    $("avisoAdminMsg").innerHTML="<span class='erro'>Preencha título e mensagem.</span>";
+    return;
+  }
+  if(destino==="usuario"&&!usuarioId){
+    $("avisoAdminMsg").innerHTML="<span class='erro'>Selecione o usuário.</span>";
+    return;
+  }
+  const payload={
+    titulo,
+    mensagem,
+    destino,
+    usuario_id:destino==="usuario"?usuarioId:null,
+    grupo:null,
+    prioridade:Number($("avisoPrioridade").value||0),
+    obrigatorio:$("avisoObrigatorio").checked,
+    descartavel:$("avisoDescartavel").checked,
+    ativo:$("avisoAtivo").checked,
+    inicio:datetimeLocalParaISO($("avisoInicio").value)||agoraISO(),
+    fim:datetimeLocalParaISO($("avisoFim").value)
+  };
+  $("avisoAdminMsg").innerText=id?"Salvando alteração...":"Publicando aviso...";
+  const resposta=id
+    ?await db.from("avisos").update(payload).eq("id",id)
+    :await db.from("avisos").insert(payload);
+  if(resposta.error){
+    $("avisoAdminMsg").innerHTML=`<span class="erro">${escHtml(resposta.error.message)}</span>`;
+    return;
+  }
+  $("avisoAdminMsg").innerText=id?"Aviso atualizado.":"Aviso publicado.";
+  limparFormularioAviso();
+  await carregarAvisosAdmin();
+}
+function editarAvisoAdmin(id){
+  const a=window.AVISOS_CACHE.find(x=>Number(x.id)===Number(id));
+  if(!a)return;
+  $("avisoId").value=a.id;
+  $("avisoTitulo").value=a.titulo||"";
+  $("avisoMensagem").value=a.mensagem||"";
+  $("avisoDestino").value=a.destino==="usuario"?"usuario":"todos";
+  $("avisoUsuarioId").value=a.usuario_id||"";
+  $("avisoPrioridade").value=String(a.prioridade??0);
+  $("avisoInicio").value=isoParaDatetimeLocal(a.inicio);
+  $("avisoFim").value=isoParaDatetimeLocal(a.fim);
+  $("avisoObrigatorio").checked=a.obrigatorio===true;
+  $("avisoDescartavel").checked=a.descartavel===true;
+  $("avisoAtivo").checked=a.ativo===true;
+  $("btnCancelarEdicaoAviso").classList.remove("escondido");
+  atualizarDestinoAviso();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+async function alternarAvisoAdmin(id,ativo){
+  const{error}=await db.from("avisos").update({ativo,}).eq("id",id);
+  if(error){alert(error.message);return}
+  await carregarAvisosAdmin();
+}
+async function excluirAvisoAdmin(id){
+  if(!confirm("Excluir este aviso definitivamente?"))return;
+  const{error}=await db.from("avisos").delete().eq("id",id);
+  if(error){alert(error.message);return}
+  if(String($("avisoId").value)===String(id))limparFormularioAviso();
+  await carregarAvisosAdmin();
+}
+
 async function carregarReceitaMes(){const i=new Date();i.setDate(1);i.setHours(0,0,0,0);const f=new Date(i.getFullYear(),i.getMonth()+1,1);const{data,error}=await db.from("historico_financeiro").select("valor_total,valor,acao,criado_em").gte("criado_em",i.toISOString()).lt("criado_em",f.toISOString());window.RECEITA_MES=error?0:(data||[]).reduce((s,h)=>s+(String(h.acao).toUpperCase()==="PAGO"?Number(h.valor_total??h.valor??0):0),0)}
-async function carregarUsuarios(){$("listaUsuarios").innerHTML="<div class='vazio'>Carregando usuários...</div>";const{data,error}=await db.from("perfis").select("*").order("nome",{ascending:true});if(error){$("listaUsuarios").innerHTML="<div class='erro'>"+error.message+"</div>";return}await carregarReceitaMes();window.USUARIOS_CACHE=data||[];atualizarResumoFinanceiro(data||[]);renderizarUsuarios(data||[])}
+async function carregarUsuarios(){$("listaUsuarios").innerHTML="<div class='vazio'>Carregando usuários...</div>";const{data,error}=await db.from("perfis").select("*").order("nome",{ascending:true});if(error){$("listaUsuarios").innerHTML="<div class='erro'>"+error.message+"</div>";return}await carregarReceitaMes();window.USUARIOS_CACHE=data||[];preencherUsuariosAviso();atualizarResumoFinanceiro(data||[]);renderizarUsuarios(data||[])}
 function atualizarResumoFinanceiro(lista){let pagos=0,pend=0,atras=0,free=0,lib=0,bloq=0;lista.forEach(u=>{const st=statusFinanceiroReal(u);if(st==="PAGO")pagos++;else if(st==="FREE")free++;else if(st==="ATRASADO"||st==="VENCIDO")atras++;else pend++;u.liberado?lib++:bloq++});$("resumoFinanceiro").innerHTML=`<div class="resumo-grid"><div class="resumo-item"><div class="resumo-num">${pagos}</div><div class="resumo-label">PAGOS</div></div><div class="resumo-item"><div class="resumo-num">${pend}</div><div class="resumo-label">PENDENTES</div></div><div class="resumo-item"><div class="resumo-num">${atras}</div><div class="resumo-label">ATRASADOS</div></div><div class="resumo-item"><div class="resumo-num">${free}</div><div class="resumo-label">FREE</div></div><div class="resumo-item"><div class="resumo-num">${lib}</div><div class="resumo-label">LIBERADOS</div></div><div class="resumo-item"><div class="resumo-num">${bloq}</div><div class="resumo-label">BLOQUEADOS</div></div></div><div class="receita">Receita do mês: ${moeda(window.RECEITA_MES)}</div>`}
 function esc(v){return String(v||"").replace(/'/g,"&#39;")}
 function renderizarUsuarios(lista){if(!lista.length){$("listaUsuarios").innerHTML="<div class='vazio'>Nenhum usuário encontrado.</div>";return}$("listaUsuarios").innerHTML=lista.map(u=>{const st=statusFinanceiroReal(u),n=texto(u.nome),e=texto(u.email),t=texto(u.telefone);return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeLiberado(u.liberado===true)}</div><div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="linha"><b>Último free:</b> ${formatarDataBR(u.data_free)}</div><div class="linha"><b>Validade free:</b> ${formatarDataBR(u.validade_free)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button><button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button></div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`}).join("")}
@@ -88,6 +340,7 @@ function fecharModalManutencao(){$("modalManutencao").classList.add("escondido")
 async function enviarManutencao(){const inicio=$("horaInicioManutencao").value.trim(),fim=$("horaFimManutencao").value.trim();let corpo=$("textoManutencao").value.trim();if(!inicio||!fim||!corpo){alert("Preencha os campos.");return}const{error:e1}=await db.from("leituras_ao_vivo").update({ativo:false}).eq("tipo","MANUTENCAO").eq("origem","ADMIN").eq("ativo",true);if(e1){alert(e1.message);return}corpo=corpo.replaceAll("{INICIO}",inicio).replaceAll("{FIM}",fim);const{error}=await db.from("leituras_ao_vivo").insert({mensagem:"⚠️ MANUTENÇÃO PROGRAMADA\n\n"+corpo,tipo:"MANUTENCAO",origem:"ADMIN",ativo:true});alert(error?error.message:"Aviso de manutenção enviado.");if(!error)fecharModalManutencao()}
 async function removerManutencao(){const{error}=await db.from("leituras_ao_vivo").update({ativo:false}).eq("tipo","MANUTENCAO").eq("origem","ADMIN").eq("ativo",true);alert(error?error.message:"Aviso removido.");if(!error)fecharModalManutencao()}
 async function sair(){await db.auth.signOut();$("adminBox").classList.add("escondido");$("loginBox").classList.remove("escondido");$("loginMsg").innerText="Sessão encerrada."}
+limparFormularioAviso();
 verificarAdmin();
 </script>
 </body>
