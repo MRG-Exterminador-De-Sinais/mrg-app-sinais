@@ -324,18 +324,30 @@ async function alternarNotificacoes(){
 
 async function prepararFinanceiroNoLogin(){
   try{
-    const{data,error}=await db.rpc("obter_status_financeiro_login");
+    // Porta direta e específica para criar, atualizar ou reabrir
+    // o aviso financeiro do usuário autenticado.
+    const{data:sincronizacao,error:erroSincronizacao}=await db.rpc(
+      "preparar_meu_aviso_financeiro"
+    );
 
-    if(error){
-      console.error("Erro ao preparar estado financeiro no login:",error);
+    if(erroSincronizacao){
+      console.error(
+        "Erro ao sincronizar aviso financeiro no login:",
+        erroSincronizacao
+      );
       STATUS_FINANCEIRO_LOGIN=null;
       return null;
     }
 
-    STATUS_FINANCEIRO_LOGIN=data||null;
+    STATUS_FINANCEIRO_LOGIN={
+      sincronizacao:Array.isArray(sincronizacao)
+        ?(sincronizacao[0]||null)
+        :(sincronizacao||null)
+    };
+
     return STATUS_FINANCEIRO_LOGIN;
   }catch(e){
-    console.error("Falha ao preparar estado financeiro no login:",e);
+    console.error("Falha ao preparar aviso financeiro no login:",e);
     STATUS_FINANCEIRO_LOGIN=null;
     return null;
   }
