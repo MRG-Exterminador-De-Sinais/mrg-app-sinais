@@ -235,10 +235,9 @@ async function carregarModelosFinanceiros(){
   if(!alvo)return;
   alvo.innerHTML="<div class='vazio'>Carregando modelos financeiros...</div>";
 
-  const{data,error}=await db
-    .from("modelos_avisos_financeiros")
-    .select("*")
-    .order("fase_financeira",{ascending:true});
+  const{data,error}=await db.rpc(
+    "admin_listar_modelos_avisos_financeiros"
+  );
 
   if(error){
     alvo.innerHTML=`<div class="erro">${escHtml(error.message)}</div>`;
@@ -251,7 +250,7 @@ async function carregarModelosFinanceiros(){
 function renderizarModelosFinanceiros(lista){
   const alvo=$("listaModelosFinanceiros");
   if(!lista.length){
-    alvo.innerHTML="<div class='vazio'>Nenhum modelo financeiro cadastrado.</div>";
+    alvo.innerHTML="<div class='vazio'>Nenhum modelo financeiro retornado pelo Supabase.</div>";
     return;
   }
 
