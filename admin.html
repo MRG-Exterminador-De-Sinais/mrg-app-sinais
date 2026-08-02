@@ -67,6 +67,33 @@ select{
   .modelo-financeiro-grade{grid-template-columns:1fr}
 }
 
+
+.modelo-resumo{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  background:#202020;
+  border:1px solid #444;
+  border-radius:12px;
+  padding:11px;
+  margin-bottom:8px;
+}
+.modelo-resumo-info{min-width:0}
+.modelo-resumo-nome{font-size:14px;font-weight:bold;color:#ffaa00}
+.modelo-resumo-titulo{font-size:12px;color:#ccc;margin-top:3px;word-break:break-word}
+.modelo-resumo button{width:auto;margin:0;padding:8px 12px;font-size:12px}
+.modal-caixa-financeiro{max-width:680px}
+.modal-lista-modelos{max-height:62vh;overflow:auto;margin-top:10px}
+.modal-acoes-fixas{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.badge-personalizado{background:#a54cff;color:#fff}
+.aviso-origem{color:#ffaa00;font-size:11px;font-weight:bold;margin-top:5px}
+@media(max-width:600px){
+  .modelo-resumo{align-items:flex-start}
+  .modelo-resumo button{width:auto;flex:0 0 auto}
+  .modal-acoes-fixas{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
@@ -78,15 +105,14 @@ select{
 <div class="card"><div class="titulo">RESUMO FINANCEIRO DO MÊS</div><div id="resumoFinanceiro" class="vazio">Carregando resumo...</div><button class="bloquear" onclick="bloquearAtrasados()">BLOQUEAR VENCIDOS FORA DA CARÊNCIA</button><button class="cobranca" onclick="abrirModalManutencao()">⚠️ MANUTENÇÃO</button></div>
 <div class="card"><div class="titulo">CONTROLE OPERACIONAL</div><div class="controle-operacional-botoes"><button id="btnSnarpy" class="btn-toggle ativo" onclick="alternarSnarpy()">🟢 SNARPY</button><button id="btnHyper" class="btn-toggle ativo" onclick="alternarHyper()">🟢 HYPER</button><button id="btnTodos" class="btn-toggle ativo" onclick="alternarTodos()">🟢 TODOS</button></div><div id="statusControleEnvio" class="status-controle">Carregando controle...</div><textarea id="mensagemControleEnvio" placeholder="Mensagem livre para aparecer como caixinha nos SINAIS ATIVOS."></textarea><button onclick="salvarMensagemControle()">SALVAR MENSAGEM</button></div>
 
+
 <div class="card">
-  <div class="titulo">MODELOS DE AVISOS FINANCEIROS</div>
-  <div class="modelo-financeiro-ajuda">
-    Esta seção é a fonte única das mensagens financeiras exibidas no Android, PC e Web.
-    Variáveis disponíveis: <b>{nome}</b>, <b>{vencimento}</b>, <b>{dias_atraso}</b> e <b>{valor_total}</b>.
-    Ao salvar, o Supabase atualiza o modelo e sincroniza os avisos ativos daquela fase.
+  <div class="titulo">MENSAGENS FINANCEIRAS AUTOMÁTICAS</div>
+  <div class="linha">
+    O sistema usa mensagens padrão para vencimento, atraso, bloqueio, reinscrição e fim do período gratuito.
+    Abra esta área apenas quando quiser alterar o padrão enviado automaticamente.
   </div>
-  <button class="hist" onclick="carregarModelosFinanceiros()">ATUALIZAR MODELOS FINANCEIROS</button>
-  <div id="listaModelosFinanceiros" class="vazio">Carregando modelos financeiros...</div>
+  <button class="hist" onclick="abrirGerenciadorModelos()">⚙️ GERENCIAR MENSAGENS AUTOMÁTICAS</button>
 </div>
 
 <div class="card">
@@ -154,6 +180,114 @@ select{
 <div id="modalFree" class="modal-fundo escondido" onclick="fecharModalFree()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">LIBERAR ACESSO FREE</div><div id="freeUsuario" class="nome"></div><input id="freePerfilId" type="hidden"><div class="duas-colunas"><div><div class="linha"><b>Início:</b></div><input id="freeInicio" type="date"></div><div><div class="linha"><b>Validade:</b></div><input id="freeValidade" type="date"></div></div><div class="linha"><b>Observação:</b></div><textarea id="freeObservacao"></textarea><div class="aviso-modal">FREE termina no último dia do mês atual e não possui carência.</div><button class="free" onclick="salvarFree()">SALVAR FREE</button><button class="btn-fechar" onclick="fecharModalFree()">CANCELAR</button></div></div>
 <div id="modalManutencao" class="modal-fundo escondido" onclick="fecharModalManutencao()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">MANUTENÇÃO PROGRAMADA</div><div class="linha"><b>Início:</b></div><input id="horaInicioManutencao" placeholder="23:40"><div class="linha"><b>Retorno:</b></div><input id="horaFimManutencao" placeholder="07:30"><div class="linha"><b>Mensagem:</b></div><textarea id="textoManutencao"></textarea><button class="cobranca" onclick="enviarManutencao()">ENVIAR AVISO</button><button class="bloquear" onclick="removerManutencao()">REMOVER AVISO</button><button class="btn-fechar" onclick="fecharModalManutencao()">FECHAR</button></div></div>
 
+
+<div id="modalModelosFinanceiros" class="modal-fundo escondido" onclick="fecharGerenciadorModelos()">
+  <div class="modal-caixa modal-caixa-financeiro" onclick="event.stopPropagation()">
+    <div class="titulo">MENSAGENS FINANCEIRAS AUTOMÁTICAS</div>
+    <div class="linha">
+      Estes são os padrões usados pelo sistema. Clique em EDITAR somente na situação que deseja alterar.
+    </div>
+    <button class="hist" onclick="carregarModelosFinanceiros()">ATUALIZAR LISTA</button>
+    <div id="listaModelosFinanceiros" class="modal-lista-modelos">
+      <div class="vazio">Carregando modelos...</div>
+    </div>
+    <button class="btn-fechar" onclick="fecharGerenciadorModelos()">FECHAR</button>
+  </div>
+</div>
+
+<div id="modalEditarModeloFinanceiro" class="modal-fundo escondido" onclick="fecharEdicaoModeloFinanceiro()">
+  <div class="modal-caixa modal-caixa-financeiro" onclick="event.stopPropagation()">
+    <div class="titulo">EDITAR MENSAGEM AUTOMÁTICA</div>
+    <div id="modeloEditFaseNome" class="nome"></div>
+    <input id="modeloEditFase" type="hidden">
+    <input id="modeloEditTitulo" placeholder="Título">
+    <textarea id="modeloEditMensagem" placeholder="Mensagem. Variáveis: {nome}, {vencimento}, {dias_atraso}, {valor_total}"></textarea>
+    <div class="duas-colunas">
+      <div>
+        <div class="linha"><b>Prioridade:</b></div>
+        <select id="modeloEditPrioridade">
+          <option value="0">0 - Informativo</option>
+          <option value="1">1 - Atenção</option>
+          <option value="2">2 - Importante</option>
+          <option value="3">3 - Crítico</option>
+        </select>
+      </div>
+      <div>
+        <div class="linha"><b>Tipo de ação:</b></div>
+        <input id="modeloEditTipoAcao" placeholder="PAGAMENTO ou INSCRICAO">
+      </div>
+    </div>
+    <div class="duas-colunas">
+      <div>
+        <div class="linha"><b>Texto do botão:</b></div>
+        <input id="modeloEditTextoBotao" placeholder="PAGAR AGORA">
+      </div>
+      <div>
+        <div class="linha"><b>URL da ação:</b></div>
+        <input id="modeloEditUrlAcao" placeholder="https://...">
+      </div>
+    </div>
+    <label class="check-linha"><input id="modeloEditObrigatorio" type="checkbox"> Leitura obrigatória</label>
+    <label class="check-linha"><input id="modeloEditDescartavel" type="checkbox"> Pode sumir após confirmação</label>
+    <label class="check-linha"><input id="modeloEditBloquearSinais" type="checkbox"> Bloquear sinais</label>
+    <label class="check-linha"><input id="modeloEditBloquearLogin" type="checkbox"> Bloquear login</label>
+    <label class="check-linha"><input id="modeloEditAtivo" type="checkbox"> Modelo ativo</label>
+    <div class="modal-acoes-fixas">
+      <button onclick="salvarModeloFinanceiroAtual()">SALVAR E SINCRONIZAR</button>
+      <button class="btn-fechar" onclick="fecharEdicaoModeloFinanceiro()">CANCELAR</button>
+    </div>
+    <div id="modeloEditStatus" class="msg"></div>
+  </div>
+</div>
+
+<div id="modalEditarAvisoPublicado" class="modal-fundo escondido" onclick="fecharEdicaoAvisoPublicado()">
+  <div class="modal-caixa modal-caixa-financeiro" onclick="event.stopPropagation()">
+    <div class="titulo">EDITAR AVISO DESTE CLIENTE</div>
+    <div id="avisoPublicadoDestino" class="nome"></div>
+    <input id="avisoPublicadoId" type="hidden">
+    <input id="avisoPublicadoTitulo" placeholder="Título">
+    <textarea id="avisoPublicadoMensagem" placeholder="Mensagem exibida para este cliente"></textarea>
+    <div class="duas-colunas">
+      <div>
+        <div class="linha"><b>Prioridade:</b></div>
+        <select id="avisoPublicadoPrioridade">
+          <option value="0">0 - Informativo</option>
+          <option value="1">1 - Atenção</option>
+          <option value="2">2 - Importante</option>
+          <option value="3">3 - Crítico</option>
+        </select>
+      </div>
+      <div>
+        <div class="linha"><b>Fim do aviso (opcional):</b></div>
+        <input id="avisoPublicadoFim" type="datetime-local">
+      </div>
+    </div>
+    <div class="duas-colunas">
+      <div>
+        <div class="linha"><b>Tipo de ação:</b></div>
+        <input id="avisoPublicadoTipoAcao" placeholder="PAGAMENTO">
+      </div>
+      <div>
+        <div class="linha"><b>Texto do botão:</b></div>
+        <input id="avisoPublicadoTextoBotao" placeholder="PAGAR AGORA">
+      </div>
+    </div>
+    <div class="linha"><b>URL da ação:</b></div>
+    <input id="avisoPublicadoUrlAcao" placeholder="https://...">
+    <label class="check-linha"><input id="avisoPublicadoObrigatorio" type="checkbox"> Leitura obrigatória</label>
+    <label class="check-linha"><input id="avisoPublicadoDescartavel" type="checkbox"> Pode sumir após confirmação</label>
+    <label class="check-linha"><input id="avisoPublicadoBloquearSinais" type="checkbox"> Bloquear sinais</label>
+    <label class="check-linha"><input id="avisoPublicadoBloquearLogin" type="checkbox"> Bloquear login</label>
+    <label class="check-linha"><input id="avisoPublicadoAtivo" type="checkbox"> Aviso ativo</label>
+    <div class="modal-acoes-fixas">
+      <button onclick="salvarAvisoPublicadoPersonalizado()">SALVAR PARA ESTE CLIENTE</button>
+      <button class="hist" onclick="restaurarAvisoPublicadoAutomatico()">RESTAURAR AUTOMÁTICO</button>
+    </div>
+    <button class="btn-fechar" onclick="fecharEdicaoAvisoPublicado()">CANCELAR</button>
+    <div id="avisoPublicadoStatus" class="msg"></div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL="https://bflptqejltvwfjhixwpj.supabase.co";
 const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
@@ -208,14 +342,7 @@ function datetimeLocalParaISO(v){
   return Number.isNaN(d.getTime())?null:d.toISOString();
 }
 
-function valorModelo(id,campo){
-  const el=document.getElementById(`modelo_${id}_${campo}`);
-  return el?el.value:"";
-}
-function checkModelo(id,campo){
-  const el=document.getElementById(`modelo_${id}_${campo}`);
-  return el?el.checked:false;
-}
+
 function faseLegivel(fase){
   const nomes={
     VENCE_AMANHA:"Vence amanhã",
@@ -230,21 +357,25 @@ function faseLegivel(fase){
   };
   return nomes[fase]||fase;
 }
+function abrirGerenciadorModelos(){
+  $("modalModelosFinanceiros").classList.remove("escondido");
+  carregarModelosFinanceiros();
+}
+function fecharGerenciadorModelos(){
+  $("modalModelosFinanceiros").classList.add("escondido");
+}
 async function carregarModelosFinanceiros(){
   const alvo=$("listaModelosFinanceiros");
   if(!alvo)return;
   alvo.innerHTML="<div class='vazio'>Carregando modelos financeiros...</div>";
 
-  const{data,error}=await db.rpc(
-    "admin_listar_modelos_avisos_financeiros"
-  );
-
+  const{data,error}=await db.rpc("admin_listar_modelos_avisos_financeiros");
   if(error){
     alvo.innerHTML=`<div class="erro">${escHtml(error.message)}</div>`;
     return;
   }
 
-  window.MODELOS_FINANCEIROS_CACHE=data||[];
+  window.MODELOS_FINANCEIROS_CACHE=Array.isArray(data)?data:[];
   renderizarModelosFinanceiros(window.MODELOS_FINANCEIROS_CACHE);
 }
 function renderizarModelosFinanceiros(lista){
@@ -253,98 +384,47 @@ function renderizarModelosFinanceiros(lista){
     alvo.innerHTML="<div class='vazio'>Nenhum modelo financeiro retornado pelo Supabase.</div>";
     return;
   }
-
   alvo.innerHTML=lista.map((m,indice)=>`
-    <div class="modelo-financeiro-card">
-      <div class="modelo-financeiro-fase">
-        ${escHtml(faseLegivel(m.fase_financeira))}
-        <span class="badge-aviso ${m.ativo===true?"ativo":"inativo"}">
-          ${m.ativo===true?"ATIVO":"INATIVO"}
-        </span>
+    <div class="modelo-resumo">
+      <div class="modelo-resumo-info">
+        <div class="modelo-resumo-nome">${escHtml(faseLegivel(m.fase_financeira))}</div>
+        <div class="modelo-resumo-titulo">${escHtml(m.titulo||"")}</div>
       </div>
-
-      <input
-        id="modelo_${indice}_titulo"
-        value="${escHtml(m.titulo||"")}"
-        placeholder="Título exibido nos aplicativos">
-
-      <textarea
-        id="modelo_${indice}_mensagem"
-        placeholder="Mensagem financeira. Use {vencimento}, {dias_atraso}, {valor_total} e {nome}.">${escHtml(m.mensagem_template||"")}</textarea>
-
-      <div class="modelo-financeiro-grade">
-        <div>
-          <div class="linha"><b>Prioridade:</b></div>
-          <select id="modelo_${indice}_prioridade">
-            <option value="0" ${Number(m.prioridade)===0?"selected":""}>0 - Informativo</option>
-            <option value="1" ${Number(m.prioridade)===1?"selected":""}>1 - Atenção</option>
-            <option value="2" ${Number(m.prioridade)===2?"selected":""}>2 - Importante</option>
-            <option value="3" ${Number(m.prioridade)===3?"selected":""}>3 - Crítico</option>
-          </select>
-        </div>
-        <div>
-          <div class="linha"><b>Tipo de ação:</b></div>
-          <input
-            id="modelo_${indice}_tipo_acao"
-            value="${escHtml(m.tipo_acao||"")}"
-            placeholder="Ex.: PAGAMENTO ou INSCRICAO">
-        </div>
-      </div>
-
-      <div class="modelo-financeiro-grade">
-        <div>
-          <div class="linha"><b>Texto do botão:</b></div>
-          <input
-            id="modelo_${indice}_texto_botao"
-            value="${escHtml(m.texto_botao_acao||"")}"
-            placeholder="Ex.: PAGAR AGORA">
-        </div>
-        <div>
-          <div class="linha"><b>URL da ação:</b></div>
-          <input
-            id="modelo_${indice}_url_acao"
-            value="${escHtml(m.url_acao||"")}"
-            placeholder="https://...">
-        </div>
-      </div>
-
-      <label class="check-linha">
-        <input id="modelo_${indice}_obrigatorio" type="checkbox" ${m.obrigatorio===true?"checked":""}>
-        Leitura obrigatória
-      </label>
-      <label class="check-linha">
-        <input id="modelo_${indice}_descartavel" type="checkbox" ${m.descartavel===true?"checked":""}>
-        Pode sumir após confirmação
-      </label>
-      <label class="check-linha">
-        <input id="modelo_${indice}_bloquear_sinais" type="checkbox" ${m.bloquear_sinais===true?"checked":""}>
-        Bloquear sinais
-      </label>
-      <label class="check-linha">
-        <input id="modelo_${indice}_bloquear_login" type="checkbox" ${m.bloquear_login===true?"checked":""}>
-        Bloquear login
-      </label>
-      <label class="check-linha">
-        <input id="modelo_${indice}_ativo" type="checkbox" ${m.ativo===true?"checked":""}>
-        Modelo ativo
-      </label>
-
-      <button onclick="salvarModeloFinanceiro(${indice})">SALVAR E SINCRONIZAR</button>
-      <div id="modelo_${indice}_status" class="modelo-financeiro-status"></div>
+      <button class="hist" onclick="abrirEdicaoModeloFinanceiro(${indice})">EDITAR</button>
     </div>
   `).join("");
 }
-async function salvarModeloFinanceiro(indice){
-  const modelo=window.MODELOS_FINANCEIROS_CACHE[indice];
-  if(!modelo)return;
+function abrirEdicaoModeloFinanceiro(indice){
+  const m=window.MODELOS_FINANCEIROS_CACHE[indice];
+  if(!m)return;
+  $("modeloEditFase").value=m.fase_financeira||"";
+  $("modeloEditFaseNome").innerText=faseLegivel(m.fase_financeira);
+  $("modeloEditTitulo").value=m.titulo||"";
+  $("modeloEditMensagem").value=m.mensagem_template||"";
+  $("modeloEditPrioridade").value=String(m.prioridade??0);
+  $("modeloEditTipoAcao").value=m.tipo_acao||"";
+  $("modeloEditTextoBotao").value=m.texto_botao_acao||"";
+  $("modeloEditUrlAcao").value=m.url_acao||"";
+  $("modeloEditObrigatorio").checked=m.obrigatorio===true;
+  $("modeloEditDescartavel").checked=m.descartavel===true;
+  $("modeloEditBloquearSinais").checked=m.bloquear_sinais===true;
+  $("modeloEditBloquearLogin").checked=m.bloquear_login===true;
+  $("modeloEditAtivo").checked=m.ativo===true;
+  $("modeloEditStatus").innerText="";
+  $("modalEditarModeloFinanceiro").classList.remove("escondido");
+}
+function fecharEdicaoModeloFinanceiro(){
+  $("modalEditarModeloFinanceiro").classList.add("escondido");
+}
+async function salvarModeloFinanceiroAtual(){
+  const fase=$("modeloEditFase").value.trim();
+  const titulo=$("modeloEditTitulo").value.trim();
+  const mensagem=$("modeloEditMensagem").value.trim();
+  const url=$("modeloEditUrlAcao").value.trim();
+  const status=$("modeloEditStatus");
 
-  const status=$(`modelo_${indice}_status`);
-  const titulo=valorModelo(indice,"titulo").trim();
-  const mensagem=valorModelo(indice,"mensagem").trim();
-  const url=valorModelo(indice,"url_acao").trim();
-
-  if(!titulo){
-    status.innerHTML="<span class='erro'>Informe o título.</span>";
+  if(!fase||!titulo){
+    status.innerHTML="<span class='erro'>Informe a fase e o título.</span>";
     return;
   }
   if(url&&!/^https:\/\//i.test(url)){
@@ -352,21 +432,20 @@ async function salvarModeloFinanceiro(indice){
     return;
   }
 
-  status.innerText="Salvando e sincronizando usuários...";
-
+  status.innerText="Salvando e sincronizando...";
   const{data,error}=await db.rpc("admin_salvar_modelo_aviso_financeiro",{
-    p_fase_financeira:modelo.fase_financeira,
+    p_fase_financeira:fase,
     p_titulo:titulo,
     p_mensagem_template:mensagem||null,
-    p_prioridade:Number(valorModelo(indice,"prioridade")||0),
-    p_obrigatorio:checkModelo(indice,"obrigatorio"),
-    p_descartavel:checkModelo(indice,"descartavel"),
-    p_bloquear_sinais:checkModelo(indice,"bloquear_sinais"),
-    p_bloquear_login:checkModelo(indice,"bloquear_login"),
-    p_tipo_acao:valorModelo(indice,"tipo_acao").trim()||null,
-    p_texto_botao_acao:valorModelo(indice,"texto_botao").trim()||null,
+    p_prioridade:Number($("modeloEditPrioridade").value||0),
+    p_obrigatorio:$("modeloEditObrigatorio").checked,
+    p_descartavel:$("modeloEditDescartavel").checked,
+    p_bloquear_sinais:$("modeloEditBloquearSinais").checked,
+    p_bloquear_login:$("modeloEditBloquearLogin").checked,
+    p_tipo_acao:$("modeloEditTipoAcao").value.trim()||null,
+    p_texto_botao_acao:$("modeloEditTextoBotao").value.trim()||null,
     p_url_acao:url||null,
-    p_ativo:checkModelo(indice,"ativo")
+    p_ativo:$("modeloEditAtivo").checked
   });
 
   if(error){
@@ -375,11 +454,10 @@ async function salvarModeloFinanceiro(indice){
   }
 
   const resultado=Array.isArray(data)?(data[0]||{}):(data||{});
-  status.innerText=
-    `Modelo salvo. Usuários sincronizados: ${Number(resultado.usuarios_sincronizados||0)}.`;
-
+  status.innerText=`Salvo. Usuários sincronizados: ${Number(resultado.usuarios_sincronizados||0)}.`;
   await carregarModelosFinanceiros();
   await carregarAvisosAdmin();
+  setTimeout(fecharEdicaoModeloFinanceiro,700);
 }
 
 function preencherUsuariosAviso(){
@@ -433,17 +511,27 @@ async function carregarAvisosAdmin(){
   window.AVISOS_CACHE=data||[];
   renderizarAvisosAdmin(window.AVISOS_CACHE);
 }
+
 function renderizarAvisosAdmin(lista){
   const alvo=$("listaAvisosAdmin");
   if(!lista.length){
     alvo.innerHTML="<div class='vazio'>Nenhum aviso cadastrado.</div>";
     return;
   }
-  alvo.innerHTML=lista.map(a=>`
+  alvo.innerHTML=lista.map(a=>{
+    const financeiro=String(a.origem||"").toUpperCase()==="FINANCEIRO";
+    const personalizado=a.override_manual===true;
+    const botaoEditar=financeiro
+      ?`<button class="pequeno hist" onclick="editarAvisoPublicadoFinanceiro(${Number(a.id)})">EDITAR ESTE CLIENTE</button>`
+      :`<button class="pequeno hist" onclick="editarAvisoAdmin(${Number(a.id)})">EDITAR</button>`;
+    return `
     <div class="aviso-admin-card">
       <div class="aviso-admin-topo">
         <div class="aviso-admin-titulo">${escHtml(a.titulo||"AVISO")}</div>
-        <span class="badge-aviso ${a.ativo===true?"ativo":"inativo"}">${a.ativo===true?"ATIVO":"INATIVO"}</span>
+        <div>
+          <span class="badge-aviso ${a.ativo===true?"ativo":"inativo"}">${a.ativo===true?"ATIVO":"INATIVO"}</span>
+          ${personalizado?'<span class="badge-aviso badge-personalizado">PERSONALIZADO</span>':""}
+        </div>
       </div>
       <div class="aviso-admin-meta">
         <span class="badge-aviso prio${Math.max(0,Math.min(3,Number(a.prioridade||0)))}">${escHtml(nomePrioridadeAviso(a.prioridade))}</span><br>
@@ -452,15 +540,102 @@ function renderizarAvisosAdmin(lista){
         <b>Fim:</b> ${escHtml(formatarDataHoraBR(a.fim))}<br>
         <b>Obrigatório:</b> ${a.obrigatorio===true?"SIM":"NÃO"} |
         <b>Descartável:</b> ${a.descartavel===true?"SIM":"NÃO"}
+        ${financeiro?`<div class="aviso-origem">FINANCEIRO — ${escHtml(a.fase_financeira||"")}</div>`:""}
       </div>
       <div class="aviso-admin-msg">${escHtml(a.mensagem||"")}</div>
       <div class="acoes">
-        <button class="pequeno hist" onclick="editarAvisoAdmin(${Number(a.id)})">EDITAR</button>
+        ${botaoEditar}
         <button class="pequeno ${a.ativo===true?"bloquear":"pago"}" onclick="alternarAvisoAdmin(${Number(a.id)},${a.ativo===true?"false":"true"})">${a.ativo===true?"DESATIVAR":"ATIVAR"}</button>
         <button class="pequeno bloquear" onclick="excluirAvisoAdmin(${Number(a.id)})">EXCLUIR</button>
       </div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 }
+function editarAvisoPublicadoFinanceiro(id){
+  const a=window.AVISOS_CACHE.find(x=>Number(x.id)===Number(id));
+  if(!a)return;
+  $("avisoPublicadoId").value=a.id;
+  $("avisoPublicadoDestino").innerText=nomeDestinoAviso(a);
+  $("avisoPublicadoTitulo").value=a.titulo||"";
+  $("avisoPublicadoMensagem").value=a.mensagem||"";
+  $("avisoPublicadoPrioridade").value=String(a.prioridade??0);
+  $("avisoPublicadoFim").value=isoParaDatetimeLocal(a.fim);
+  $("avisoPublicadoTipoAcao").value=a.tipo_acao||"";
+  $("avisoPublicadoTextoBotao").value=a.texto_botao_acao||"";
+  $("avisoPublicadoUrlAcao").value=a.url_acao||"";
+  $("avisoPublicadoObrigatorio").checked=a.obrigatorio===true;
+  $("avisoPublicadoDescartavel").checked=a.descartavel===true;
+  $("avisoPublicadoBloquearSinais").checked=a.bloquear_sinais===true;
+  $("avisoPublicadoBloquearLogin").checked=a.bloquear_login===true;
+  $("avisoPublicadoAtivo").checked=a.ativo===true;
+  $("avisoPublicadoStatus").innerText="";
+  $("modalEditarAvisoPublicado").classList.remove("escondido");
+}
+function fecharEdicaoAvisoPublicado(){
+  $("modalEditarAvisoPublicado").classList.add("escondido");
+}
+async function salvarAvisoPublicadoPersonalizado(){
+  const id=Number($("avisoPublicadoId").value||0);
+  const titulo=$("avisoPublicadoTitulo").value.trim();
+  const mensagem=$("avisoPublicadoMensagem").value.trim();
+  const url=$("avisoPublicadoUrlAcao").value.trim();
+  const status=$("avisoPublicadoStatus");
+
+  if(!id||!titulo||!mensagem){
+    status.innerHTML="<span class='erro'>Informe título e mensagem.</span>";
+    return;
+  }
+  if(url&&!/^https:\/\//i.test(url)){
+    status.innerHTML="<span class='erro'>A URL precisa começar com https://</span>";
+    return;
+  }
+
+  status.innerText="Salvando personalização...";
+  const{error}=await db.rpc("admin_editar_aviso_financeiro_publicado",{
+    p_aviso_id:id,
+    p_titulo:titulo,
+    p_mensagem:mensagem,
+    p_prioridade:Number($("avisoPublicadoPrioridade").value||0),
+    p_obrigatorio:$("avisoPublicadoObrigatorio").checked,
+    p_descartavel:$("avisoPublicadoDescartavel").checked,
+    p_bloquear_sinais:$("avisoPublicadoBloquearSinais").checked,
+    p_bloquear_login:$("avisoPublicadoBloquearLogin").checked,
+    p_tipo_acao:$("avisoPublicadoTipoAcao").value.trim()||null,
+    p_texto_botao_acao:$("avisoPublicadoTextoBotao").value.trim()||null,
+    p_url_acao:url||null,
+    p_fim:datetimeLocalParaISO($("avisoPublicadoFim").value),
+    p_ativo:$("avisoPublicadoAtivo").checked
+  });
+
+  if(error){
+    status.innerHTML=`<span class="erro">${escHtml(error.message)}</span>`;
+    return;
+  }
+
+  status.innerText="Personalização salva para este cliente.";
+  await carregarAvisosAdmin();
+  setTimeout(fecharEdicaoAvisoPublicado,700);
+}
+async function restaurarAvisoPublicadoAutomatico(){
+  const id=Number($("avisoPublicadoId").value||0);
+  if(!id||!confirm("Restaurar este aviso para o padrão automático atual?"))return;
+  const status=$("avisoPublicadoStatus");
+  status.innerText="Restaurando padrão automático...";
+
+  const{error}=await db.rpc("admin_restaurar_aviso_financeiro_automatico",{
+    p_aviso_id:id
+  });
+
+  if(error){
+    status.innerHTML=`<span class="erro">${escHtml(error.message)}</span>`;
+    return;
+  }
+
+  status.innerText="Aviso restaurado para o padrão automático.";
+  await carregarAvisosAdmin();
+  setTimeout(fecharEdicaoAvisoPublicado,700);
+}
+
 async function salvarAvisoAdmin(){
   const id=$("avisoId").value;
   const titulo=$("avisoTitulo").value.trim();
