@@ -157,6 +157,12 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
     <div id="mensagemCentralAvisos" class="central-aviso-mensagem"></div>
     <div id="statusCentralAvisos" class="central-aviso-status"></div>
     <button
+      id="btnAcaoAviso"
+      type="button"
+      class="central-aviso-botao escondido"
+      onclick="executarAcaoAvisoAtual()">
+    </button>
+    <button
       id="btnConfirmarAviso"
       type="button"
       class="central-aviso-botao"
@@ -184,6 +190,22 @@ let FILA_AVISOS=[];
 let AVISO_ATUAL=null;
 let BUSCANDO_AVISOS=false;
 let STATUS_FINANCEIRO_LOGIN=null;
+let FINANCEIRO={
+  fase:"",
+  titulo:"",
+  mensagem:"",
+  textoBotaoAcao:"",
+  urlAcao:"",
+  bloquearSinais:false,
+  bloquearLogin:false,
+  aviso:null,
+  contrato:null,
+  cobranca:null,
+  ultimaSincronizacao:0
+};
+let FINANCEIRO_SINCRONIZANDO=false;
+let FINANCEIRO_RETORNO_EXTERNO=false;
+const FINANCEIRO_INTERVALO_MS=5*60*1000;
 let CONTROLE_ENVIO={snarpy_ativo:true,hyper_ativo:true,mensagem:""};
 function aplicarClassePwa(){const ua=navigator.userAgent||"";const ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);const standalone=window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches;if(ios&&!standalone)document.body.classList.add("ios-safari");if(standalone)document.body.classList.add("standalone")}aplicarClassePwa();
 
@@ -322,36 +344,151 @@ async function alternarNotificacoes(){
 }
 
 
-async function prepararFinanceiroNoLogin(){
-  try{
-    // Porta direta e específica para criar, atualizar ou reabrir
-    // o aviso financeiro do usuário autenticado.
-    const{data:sincronizacao,error:erroSincronizacao}=await db.rpc(
-      "preparar_meu_aviso_financeiro"
-    );
+function boolFinanceiro(valor,padrao=false){
+  if(valor===true||valor===false)return valor;
+  if(valor===1||valor==="1")return true;
+  if(valor===0||valor==="0")return false;
+  const s=String(valor??"").trim().toLowerCase();
+  if(["true","sim","yes","ativo"].includes(s))return true;
+  if(["false","nao","não","no","inativo"].includes(s))return false;
+  return padrao;
+}
+function primeiroObjetoFinanceiro(data){
+  if(Array.isArray(data))return data[0]||{};
+  return data&&typeof data==="object"?data:{};
+}
+function financeiroVazio(){
+  return {
+    fase:"",
+    titulo:"",
+    mensagem:"",
+    textoBotaoAcao:"",
+    urlAcao:"",
+    bloquearSinais:false,
+    bloquearLogin:false,
+    aviso:null,
+    contrato:null,
+    cobranca:null,
+    ultimaSincronizacao:Date.now()
+  };
+}
+async function sincronizarFinanceiro(motivo="PERIODICO"){
+  if(FINANCEIRO_SINCRONIZANDO)return false;
 
-    if(erroSincronizacao){
-      console.error(
-        "Erro ao sincronizar aviso financeiro no login:",
-        erroSincronizacao
-      );
-      STATUS_FINANCEIRO_LOGIN=null;
-      return null;
+  const{data:sessionData}=await db.auth.getSession();
+  if(!sessionData?.session?.user)return false;
+
+  FINANCEIRO_SINCRONIZANDO=true;
+
+  const anterior=JSON.stringify({
+    fase:FINANCEIRO.fase,
+    titulo:FINANCEIRO.titulo,
+    mensagem:FINANCEIRO.mensagem,
+    textoBotaoAcao:FINANCEIRO.textoBotaoAcao,
+    urlAcao:FINANCEIRO.urlAcao,
+    bloquearSinais:FINANCEIRO.bloquearSinais,
+    bloquearLogin:FINANCEIRO.bloquearLogin
+  });
+
+  try{
+    const{data,error}=await db.rpc("obter_status_financeiro_login");
+
+    if(error){
+      console.error("Erro ao sincronizar estado financeiro:",error);
+      return false;
     }
 
-    STATUS_FINANCEIRO_LOGIN={
-      sincronizacao:Array.isArray(sincronizacao)
-        ?(sincronizacao[0]||null)
-        :(sincronizacao||null)
+    const retorno=primeiroObjetoFinanceiro(data);
+    const financeiro=retorno.financeiro||{};
+    const aviso=retorno.aviso&&retorno.aviso.possui_aviso!==false
+      ?retorno.aviso
+      :null;
+    const contrato=retorno.contrato||null;
+    const cobranca=retorno.cobranca||null;
+
+    FINANCEIRO={
+      fase:String(financeiro.fase_financeira||aviso?.fase_financeira||""),
+      titulo:String(aviso?.titulo||""),
+      mensagem:String(aviso?.mensagem||""),
+      textoBotaoAcao:String(
+        aviso?.texto_botao_acao||
+        aviso?.textoBotaoAcao||
+        ""
+      ),
+      urlAcao:String(
+        aviso?.url_acao||
+        aviso?.urlAcao||
+        cobranca?.link_pagamento||
+        ""
+      ),
+      bloquearSinais:!!(
+        boolFinanceiro(aviso?.bloquear_sinais,false)||
+        boolFinanceiro(financeiro.bloqueio_recomendado,false)||
+        boolFinanceiro(financeiro.liberar_sinais,true)===false
+      ),
+      bloquearLogin:!!(
+        boolFinanceiro(aviso?.bloquear_login,false)||
+        boolFinanceiro(financeiro.liberar_login,true)===false
+      ),
+      aviso,
+      contrato,
+      cobranca,
+      ultimaSincronizacao:Date.now()
     };
 
-    return STATUS_FINANCEIRO_LOGIN;
+    STATUS_FINANCEIRO_LOGIN=retorno;
+
+    const atual=JSON.stringify({
+      fase:FINANCEIRO.fase,
+      titulo:FINANCEIRO.titulo,
+      mensagem:FINANCEIRO.mensagem,
+      textoBotaoAcao:FINANCEIRO.textoBotaoAcao,
+      urlAcao:FINANCEIRO.urlAcao,
+      bloquearSinais:FINANCEIRO.bloquearSinais,
+      bloquearLogin:FINANCEIRO.bloquearLogin
+    });
+
+    if(anterior!==atual&&painelAtivo){
+      await carregar();
+      await carregarAvisos();
+    }
+
+    return true;
   }catch(e){
-    console.error("Falha ao preparar aviso financeiro no login:",e);
-    STATUS_FINANCEIRO_LOGIN=null;
-    return null;
+    console.error("Falha ao sincronizar estado financeiro:",e);
+    return false;
+  }finally{
+    FINANCEIRO_SINCRONIZANDO=false;
   }
 }
+async function verificarFinanceiroPeriodico(){
+  if(!painelAtivo)return;
+  await sincronizarFinanceiro("PERIODICO");
+
+  if(FINANCEIRO.bloquearLogin){
+    const msg=[FINANCEIRO.titulo,FINANCEIRO.mensagem]
+      .filter(Boolean)
+      .join("<br><br>");
+    await sair();
+    mostrarLogin(msg);
+  }
+}
+async function retornoAcaoFinanceira(){
+  if(!painelAtivo||!FINANCEIRO_RETORNO_EXTERNO)return;
+  FINANCEIRO_RETORNO_EXTERNO=false;
+  await sincronizarFinanceiro("RETORNO_EXTERNO");
+  await carregarAvisos();
+  await carregar();
+}
+window.addEventListener("focus",()=>{
+  setTimeout(async()=>{
+    if(FINANCEIRO_RETORNO_EXTERNO){
+      await retornoAcaoFinanceira();
+    }else if(painelAtivo){
+      await sincronizarFinanceiro("FOCO");
+    }
+  },300);
+});
 
 
 async function carregarAvisos(){
@@ -395,6 +532,7 @@ function exibirProximoAviso(){
   const titulo=document.getElementById("tituloCentralAvisos");
   const mensagem=document.getElementById("mensagemCentralAvisos");
   const status=document.getElementById("statusCentralAvisos");
+  const botaoAcao=document.getElementById("btnAcaoAviso");
   const botao=document.getElementById("btnConfirmarAviso");
 
   caixa.classList.remove(
@@ -417,12 +555,39 @@ function exibirProximoAviso(){
     ?"Leitura obrigatória."
     :"";
 
+  const textoAcao=String(
+    proximo.texto_botao_acao||
+    proximo.textoBotaoAcao||
+    ""
+  ).trim();
+  const urlAcao=String(
+    proximo.url_acao||
+    proximo.urlAcao||
+    ""
+  ).trim();
+
+  botaoAcao.classList.toggle(
+    "escondido",
+    !(textoAcao&&/^https:\/\//i.test(urlAcao))
+  );
+  botaoAcao.disabled=false;
+  botaoAcao.innerText=textoAcao;
+  botaoAcao.dataset.url=urlAcao;
+
   botao.disabled=false;
   botao.innerText=proximo.obrigatorio===true
     ?"ESTOU CIENTE"
     :"LI E FECHAR";
 
   modal.classList.remove("escondido");
+}
+
+function executarAcaoAvisoAtual(){
+  const botao=document.getElementById("btnAcaoAviso");
+  const url=String(botao?.dataset?.url||"").trim();
+  if(!/^https:\/\//i.test(url))return;
+  FINANCEIRO_RETORNO_EXTERNO=true;
+  window.open(url,"_blank");
 }
 
 function limparEstadoCentralAvisos(){
@@ -536,7 +701,7 @@ async function encerrarSessaoPorOutroAparelho(){
 }
 
 function esconderTudo(){["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>document.getElementById(id).classList.add("escondido"))}
-function mostrarLogin(msg=""){painelAtivo=false;STATUS_FINANCEIRO_LOGIN=null;limparEstadoCentralAvisos();telaAtual="login";esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg}
+function mostrarLogin(msg=""){painelAtivo=false;STATUS_FINANCEIRO_LOGIN=null;FINANCEIRO=financeiroVazio();FINANCEIRO_RETORNO_EXTERNO=false;limparEstadoCentralAvisos();telaAtual="login";esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg}
 function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";esconderTudo();document.getElementById("cadastroBox").classList.remove("escondido")}
 function mostrarRecuperar(){painelAtivo=false;telaAtual="recuperar";esconderTudo();document.getElementById("recuperarBox").classList.remove("escondido")}
 function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";esconderTudo();document.getElementById("novaSenhaBox").classList.remove("escondido")}
@@ -586,12 +751,17 @@ async function salvarNovaSenha(){const senha=document.getElementById("novaSenha"
 async function verificarAcesso(redirecionarSemSessao=false){if(["cadastro","recuperar","novaSenha"].includes(telaAtual))return;const{data:sessionData}=await db.auth.getSession();if(!sessionData||!sessionData.session||!sessionData.session.user){painelAtivo=false;if(redirecionarSemSessao)mostrarLogin();return}const user=sessionData.session.user;if(telaAtual==="app"||telaAtual==="aguardando"){const sessaoAtual=await sessaoAppContinuaAtual();if(!sessaoAtual){await encerrarSessaoPorOutroAparelho();return}}const{data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();if(error||!perfil){await db.from("perfis").insert({id:user.id,nome:user.user_metadata?.nome||user.email,email:user.email,telefone:user.user_metadata?.telefone||"",liberado:false});mostrarAguardando(user.email);return}if(perfil.liberado===true){
   const entrandoNoApp=telaAtual!=="app";
 
-  // Sincroniza o financeiro uma única vez ao efetivamente entrar na tela do app,
-  // inclusive quando a sessão já estava salva e a página foi recarregada.
-  // O verificador periódico de 10 segundos não repete a sincronização
-  // enquanto o usuário já estiver dentro do app.
   if(entrandoNoApp){
-    await prepararFinanceiroNoLogin();
+    await sincronizarFinanceiro("ENTRADA_APP");
+
+    if(FINANCEIRO.bloquearLogin){
+      const msg=[FINANCEIRO.titulo,FINANCEIRO.mensagem]
+        .filter(Boolean)
+        .join("<br><br>");
+      await db.auth.signOut({scope:"local"});
+      mostrarLogin(msg);
+      return;
+    }
   }
 
   mostrarApp(user.email);
@@ -634,10 +804,27 @@ function fecharRosas(){document.getElementById("modalRosas").classList.add("esco
 function fecharDetalhesRosas(){document.getElementById("modalRosasDetalhes").classList.add("escondido")}
 function abrirProjecoes(){carregarProjecoes();document.getElementById("modalProjecoes").classList.remove("escondido")}
 function fecharProjecoes(){document.getElementById("modalProjecoes").classList.add("escondido")}
-async function carregar(){if(!painelAtivo)return;await carregarControleEnvio();const{data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Verificar Supabase</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";return}let ativos=(data||[]).filter(ehAtivo),historico=(data||[]).filter(item=>!ehAtivo(item));ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo)});ativos=ativos.slice(0,3);historico=historico.slice(0,20);atualizarResumoFechados(historico);let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";const aviso=avisoOperacionalHTML();document.getElementById("ativos").innerHTML=ativos.length?`${aviso}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:(aviso?aviso:"<div class='vazio'>Nenhum sinal ativo no momento</div>");document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`<div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>"}
+async function carregar(){if(!painelAtivo)return;await carregarControleEnvio();
+
+if(FINANCEIRO.bloquearSinais){
+  const titulo=String(FINANCEIRO.titulo||"").trim();
+  const mensagem=String(FINANCEIRO.mensagem||"").trim();
+  const textoBotao=String(FINANCEIRO.textoBotaoAcao||"").trim();
+  const url=String(FINANCEIRO.urlAcao||"").trim();
+  const botao=(textoBotao&&/^https:\/\//i.test(url))
+    ?`<button type="button" onclick="FINANCEIRO_RETORNO_EXTERNO=true;window.open('${url.replace(/'/g,"&#39;")}','_blank')">${escaparHtml(textoBotao)}</button>`
+    :"";
+  document.getElementById("ativos").innerHTML=
+    `<div class="aviso-operacional">${titulo?`<b>${escaparHtml(titulo)}</b><br><br>`:""}${escaparHtml(mensagem)}${botao}</div>`;
+  document.getElementById("resumoFechados").innerHTML="<div class='vazio'></div>";
+  document.getElementById("historico").innerHTML="<div class='vazio'></div>";
+  return;
+}
+
+const{data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Verificar Supabase</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";return}let ativos=(data||[]).filter(ehAtivo),historico=(data||[]).filter(item=>!ehAtivo(item));ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo)});ativos=ativos.slice(0,3);historico=historico.slice(0,20);atualizarResumoFechados(historico);let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";const aviso=avisoOperacionalHTML();document.getElementById("ativos").innerHTML=ativos.length?`${aviso}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:(aviso?aviso:"<div class='vazio'>Nenhum sinal ativo no momento</div>");document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`<div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>"}
 registrarServiceWorker();
 db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY")mostrarNovaSenha()});if(window.location.hash.includes("type=recovery"))mostrarNovaSenha();else mostrarLogin();
-setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},10000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);setInterval(carregarAvisos,30000);
+setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},10000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);setInterval(carregarAvisos,30000);setInterval(verificarFinanceiroPeriodico,FINANCEIRO_INTERVALO_MS);
 </script>
 </body>
 </html>
