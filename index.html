@@ -183,6 +183,7 @@ let ROSAS_HORAS=[];
 let FILA_AVISOS=[];
 let AVISO_ATUAL=null;
 let BUSCANDO_AVISOS=false;
+let STATUS_FINANCEIRO_LOGIN=null;
 let CONTROLE_ENVIO={snarpy_ativo:true,hyper_ativo:true,mensagem:""};
 function aplicarClassePwa(){const ua=navigator.userAgent||"";const ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);const standalone=window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches;if(ios&&!standalone)document.body.classList.add("ios-safari");if(standalone)document.body.classList.add("standalone")}aplicarClassePwa();
 
@@ -318,6 +319,26 @@ async function alternarNotificacoes(){
     if(assinatura&&Notification.permission==="granted")await desativarNotificacoes();
     else await ativarNotificacoes();
   }catch(e){await ativarNotificacoes()}
+}
+
+
+async function prepararFinanceiroNoLogin(){
+  try{
+    const{data,error}=await db.rpc("obter_status_financeiro_login");
+
+    if(error){
+      console.error("Erro ao preparar estado financeiro no login:",error);
+      STATUS_FINANCEIRO_LOGIN=null;
+      return null;
+    }
+
+    STATUS_FINANCEIRO_LOGIN=data||null;
+    return STATUS_FINANCEIRO_LOGIN;
+  }catch(e){
+    console.error("Falha ao preparar estado financeiro no login:",e);
+    STATUS_FINANCEIRO_LOGIN=null;
+    return null;
+  }
 }
 
 
@@ -503,7 +524,7 @@ async function encerrarSessaoPorOutroAparelho(){
 }
 
 function esconderTudo(){["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>document.getElementById(id).classList.add("escondido"))}
-function mostrarLogin(msg=""){painelAtivo=false;limparEstadoCentralAvisos();telaAtual="login";esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg}
+function mostrarLogin(msg=""){painelAtivo=false;STATUS_FINANCEIRO_LOGIN=null;limparEstadoCentralAvisos();telaAtual="login";esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg}
 function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";esconderTudo();document.getElementById("cadastroBox").classList.remove("escondido")}
 function mostrarRecuperar(){painelAtivo=false;telaAtual="recuperar";esconderTudo();document.getElementById("recuperarBox").classList.remove("escondido")}
 function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";esconderTudo();document.getElementById("novaSenhaBox").classList.remove("escondido")}
@@ -550,7 +571,14 @@ async function criarConta(){
 async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}try{await registrarSessaoAppAtual()}catch(e){console.error(e);await db.auth.signOut({scope:"local"});document.getElementById("loginMsg").innerHTML="<span class='erro'>Não foi possível registrar este aparelho como sessão atual.</span>";return}try{await sincronizarPushNoLogin()}catch(e){console.error("Falha ao definir o aparelho atual para Push:",e)}await verificarAcesso(true)}
 async function recuperarSenha(){const email=document.getElementById("recEmail").value.trim();if(!email){document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";return}const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});document.getElementById("recMsg").innerHTML=error?"<span class='erro'>"+error.message+"</span>":"Link de recuperação enviado. Verifique seu e-mail."}
 async function salvarNovaSenha(){const senha=document.getElementById("novaSenha").value.trim();if(!senha){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";return}const{error}=await db.auth.updateUser({password:senha});if(error){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000)}
-async function verificarAcesso(redirecionarSemSessao=false){if(["cadastro","recuperar","novaSenha"].includes(telaAtual))return;const{data:sessionData}=await db.auth.getSession();if(!sessionData||!sessionData.session||!sessionData.session.user){painelAtivo=false;if(redirecionarSemSessao)mostrarLogin();return}const user=sessionData.session.user;if(telaAtual==="app"||telaAtual==="aguardando"){const sessaoAtual=await sessaoAppContinuaAtual();if(!sessaoAtual){await encerrarSessaoPorOutroAparelho();return}}const{data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();if(error||!perfil){await db.from("perfis").insert({id:user.id,nome:user.user_metadata?.nome||user.email,email:user.email,telefone:user.user_metadata?.telefone||"",liberado:false});mostrarAguardando(user.email);return}perfil.liberado===true?mostrarApp(user.email):mostrarAguardando(user.email)}
+async function verificarAcesso(redirecionarSemSessao=false){if(["cadastro","recuperar","novaSenha"].includes(telaAtual))return;const{data:sessionData}=await db.auth.getSession();if(!sessionData||!sessionData.session||!sessionData.session.user){painelAtivo=false;if(redirecionarSemSessao)mostrarLogin();return}const user=sessionData.session.user;if(telaAtual==="app"||telaAtual==="aguardando"){const sessaoAtual=await sessaoAppContinuaAtual();if(!sessaoAtual){await encerrarSessaoPorOutroAparelho();return}}const{data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();if(error||!perfil){await db.from("perfis").insert({id:user.id,nome:user.user_metadata?.nome||user.email,email:user.email,telefone:user.user_metadata?.telefone||"",liberado:false});mostrarAguardando(user.email);return}if(perfil.liberado===true){
+  if(redirecionarSemSessao===true){
+    await prepararFinanceiroNoLogin();
+  }
+  mostrarApp(user.email);
+}else{
+  mostrarAguardando(user.email);
+}}
 async function sair(){painelAtivo=false;limparEstadoCentralAvisos();localStorage.removeItem(APP_SESSION_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
 function alvoNumero(alvo){return Number(String(alvo||"").replace("x","").replace("X","").trim())||0}
 function horarioValor(h){if(!h)return 999999;const p=String(h).split(":").map(Number);return(p[0]||0)*3600+(p[1]||0)*60+(p[2]||0)}
