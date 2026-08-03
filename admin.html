@@ -94,6 +94,8 @@ select{
   .modal-acoes-fixas{grid-template-columns:1fr}
 }
 
+
+.cobranca-modal-grade{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cobranca-status{margin-top:10px;color:#ffaa00;text-align:center;white-space:pre-wrap}.cobranca-acoes{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cobranca-link{word-break:break-all;color:#00ff88;font-size:12px;margin-top:8px}@media(max-width:600px){.cobranca-modal-grade,.cobranca-acoes{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -288,6 +290,8 @@ select{
   </div>
 </div>
 
+
+<div id="modalCobrancaPix" class="modal-fundo escondido" onclick="fecharModalCobrancaPix()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">GERAR COBRANÇA PAGBANK</div><div id="cobrancaUsuario" class="nome"></div><input id="cobrancaPerfilId" type="hidden"><input id="cobrancaTelefone" type="hidden"><input id="cobrancaNome" type="hidden"><input id="cobrancaEmail" type="hidden"><div class="linha"><b>Modo:</b></div><select id="cobrancaModo" onchange="atualizarModoCobranca()"><option value="AUTOMATICA">AUTOMÁTICA — valor calculado pelo Supabase</option><option value="MANUAL">MANUAL — desconto, acréscimo ou valor especial</option></select><div class="cobranca-modal-grade"><div><div class="linha"><b>Valor final manual (opcional):</b></div><input id="cobrancaValorManual" type="number" min="0" step="0.01" placeholder="Deixe vazio para cálculo automático"></div><div><div class="linha"><b>Prazo do PIX (dias):</b></div><input id="cobrancaPrazoDias" type="number" min="1" max="30" value="1"></div><div><div class="linha"><b>Desconto R$:</b></div><input id="cobrancaDesconto" type="number" min="0" step="0.01" value="0"></div><div><div class="linha"><b>Acréscimo R$:</b></div><input id="cobrancaAcrescimo" type="number" min="0" step="0.01" value="0"></div></div><div class="linha"><b>CPF/CNPJ do pagador (opcional até o PagBank exigir):</b></div><input id="cobrancaDocumento" inputmode="numeric" placeholder="Somente números"><div class="linha"><b>Observação interna:</b></div><textarea id="cobrancaObservacao" placeholder="Desconto concedido, prazo especial, negociação etc."></textarea><label class="check-linha"><input id="cobrancaSubstituir" type="checkbox"> Substituir cobrança pendente existente</label><button class="cobranca" onclick="gerarCobrancaPix()">GERAR PIX</button><div id="cobrancaStatus" class="cobranca-status"></div><div id="cobrancaResultado" class="escondido"><div class="cobranca-link" id="cobrancaLink"></div><div class="cobranca-acoes"><button onclick="abrirLinkCobranca()">ABRIR PAGAMENTO</button><button class="whats" onclick="enviarCobrancaWhatsapp()">ENVIAR WHATSAPP</button></div></div><button class="btn-fechar" onclick="fecharModalCobrancaPix()">FECHAR</button></div></div>
 <script>
 const SUPABASE_URL="https://bflptqejltvwfjhixwpj.supabase.co";
 const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
@@ -710,7 +714,7 @@ async function carregarReceitaMes(){const i=new Date();i.setDate(1);i.setHours(0
 async function carregarUsuarios(){$("listaUsuarios").innerHTML="<div class='vazio'>Carregando usuários...</div>";const{data,error}=await db.from("perfis").select("*").order("nome",{ascending:true});if(error){$("listaUsuarios").innerHTML="<div class='erro'>"+error.message+"</div>";return}await carregarReceitaMes();window.USUARIOS_CACHE=data||[];preencherUsuariosAviso();atualizarResumoFinanceiro(data||[]);renderizarUsuarios(data||[])}
 function atualizarResumoFinanceiro(lista){let pagos=0,pend=0,atras=0,free=0,lib=0,bloq=0;lista.forEach(u=>{const st=statusFinanceiroReal(u);if(st==="PAGO")pagos++;else if(st==="FREE")free++;else if(st==="ATRASADO"||st==="VENCIDO")atras++;else pend++;u.liberado?lib++:bloq++});$("resumoFinanceiro").innerHTML=`<div class="resumo-grid"><div class="resumo-item"><div class="resumo-num">${pagos}</div><div class="resumo-label">PAGOS</div></div><div class="resumo-item"><div class="resumo-num">${pend}</div><div class="resumo-label">PENDENTES</div></div><div class="resumo-item"><div class="resumo-num">${atras}</div><div class="resumo-label">ATRASADOS</div></div><div class="resumo-item"><div class="resumo-num">${free}</div><div class="resumo-label">FREE</div></div><div class="resumo-item"><div class="resumo-num">${lib}</div><div class="resumo-label">LIBERADOS</div></div><div class="resumo-item"><div class="resumo-num">${bloq}</div><div class="resumo-label">BLOQUEADOS</div></div></div><div class="receita">Receita do mês: ${moeda(window.RECEITA_MES)}</div>`}
 function esc(v){return String(v||"").replace(/'/g,"&#39;")}
-function renderizarUsuarios(lista){if(!lista.length){$("listaUsuarios").innerHTML="<div class='vazio'>Nenhum usuário encontrado.</div>";return}$("listaUsuarios").innerHTML=lista.map(u=>{const st=statusFinanceiroReal(u),n=texto(u.nome),e=texto(u.email),t=texto(u.telefone);return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeLiberado(u.liberado===true)}</div><div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="linha"><b>Último free:</b> ${formatarDataBR(u.data_free)}</div><div class="linha"><b>Validade free:</b> ${formatarDataBR(u.validade_free)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button><button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button></div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`}).join("")}
+function renderizarUsuarios(lista){if(!lista.length){$("listaUsuarios").innerHTML="<div class='vazio'>Nenhum usuário encontrado.</div>";return}$("listaUsuarios").innerHTML=lista.map(u=>{const st=statusFinanceiroReal(u),n=texto(u.nome),e=texto(u.email),t=texto(u.telefone);return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeLiberado(u.liberado===true)}</div><div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="linha"><b>Último free:</b> ${formatarDataBR(u.data_free)}</div><div class="linha"><b>Validade free:</b> ${formatarDataBR(u.validade_free)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button><button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button></div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${u.id}','${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`}).join("")}
 function toggleBusca(){const c=$("campoBusca");if(!c.style.display||c.style.display==="none"){c.style.display="block";c.focus()}else{c.value="";c.style.display="none";renderizarUsuarios(window.USUARIOS_CACHE)}}
 function filtrarUsuarios(){const q=$("campoBusca").value.toLowerCase().trim();renderizarUsuarios(!q?window.USUARIOS_CACHE:window.USUARIOS_CACHE.filter(u=>[u.nome,u.email,u.telefone,statusFinanceiroReal(u)].some(v=>String(v||"").toLowerCase().includes(q))))}
 async function registrarHistorico(x){const{error}=await db.from("historico_financeiro").insert({perfil_id:x.perfil_id,nome:x.nome,email:x.email,acao:x.acao,valor:Number(x.total||0),valor_total:Number(x.total||0),valor_mensalidade:Number(x.mensalidade||0),valor_inscricao:Number(x.inscricao||0),data_pagamento:x.data||null,validade_inicio:x.inicio||null,validade_fim:x.fim||null,observacao:x.obs||null,criado_em:agoraISO()});if(error)throw error}
@@ -728,7 +732,70 @@ async function abrirHistorico(id,nome){$("modalHistorico").classList.remove("esc
 function fecharHistorico(){$("modalHistorico").classList.add("escondido")}
 async function recarregarMantendoBusca(){const c=$("campoBusca"),q=c.value,aberto=c.style.display!=="none";await carregarUsuarios();if(aberto&&q){c.value=q;filtrarUsuarios()}}
 function abrirWhatsapp(tel,nome,email){tel=limparTelefone(tel);if(!tel){alert("Sem telefone cadastrado.");return}if(tel.length===10||tel.length===11)tel="55"+tel;window.open("https://wa.me/"+tel+"?text="+encodeURIComponent(`Olá ${nome}, seu cadastro no MRG foi localizado. E-mail: ${email}.`),"_blank")}
-function abrirCobranca(tel,nome,email){tel=limparTelefone(tel);if(!tel){alert("Sem telefone cadastrado.");return}if(tel.length===10||tel.length===11)tel="55"+tel;const msg=`Olá ${nome}, tudo bem?\n\nSua mensalidade pré-paga do MRG está pendente.\n\nEvite o bloqueio do sistema e a taxa de reinscrição mantendo sua mensalidade em dia.\n\nE-mail: ${email}\n\nSe já pagou, desconsidere.`;window.open("https://wa.me/"+tel+"?text="+encodeURIComponent(msg),"_blank")}
+let COBRANCA_ATUAL=null;
+function abrirCobranca(id,tel,nome,email){
+  $("cobrancaPerfilId").value=id;
+  $("cobrancaTelefone").value=tel||"";
+  $("cobrancaNome").value=nome||"";
+  $("cobrancaEmail").value=email||"";
+  $("cobrancaUsuario").innerText=`${nome} — ${email}`;
+  $("cobrancaModo").value="AUTOMATICA";
+  $("cobrancaValorManual").value="";
+  $("cobrancaDesconto").value="0";
+  $("cobrancaAcrescimo").value="0";
+  $("cobrancaPrazoDias").value="1";
+  $("cobrancaDocumento").value=usuario(id)?.documento_pagamento||"";
+  $("cobrancaObservacao").value="";
+  $("cobrancaSubstituir").checked=false;
+  $("cobrancaStatus").innerText="";
+  $("cobrancaResultado").classList.add("escondido");
+  COBRANCA_ATUAL=null;
+  atualizarModoCobranca();
+  $("modalCobrancaPix").classList.remove("escondido");
+}
+function fecharModalCobrancaPix(){$("modalCobrancaPix").classList.add("escondido")}
+function atualizarModoCobranca(){
+  const manual=$("cobrancaModo").value==="MANUAL";
+  ["cobrancaValorManual","cobrancaDesconto","cobrancaAcrescimo","cobrancaObservacao"].forEach(id=>$(id).disabled=!manual);
+}
+async function gerarCobrancaPix(){
+  const perfilId=$("cobrancaPerfilId").value;
+  const status=$("cobrancaStatus");
+  if(!perfilId){status.innerHTML="<span class='erro'>Cliente inválido.</span>";return}
+  status.innerText="Criando PIX no PagBank...";
+  $("cobrancaResultado").classList.add("escondido");
+  const payload={
+    perfil_id:perfilId,
+    modo:$("cobrancaModo").value,
+    valor_manual:$("cobrancaValorManual").value?Number($("cobrancaValorManual").value):null,
+    desconto:Number($("cobrancaDesconto").value||0),
+    acrescimo:Number($("cobrancaAcrescimo").value||0),
+    prazo_dias:Number($("cobrancaPrazoDias").value||1),
+    documento:$("cobrancaDocumento").value.trim()||null,
+    observacao:$("cobrancaObservacao").value.trim()||null,
+    substituir_aberta:$("cobrancaSubstituir").checked
+  };
+  const{data,error}=await db.functions.invoke("rapid-task",{body:payload});
+  if(error){status.innerHTML=`<span class="erro">${escHtml(error.message||"Erro ao chamar função.")}</span>`;return}
+  if(!data?.sucesso){status.innerHTML=`<span class="erro">${escHtml(data?.erro||"Falha ao criar cobrança.")}</span>`;return}
+  COBRANCA_ATUAL=data.cobranca;
+  status.innerText=data.reutilizada?"Cobrança pendente existente reutilizada.":"PIX criado com sucesso.";
+  $("cobrancaLink").innerText=COBRANCA_ATUAL?.link_pagamento||"";
+  $("cobrancaResultado").classList.remove("escondido");
+  await carregarUsuarios();
+  await carregarAvisosAdmin();
+}
+function abrirLinkCobranca(){if(COBRANCA_ATUAL?.link_pagamento)window.open(COBRANCA_ATUAL.link_pagamento,"_blank")}
+function enviarCobrancaWhatsapp(){
+  if(!COBRANCA_ATUAL?.link_pagamento){alert("Gere o PIX primeiro.");return}
+  let tel=limparTelefone($("cobrancaTelefone").value);
+  if(!tel){alert("Sem telefone cadastrado.");return}
+  if(tel.length===10||tel.length===11)tel="55"+tel;
+  const nome=$("cobrancaNome").value;
+  const valor=moeda(COBRANCA_ATUAL.valor);
+  const msg=`Olá ${nome}, sua cobrança MRG foi gerada.\n\nValor: ${valor}\n\nPague via PIX pelo link seguro:\n${COBRANCA_ATUAL.link_pagamento}\n\nA liberação será automática após a confirmação do PagBank.`;
+  window.open("https://wa.me/"+tel+"?text="+encodeURIComponent(msg),"_blank");
+}
 function textoPadraoManutencao(){return `O sistema entrará em manutenção programada.\n\nPrevisão de início:\n{INICIO}\n\nPrevisão de retorno:\n{FIM}\n\nDurante este período os sinais poderão ficar temporariamente indisponíveis.\n\nAgradeço a compreensão.\n\nMRG Exterminador de Sinais`}
 function abrirModalManutencao(){$("horaInicioManutencao").value="23:40";$("horaFimManutencao").value="07:30";$("textoManutencao").value=textoPadraoManutencao();$("modalManutencao").classList.remove("escondido")}
 function fecharModalManutencao(){$("modalManutencao").classList.add("escondido")}
