@@ -40,6 +40,15 @@ self.addEventListener("push", (event) => {
         titulo = "MRG SURF ROXO - ENTRADA";
     }
 
+    const linhaEntrada = String(mensagem)
+        .split(/\n+/)
+        .map((linha) => linha.trim())
+        .find((linha) => linha.toUpperCase().includes("APÓS") && linha.toUpperCase().includes("SAIR"));
+
+    if (linhaEntrada) {
+        mensagem = linhaEntrada;
+    }
+
     const url =
         dados.url ||
         dados.link ||
