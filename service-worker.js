@@ -19,25 +19,33 @@ self.addEventListener("push", (event) => {
         };
     }
 
-    const titulo =
+    let titulo =
         dados.title ||
         dados.titulo ||
         "MRG Exterminador de Sinais";
 
-    const mensagem =
+    let mensagem =
         dados.body ||
         dados.mensagem ||
         "Novo sinal disponível.";
+
+    const referencia = `${dados.tipo || ""} ${titulo} ${mensagem}`.toUpperCase();
+    const entradaRosa = referencia.includes("ROSA") || referencia.includes("EXECUTOR") || referencia.includes(" 4C") || referencia.includes("· 4C");
+    const entradaRoxa = referencia.includes("ROXA") || referencia.includes("SURF") || referencia.includes(" 2C") || referencia.includes("· 2C");
+
+    if (entradaRosa) {
+        titulo = "MRG EXECUTOR ROSA - ENTRADA";
+        mensagem = String(mensagem).replace(/🟢/g, "🩷");
+    } else if (entradaRoxa) {
+        titulo = "MRG SURF ROXO - ENTRADA";
+    }
 
     const url =
         dados.url ||
         dados.link ||
         "/";
 
-    const tag =
-        dados.tag ||
-        dados.tipo ||
-        "mrg-sinal";
+    const tag = entradaRosa ? "mrg-executor-rosa" : (entradaRoxa ? "mrg-surf-roxo" : (dados.tag || dados.tipo || "mrg-sinal"));
 
     const opcoes = {
         body: mensagem,
