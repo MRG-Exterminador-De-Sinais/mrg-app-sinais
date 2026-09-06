@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 <head>
 <meta charset="UTF-8">
@@ -53,81 +52,81 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 }
 
 .central-aviso-modal{
-position;
-inset:0;
-z-index:12000;
-display;
-align-items;
-justify-content;
-padding:14px;
-background(0,0,0,.84);
-backdrop-filter(4px);
+  position:fixed;
+  inset:0;
+  z-index:12000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:14px;
+  background:rgba(0,0,0,.84);
+  backdrop-filter:blur(4px);
 }
 
 .central-aviso-caixa{
-width:100%;
-max-width:520px;
-max-height:86vh;
-overflow;
-border-radius:18px;
-padding:18px;
-background:#111;
-border:2px solid #ffaa00;
-box-shadow:0 0 28px rgba(255,170,0,.22);
+  width:100%;
+  max-width:520px;
+  max-height:86vh;
+  overflow:auto;
+  border-radius:18px;
+  padding:18px;
+  background:#111;
+  border:2px solid #ffaa00;
+  box-shadow:0 0 28px rgba(255,170,0,.22);
 }
 
 .central-aviso-caixa.prioridade-0{
-border-color:#666;
+  border-color:#666;
 }
 
 .central-aviso-caixa.prioridade-1{
-border-color:#00bfff;
-box-shadow:0 0 28px rgba(0,191,255,.20);
+  border-color:#00bfff;
+  box-shadow:0 0 28px rgba(0,191,255,.20);
 }
 
 .central-aviso-caixa.prioridade-2{
-border-color:#ffaa00;
-box-shadow:0 0 28px rgba(255,170,0,.22);
+  border-color:#ffaa00;
+  box-shadow:0 0 28px rgba(255,170,0,.22);
 }
 
 .central-aviso-caixa.prioridade-3{
-border-color:#ff5a5a;
-box-shadow:0 0 30px rgba(255,90,90,.25);
+  border-color:#ff5a5a;
+  box-shadow:0 0 30px rgba(255,90,90,.25);
 }
 
 .central-aviso-titulo{
-text-align;
-font-size:20px;
-font-weight:900;
-color:#fff;
-margin-bottom:12px;
-word-break;
+  text-align:center;
+  font-size:20px;
+  font-weight:900;
+  color:#fff;
+  margin-bottom:12px;
+  word-break:break-word;
 }
 
 .central-aviso-mensagem{
-white-space;
-line-height:1.55;
-font-size:15px;
-color:#eee;
-text-align;
-word-break;
+  white-space:pre-wrap;
+  line-height:1.55;
+  font-size:15px;
+  color:#eee;
+  text-align:left;
+  word-break:break-word;
 }
 
 .central-aviso-status{
-margin-top:12px;
-text-align;
-color:#aaa;
-font-size:12px;
+  margin-top:12px;
+  text-align:center;
+  color:#aaa;
+  font-size:12px;
 }
 
 .central-aviso-botao{
-margin-top:16px;
-background:#00ff88;
-color:#000;
+  margin-top:16px;
+  background:#00ff88;
+  color:#000;
 }
 
-.central-aviso-botao{
-opacity:.55;
+.central-aviso-botao:disabled{
+  opacity:.55;
 }
 
 </style>
@@ -212,495 +211,494 @@ let CONTROLE_ENVIO={snarpy_ativo:true,hyper_ativo:true,mensagem:""};
 function aplicarClassePwa(){const ua=navigator.userAgent||"";const ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);const standalone=window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches;if(ios&&!standalone)document.body.classList.add("ios-safari");if(standalone)document.body.classList.add("standalone")}aplicarClassePwa();
 
 function base64UrlParaUint8Array(base64String){
-const padding="=".repeat((4-base64String.length%4)%4);
-const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
-const rawData=window.atob(base64);
-return Uint8Array.from([...rawData].map(c=>c.charCodeAt(0)));
+  const padding="=".repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+  const rawData=window.atob(base64);
+  return Uint8Array.from([...rawData].map(c=>c.charCodeAt(0)));
 }
 function pushDisponivel(){return "serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window}
 async function registrarServiceWorker(){
-if(!pushDisponivel())return null;
-try{return await navigator.serviceWorker.register("/service-worker.js",{scope:"/"})}catch(e){console.error("Falha ao registrar service worker",e);return null}
+  if(!pushDisponivel())return null;
+  try{return await navigator.serviceWorker.register("/service-worker.js",{scope:"/"})}catch(e){console.error("Falha ao registrar service worker",e);return null}
 }
 async function obterAssinaturaPush(){
-if(!pushDisponivel())return null;
-const registro=await navigator.serviceWorker.ready;
-return await registro.pushManager.getSubscription();
+  if(!pushDisponivel())return null;
+  const registro=await navigator.serviceWorker.ready;
+  return await registro.pushManager.getSubscription();
 }
 function atualizarBotaoNotificacoes(ativa=false,mensagem=""){
-const btn=document.getElementById("btnNotificacoes");
-if(!btn)return;
-btn.disabled=false;
-btn.classList.toggle("ativa",ativa);
-btn.textContent=ativa?"🔕 DESATIVAR":"🔔 ATIVAR";
-btn.title=mensagem|| (ativa?"Desativar notificações neste aparelho":"Ativar notificações neste aparelho");
+  const btn=document.getElementById("btnNotificacoes");
+  if(!btn)return;
+  btn.disabled=false;
+  btn.classList.toggle("ativa",ativa);
+  btn.textContent=ativa?"🔕 DESATIVAR":"🔔 ATIVAR";
+  btn.title=mensagem|| (ativa?"Desativar notificações neste aparelho":"Ativar notificações neste aparelho");
 }
 async function salvarAssinaturaPush(subscription,ativo=true){
-const{data}=await db.auth.getSession();
-const user=sessionData?.session?.user;
-if(!user)throw new Error("Usuário sem sessão ativa.");
+  const{data:sessionData}=await db.auth.getSession();
+  const user=sessionData?.session?.user;
+  if(!user)throw new Error("Usuário sem sessão ativa.");
 
-const json=subscription?.toJSON?.()||null;
+  const json=subscription?.toJSON?.()||null;
 
-const{error}=await db.rpc("definir_assinatura_push_atual",{
-p_endpoint===true?(json?.endpoint||null),
-p_p256dh===true?(json?.keys?.p256dh||null),
-p_auth===true?(json?.keys?.auth||null),
-p_email.email||"",
-p_user_agent.userAgent||""
-});
-
-if(error)throw error;
-}
-
-async function sincronizarPushNoLogin(){
-if(!pushDisponivel())return;
-if(Notification.permission!=="granted")return;
-
-await registrarServiceWorker();
-
-// No iPhone/PWA, a assinatura pode demorar alguns instantes para reaparecer.
-// Tentamos algumas vezes, mas nunca enviamos assinatura nula ao Supabase.
-let assinatura=null;
-for(let tentativa=0;tentativa<5&&!assinatura;tentativa++){
-assinatura=await obterAssinaturaPush();
-if(!assinatura)await new Promise(resolve=>setTimeout(resolve,700));
-}
-
-// Só define este aparelho como o único ativo quando existe
-// uma assinatura Push válida neste aparelho.
-if(assinatura){
-await salvarAssinaturaPush(assinatura,true);
-}
-}
-async function marcarAssinaturaInativa(subscription){
-const endpoint=subscription?.endpoint||"";
-if(!endpoint)return;
-const{error}=await db.from(PUSH_TABLE).update({ativo,atualizado_em Date().toISOString()}).eq("endpoint",endpoint);
-if(error)throw error;
-}
-async function consultarEstadoNotificacoes(){
-const btn=document.getElementById("btnNotificacoes");
-if(!btn)return;
-if(!pushDisponivel()){
-btn.disabled=true;
-btn.textContent="🔕 INDISPONÍVEL";
-btn.title="Este aparelho ou navegador não oferece suporte a notificações Push.";
-return;
-}
-try{
-await registrarServiceWorker();
-const assinatura=await obterAssinaturaPush();
-atualizarBotaoNotificacoes(Boolean(assinatura&&Notification.permission==="granted"));
-}catch(e){
-console.error(e);
-atualizarBotaoNotificacoes(false,"Não foi possível consultar as notificações.");
-}
-}
-async function ativarNotificacoes(){
-const btn=document.getElementById("btnNotificacoes");
-if(btn){btn.disabled=true;btn.textContent="ATIVANDO..."}
-try{
-if(!pushDisponivel())throw new Error("Notificações Push não são compatíveis com este aparelho ou navegador.");
-if(!VAPID_PUBLIC_KEY)throw new Error("A chave pública de notificações ainda não foi configurada.");
-const permissao=await Notification.requestPermission();
-if(permissao!=="granted")throw new Error("A permissão de notificações não foi autorizada.");
-const registro=await registrarServiceWorker();
-if(!registro)throw new Error("Não foi possível registrar o serviço de notificações.");
-let assinatura=await registro.pushManager.getSubscription();
-if(!assinatura){
-assinatura=await registro.pushManager.subscribe({userVisibleOnly,applicationServerKey(VAPID_PUBLIC_KEY)});
-}
-await salvarAssinaturaPush(assinatura,true);
-atualizarBotaoNotificacoes(true);
-alert("Notificações ativadas neste aparelho.");
-}catch(e){
-console.error(e);
-atualizarBotaoNotificacoes(false);
-alert(e?.message||"Não foi possível ativar as notificações.");
-}
-}
-async function desativarNotificacoes(){
-const btn=document.getElementById("btnNotificacoes");
-if(btn){btn.disabled=true;btn.textContent="DESATIVANDO..."}
-try{
-const assinatura=await obterAssinaturaPush();
-if(assinatura){
-await marcarAssinaturaInativa(assinatura);
-await assinatura.unsubscribe();
-}
-atualizarBotaoNotificacoes(false);
-alert("Notificações desativadas neste aparelho.");
-}catch(e){
-console.error(e);
-atualizarBotaoNotificacoes(Boolean(await obterAssinaturaPush()));
-alert(e?.message||"Não foi possível desativar as notificações.");
-}
-}
-async function alternarNotificacoes(){
-try{
-const assinatura=await obterAssinaturaPush();
-if(assinatura&&Notification.permission==="granted")await desativarNotificacoes();
-else await ativarNotificacoes();
-}catch(e){await ativarNotificacoes()}
-}
-
-function boolFinanceiro(valor,padrao=false){
-if(valor===true||valor===false)return valor;
-if(valor===1||valor==="1")return true;
-if(valor===0||valor==="0")return false;
-const s=String(valor??"").trim().toLowerCase();
-if(["true","sim","yes","ativo"].includes(s))return true;
-if(["false","nao","não","no","inativo"].includes(s))return false;
-return padrao;
-}
-function primeiroObjetoFinanceiro(data){
-if(Array.isArray(data))return data[0]||{};
-return data&&typeof data==="object"?data:{};
-}
-function financeiroVazio(){
-return {
-fase:"",
-titulo:"",
-mensagem:"",
-textoBotaoAcao:"",
-urlAcao:"",
-bloquearSinais,
-bloquearLogin,
-aviso,
-contrato,
-cobranca,
-ultimaSincronizacao.now()
-};
-}
-async function sincronizarFinanceiro(motivo="PERIODICO"){
-if(FINANCEIRO_SINCRONIZANDO)return false;
-
-const{data}=await db.auth.getSession();
-if(!sessionData?.session?.user)return false;
-
-FINANCEIRO_SINCRONIZANDO=true;
-
-const anterior=JSON.stringify({
-fase.fase,
-titulo.titulo,
-mensagem.mensagem,
-textoBotaoAcao.textoBotaoAcao,
-urlAcao.urlAcao,
-bloquearSinais.bloquearSinais,
-bloquearLogin.bloquearLogin
-});
-
-try{
-const{data,error}=await db.rpc("obter_status_financeiro_login");
-
-if(error){
-  console.error("Erro ao sincronizar estado financeiro:",error);
-  return false;
-}
-
-const retorno=primeiroObjetoFinanceiro(data);
-const financeiro=retorno.financeiro||{};
-const aviso=retorno.aviso&&retorno.aviso.possui_aviso!==false
-  ?retorno.aviso
-  :null;
-const contrato=retorno.contrato||null;
-const cobranca=retorno.cobranca||null;
-
-FINANCEIRO={
-  fase:String(financeiro.fase_financeira||aviso?.fase_financeira||""),
-  titulo:String(aviso?.titulo||""),
-  mensagem:String(aviso?.mensagem||""),
-  textoBotaoAcao:String(
-    aviso?.texto_botao_acao||
-    aviso?.textoBotaoAcao||
-    ""
-  ),
-  urlAcao:String(
-    aviso?.url_acao||
-    aviso?.urlAcao||
-    cobranca?.link_pagamento||
-    ""
-  ),
-  bloquearSinais:!!(
-    boolFinanceiro(aviso?.bloquear_sinais,false)||
-    boolFinanceiro(financeiro.bloqueio_recomendado,false)||
-    boolFinanceiro(financeiro.liberar_sinais,true)===false
-  ),
-  bloquearLogin:!!(
-    boolFinanceiro(aviso?.bloquear_login,false)||
-    boolFinanceiro(financeiro.liberar_login,true)===false
-  ),
-  aviso,
-  contrato,
-  cobranca,
-  ultimaSincronizacao:Date.now()
-};
-
-STATUS_FINANCEIRO_LOGIN=retorno;
-
-const atual=JSON.stringify({
-  fase:FINANCEIRO.fase,
-  titulo:FINANCEIRO.titulo,
-  mensagem:FINANCEIRO.mensagem,
-  textoBotaoAcao:FINANCEIRO.textoBotaoAcao,
-  urlAcao:FINANCEIRO.urlAcao,
-  bloquearSinais:FINANCEIRO.bloquearSinais,
-  bloquearLogin:FINANCEIRO.bloquearLogin
-});
-
-if(anterior!==atual&&painelAtivo){
-  await carregar();
-  await carregarAvisos();
-}
-
-return true;
-
-}catch(e){
-console.error("Falha ao sincronizar estado financeiro:",e);
-return false;
-}finally{
-FINANCEIRO_SINCRONIZANDO=false;
-}
-}
-async function verificarFinanceiroPeriodico(){
-if(!painelAtivo)return;
-await sincronizarFinanceiro("PERIODICO");
-
-if(FINANCEIRO.bloquearLogin){
-const msg=[FINANCEIRO.titulo,FINANCEIRO.mensagem]
-.filter(Boolean)
-.join("<br><br>");
-await sair();
-mostrarLogin(msg);
-}
-}
-async function retornoAcaoFinanceira(){
-if(!painelAtivo||!FINANCEIRO_RETORNO_EXTERNO)return;
-FINANCEIRO_RETORNO_EXTERNO=false;
-await sincronizarFinanceiro("RETORNO_EXTERNO");
-await carregarAvisos();
-await carregar();
-}
-window.addEventListener("focus",()=>{
-setTimeout(async()=>{
-if(FINANCEIRO_RETORNO_EXTERNO){
-await retornoAcaoFinanceira();
-}else if(painelAtivo){
-await sincronizarFinanceiro("FOCO");
-}
-},300);
-});
-
-async function carregarAvisos(){
-if(!painelAtivo)return;
-if(BUSCANDO_AVISOS)return;
-if(AVISO_ATUAL)return;
-
-BUSCANDO_AVISOS=true;
-
-try{
-const{data,error}=await db.rpc("buscar_avisos_usuario");
-
-if(error){
-  console.error("Erro ao buscar avisos:",error);
-  return;
-}
-
-FILA_AVISOS=Array.isArray(data)?data:[];
-
-if(FILA_AVISOS.length){
-  exibirProximoAviso();
-}
-
-}catch(e){
-console.error("Falha ao carregar avisos:",e);
-}finally{
-BUSCANDO_AVISOS=false;
-}
-}
-
-function exibirProximoAviso(){
-if(AVISO_ATUAL)return;
-
-const proximo=FILA_AVISOS.shift();
-
-if(!proximo)return;
-
-AVISO_ATUAL=proximo;
-
-const modal=document.getElementById("modalCentralAvisos");
-const caixa=document.getElementById("caixaCentralAvisos");
-const titulo=document.getElementById("tituloCentralAvisos");
-const mensagem=document.getElementById("mensagemCentralAvisos");
-const status=document.getElementById("statusCentralAvisos");
-const botaoAcao=document.getElementById("btnAcaoAviso");
-const botao=document.getElementById("btnConfirmarAviso");
-
-caixa.classList.remove(
-"prioridade-0",
-"prioridade-1",
-"prioridade-2",
-"prioridade-3"
-);
-
-const prioridade=Math.max(
-0,
-Math.min(3,Number(proximo.prioridade||0))
-);
-
-caixa.classList.add(prioridade-${prioridade});
-
-titulo.innerText=proximo.titulo||"AVISO";
-mensagem.innerText=proximo.mensagem||"";
-status.innerText=proximo.obrigatorio===true
-?"Leitura obrigatória."
-:"";
-
-const textoAcao=String(
-proximo.texto_botao_acao||
-proximo.textoBotaoAcao||
-""
-).trim();
-const urlAcao=String(
-proximo.url_acao||
-proximo.urlAcao||
-""
-).trim();
-
-botaoAcao.classList.toggle(
-"escondido",
-!(textoAcao&&/^https:///i.test(urlAcao))
-);
-botaoAcao.disabled=false;
-botaoAcao.innerText=textoAcao;
-botaoAcao.dataset.url=urlAcao;
-
-botao.disabled=false;
-botao.innerText=proximo.obrigatorio===true
-?"ESTOU CIENTE"
-:"LI E FECHAR";
-
-modal.classList.remove("escondido");
-}
-
-function executarAcaoAvisoAtual(){
-const botao=document.getElementById("btnAcaoAviso");
-const url=String(botao?.dataset?.url||"").trim();
-if(!/^https:///i.test(url))return;
-FINANCEIRO_RETORNO_EXTERNO=true;
-window.open(url,"_blank");
-}
-
-function limparEstadoCentralAvisos(){
-FILA_AVISOS=[];
-AVISO_ATUAL=null;
-BUSCANDO_AVISOS=false;
-
-const modal=document.getElementById("modalCentralAvisos");
-if(modal)modal.classList.add("escondido");
-}
-
-async function confirmarAvisoAtual(){
-if(!AVISO_ATUAL)return;
-
-const botao=document.getElementById("btnConfirmarAviso");
-botao.disabled=true;
-botao.innerText="SALVANDO...";
-
-try{
-const{data}=await db.auth.getSession();
-const user=sessionData?.session?.user;
-
-if(!user){
-  throw new Error("Usuário sem sessão.");
-}
-
-if(AVISO_ATUAL.descartavel===true){
-  const{error}=await db
-    .from("avisos_lidos")
-    .upsert(
-      {
-        aviso_id:AVISO_ATUAL.id,
-        usuario_id:user.id,
-        lido_em:new Date().toISOString()
-      },
-      {
-        onConflict:"aviso_id,usuario_id"
-      }
-    );
+  const{error}=await db.rpc("definir_assinatura_push_atual",{
+    p_endpoint:ativo===true?(json?.endpoint||null):null,
+    p_p256dh:ativo===true?(json?.keys?.p256dh||null):null,
+    p_auth:ativo===true?(json?.keys?.auth||null):null,
+    p_email:user.email||"",
+    p_user_agent:navigator.userAgent||""
+  });
 
   if(error)throw error;
 }
 
-document
-  .getElementById("modalCentralAvisos")
-  .classList.add("escondido");
+async function sincronizarPushNoLogin(){
+  if(!pushDisponivel())return;
+  if(Notification.permission!=="granted")return;
 
-AVISO_ATUAL=null;
+  await registrarServiceWorker();
 
-if(FILA_AVISOS.length){
-  setTimeout(exibirProximoAviso,250);
+  // No iPhone/PWA, a assinatura pode demorar alguns instantes para reaparecer.
+  // Tentamos algumas vezes, mas nunca enviamos assinatura nula ao Supabase.
+  let assinatura=null;
+  for(let tentativa=0;tentativa<5&&!assinatura;tentativa++){
+    assinatura=await obterAssinaturaPush();
+    if(!assinatura)await new Promise(resolve=>setTimeout(resolve,700));
+  }
+
+  // Só define este aparelho como o único ativo quando existe
+  // uma assinatura Push válida neste aparelho.
+  if(assinatura){
+    await salvarAssinaturaPush(assinatura,true);
+  }
+}
+async function marcarAssinaturaInativa(subscription){
+  const endpoint=subscription?.endpoint||"";
+  if(!endpoint)return;
+  const{error}=await db.from(PUSH_TABLE).update({ativo:false,atualizado_em:new Date().toISOString()}).eq("endpoint",endpoint);
+  if(error)throw error;
+}
+async function consultarEstadoNotificacoes(){
+  const btn=document.getElementById("btnNotificacoes");
+  if(!btn)return;
+  if(!pushDisponivel()){
+    btn.disabled=true;
+    btn.textContent="🔕 INDISPONÍVEL";
+    btn.title="Este aparelho ou navegador não oferece suporte a notificações Push.";
+    return;
+  }
+  try{
+    await registrarServiceWorker();
+    const assinatura=await obterAssinaturaPush();
+    atualizarBotaoNotificacoes(Boolean(assinatura&&Notification.permission==="granted"));
+  }catch(e){
+    console.error(e);
+    atualizarBotaoNotificacoes(false,"Não foi possível consultar as notificações.");
+  }
+}
+async function ativarNotificacoes(){
+  const btn=document.getElementById("btnNotificacoes");
+  if(btn){btn.disabled=true;btn.textContent="ATIVANDO..."}
+  try{
+    if(!pushDisponivel())throw new Error("Notificações Push não são compatíveis com este aparelho ou navegador.");
+    if(!VAPID_PUBLIC_KEY)throw new Error("A chave pública de notificações ainda não foi configurada.");
+    const permissao=await Notification.requestPermission();
+    if(permissao!=="granted")throw new Error("A permissão de notificações não foi autorizada.");
+    const registro=await registrarServiceWorker();
+    if(!registro)throw new Error("Não foi possível registrar o serviço de notificações.");
+    let assinatura=await registro.pushManager.getSubscription();
+    if(!assinatura){
+      assinatura=await registro.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:base64UrlParaUint8Array(VAPID_PUBLIC_KEY)});
+    }
+    await salvarAssinaturaPush(assinatura,true);
+    atualizarBotaoNotificacoes(true);
+    alert("Notificações ativadas neste aparelho.");
+  }catch(e){
+    console.error(e);
+    atualizarBotaoNotificacoes(false);
+    alert(e?.message||"Não foi possível ativar as notificações.");
+  }
+}
+async function desativarNotificacoes(){
+  const btn=document.getElementById("btnNotificacoes");
+  if(btn){btn.disabled=true;btn.textContent="DESATIVANDO..."}
+  try{
+    const assinatura=await obterAssinaturaPush();
+    if(assinatura){
+      await marcarAssinaturaInativa(assinatura);
+      await assinatura.unsubscribe();
+    }
+    atualizarBotaoNotificacoes(false);
+    alert("Notificações desativadas neste aparelho.");
+  }catch(e){
+    console.error(e);
+    atualizarBotaoNotificacoes(Boolean(await obterAssinaturaPush()));
+    alert(e?.message||"Não foi possível desativar as notificações.");
+  }
+}
+async function alternarNotificacoes(){
+  try{
+    const assinatura=await obterAssinaturaPush();
+    if(assinatura&&Notification.permission==="granted")await desativarNotificacoes();
+    else await ativarNotificacoes();
+  }catch(e){await ativarNotificacoes()}
 }
 
-}catch(e){
-console.error("Erro ao confirmar aviso:",e);
-botao.disabled=false;
-botao.innerText="TENTAR NOVAMENTE";
+
+function boolFinanceiro(valor,padrao=false){
+  if(valor===true||valor===false)return valor;
+  if(valor===1||valor==="1")return true;
+  if(valor===0||valor==="0")return false;
+  const s=String(valor??"").trim().toLowerCase();
+  if(["true","sim","yes","ativo"].includes(s))return true;
+  if(["false","nao","não","no","inativo"].includes(s))return false;
+  return padrao;
 }
+function primeiroObjetoFinanceiro(data){
+  if(Array.isArray(data))return data[0]||{};
+  return data&&typeof data==="object"?data:{};
+}
+function financeiroVazio(){
+  return {
+    fase:"",
+    titulo:"",
+    mensagem:"",
+    textoBotaoAcao:"",
+    urlAcao:"",
+    bloquearSinais:false,
+    bloquearLogin:false,
+    aviso:null,
+    contrato:null,
+    cobranca:null,
+    ultimaSincronizacao:Date.now()
+  };
+}
+async function sincronizarFinanceiro(motivo="PERIODICO"){
+  if(FINANCEIRO_SINCRONIZANDO)return false;
+
+  const{data:sessionData}=await db.auth.getSession();
+  if(!sessionData?.session?.user)return false;
+
+  FINANCEIRO_SINCRONIZANDO=true;
+
+  const anterior=JSON.stringify({
+    fase:FINANCEIRO.fase,
+    titulo:FINANCEIRO.titulo,
+    mensagem:FINANCEIRO.mensagem,
+    textoBotaoAcao:FINANCEIRO.textoBotaoAcao,
+    urlAcao:FINANCEIRO.urlAcao,
+    bloquearSinais:FINANCEIRO.bloquearSinais,
+    bloquearLogin:FINANCEIRO.bloquearLogin
+  });
+
+  try{
+    const{data,error}=await db.rpc("obter_status_financeiro_login");
+
+    if(error){
+      console.error("Erro ao sincronizar estado financeiro:",error);
+      return false;
+    }
+
+    const retorno=primeiroObjetoFinanceiro(data);
+    const financeiro=retorno.financeiro||{};
+    const aviso=retorno.aviso&&retorno.aviso.possui_aviso!==false
+      ?retorno.aviso
+      :null;
+    const contrato=retorno.contrato||null;
+    const cobranca=retorno.cobranca||null;
+
+    FINANCEIRO={
+      fase:String(financeiro.fase_financeira||aviso?.fase_financeira||""),
+      titulo:String(aviso?.titulo||""),
+      mensagem:String(aviso?.mensagem||""),
+      textoBotaoAcao:String(
+        aviso?.texto_botao_acao||
+        aviso?.textoBotaoAcao||
+        ""
+      ),
+      urlAcao:String(
+        aviso?.url_acao||
+        aviso?.urlAcao||
+        cobranca?.link_pagamento||
+        ""
+      ),
+      bloquearSinais:!!(
+        boolFinanceiro(aviso?.bloquear_sinais,false)||
+        boolFinanceiro(financeiro.bloqueio_recomendado,false)||
+        boolFinanceiro(financeiro.liberar_sinais,true)===false
+      ),
+      bloquearLogin:!!(
+        boolFinanceiro(aviso?.bloquear_login,false)||
+        boolFinanceiro(financeiro.liberar_login,true)===false
+      ),
+      aviso,
+      contrato,
+      cobranca,
+      ultimaSincronizacao:Date.now()
+    };
+
+    STATUS_FINANCEIRO_LOGIN=retorno;
+
+    const atual=JSON.stringify({
+      fase:FINANCEIRO.fase,
+      titulo:FINANCEIRO.titulo,
+      mensagem:FINANCEIRO.mensagem,
+      textoBotaoAcao:FINANCEIRO.textoBotaoAcao,
+      urlAcao:FINANCEIRO.urlAcao,
+      bloquearSinais:FINANCEIRO.bloquearSinais,
+      bloquearLogin:FINANCEIRO.bloquearLogin
+    });
+
+    if(anterior!==atual&&painelAtivo){
+      await carregar();
+      await carregarAvisos();
+    }
+
+    return true;
+  }catch(e){
+    console.error("Falha ao sincronizar estado financeiro:",e);
+    return false;
+  }finally{
+    FINANCEIRO_SINCRONIZANDO=false;
+  }
+}
+async function verificarFinanceiroPeriodico(){
+  if(!painelAtivo)return;
+  await sincronizarFinanceiro("PERIODICO");
+
+  if(FINANCEIRO.bloquearLogin){
+    const msg=[FINANCEIRO.titulo,FINANCEIRO.mensagem]
+      .filter(Boolean)
+      .join("<br><br>");
+    await sair();
+    mostrarLogin(msg);
+  }
+}
+async function retornoAcaoFinanceira(){
+  if(!painelAtivo||!FINANCEIRO_RETORNO_EXTERNO)return;
+  FINANCEIRO_RETORNO_EXTERNO=false;
+  await sincronizarFinanceiro("RETORNO_EXTERNO");
+  await carregarAvisos();
+  await carregar();
+}
+window.addEventListener("focus",()=>{
+  setTimeout(async()=>{
+    if(FINANCEIRO_RETORNO_EXTERNO){
+      await retornoAcaoFinanceira();
+    }else if(painelAtivo){
+      await sincronizarFinanceiro("FOCO");
+    }
+  },300);
+});
+
+
+async function carregarAvisos(){
+  if(!painelAtivo)return;
+  if(BUSCANDO_AVISOS)return;
+  if(AVISO_ATUAL)return;
+
+  BUSCANDO_AVISOS=true;
+
+  try{
+    const{data,error}=await db.rpc("buscar_avisos_usuario");
+
+    if(error){
+      console.error("Erro ao buscar avisos:",error);
+      return;
+    }
+
+    FILA_AVISOS=Array.isArray(data)?data:[];
+
+    if(FILA_AVISOS.length){
+      exibirProximoAviso();
+    }
+  }catch(e){
+    console.error("Falha ao carregar avisos:",e);
+  }finally{
+    BUSCANDO_AVISOS=false;
+  }
+}
+
+function exibirProximoAviso(){
+  if(AVISO_ATUAL)return;
+
+  const proximo=FILA_AVISOS.shift();
+
+  if(!proximo)return;
+
+  AVISO_ATUAL=proximo;
+
+  const modal=document.getElementById("modalCentralAvisos");
+  const caixa=document.getElementById("caixaCentralAvisos");
+  const titulo=document.getElementById("tituloCentralAvisos");
+  const mensagem=document.getElementById("mensagemCentralAvisos");
+  const status=document.getElementById("statusCentralAvisos");
+  const botaoAcao=document.getElementById("btnAcaoAviso");
+  const botao=document.getElementById("btnConfirmarAviso");
+
+  caixa.classList.remove(
+    "prioridade-0",
+    "prioridade-1",
+    "prioridade-2",
+    "prioridade-3"
+  );
+
+  const prioridade=Math.max(
+    0,
+    Math.min(3,Number(proximo.prioridade||0))
+  );
+
+  caixa.classList.add(`prioridade-${prioridade}`);
+
+  titulo.innerText=proximo.titulo||"AVISO";
+  mensagem.innerText=proximo.mensagem||"";
+  status.innerText=proximo.obrigatorio===true
+    ?"Leitura obrigatória."
+    :"";
+
+  const textoAcao=String(
+    proximo.texto_botao_acao||
+    proximo.textoBotaoAcao||
+    ""
+  ).trim();
+  const urlAcao=String(
+    proximo.url_acao||
+    proximo.urlAcao||
+    ""
+  ).trim();
+
+  botaoAcao.classList.toggle(
+    "escondido",
+    !(textoAcao&&/^https:\/\//i.test(urlAcao))
+  );
+  botaoAcao.disabled=false;
+  botaoAcao.innerText=textoAcao;
+  botaoAcao.dataset.url=urlAcao;
+
+  botao.disabled=false;
+  botao.innerText=proximo.obrigatorio===true
+    ?"ESTOU CIENTE"
+    :"LI E FECHAR";
+
+  modal.classList.remove("escondido");
+}
+
+function executarAcaoAvisoAtual(){
+  const botao=document.getElementById("btnAcaoAviso");
+  const url=String(botao?.dataset?.url||"").trim();
+  if(!/^https:\/\//i.test(url))return;
+  FINANCEIRO_RETORNO_EXTERNO=true;
+  window.open(url,"_blank");
+}
+
+function limparEstadoCentralAvisos(){
+  FILA_AVISOS=[];
+  AVISO_ATUAL=null;
+  BUSCANDO_AVISOS=false;
+
+  const modal=document.getElementById("modalCentralAvisos");
+  if(modal)modal.classList.add("escondido");
+}
+
+async function confirmarAvisoAtual(){
+  if(!AVISO_ATUAL)return;
+
+  const botao=document.getElementById("btnConfirmarAviso");
+  botao.disabled=true;
+  botao.innerText="SALVANDO...";
+
+  try{
+    const{data:sessionData}=await db.auth.getSession();
+    const user=sessionData?.session?.user;
+
+    if(!user){
+      throw new Error("Usuário sem sessão.");
+    }
+
+    if(AVISO_ATUAL.descartavel===true){
+      const{error}=await db
+        .from("avisos_lidos")
+        .upsert(
+          {
+            aviso_id:AVISO_ATUAL.id,
+            usuario_id:user.id,
+            lido_em:new Date().toISOString()
+          },
+          {
+            onConflict:"aviso_id,usuario_id"
+          }
+        );
+
+      if(error)throw error;
+    }
+
+    document
+      .getElementById("modalCentralAvisos")
+      .classList.add("escondido");
+
+    AVISO_ATUAL=null;
+
+    if(FILA_AVISOS.length){
+      setTimeout(exibirProximoAviso,250);
+    }
+  }catch(e){
+    console.error("Erro ao confirmar aviso:",e);
+    botao.disabled=false;
+    botao.innerText="TENTAR NOVAMENTE";
+  }
 }
 
 function gerarIdSessaoApp(){
-if(window.crypto&&typeof window.crypto.randomUUID==="function")return window.crypto.randomUUID();
-return ${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)};
+  if(window.crypto&&typeof window.crypto.randomUUID==="function")return window.crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 }
 function obterIdSessaoApp(){return localStorage.getItem(APP_SESSION_KEY)||""}
 function criarNovaSessaoApp(){
-const sessionId=gerarIdSessaoApp();
-localStorage.setItem(APP_SESSION_KEY,sessionId);
-return sessionId;
+  const sessionId=gerarIdSessaoApp();
+  localStorage.setItem(APP_SESSION_KEY,sessionId);
+  return sessionId;
 }
 async function registrarSessaoAppAtual(){
-const sessionId=criarNovaSessaoApp();
-const{error}=await db.rpc("registrar_sessao_app_atual",{p_session_id});
-if(error){
-localStorage.removeItem(APP_SESSION_KEY);
-throw error;
-}
-return sessionId;
+  const sessionId=criarNovaSessaoApp();
+  const{error}=await db.rpc("registrar_sessao_app_atual",{p_session_id:sessionId});
+  if(error){
+    localStorage.removeItem(APP_SESSION_KEY);
+    throw error;
+  }
+  return sessionId;
 }
 async function sessaoAppContinuaAtual(){
-const sessionId=obterIdSessaoApp();
-if(!sessionId)return false;
-const{data,error}=await db.rpc("sessao_app_eh_atual",{p_session_id});
-if(error){
-console.error("Falha ao validar sessão exclusiva:",error);
-return true;
-}
-return data===true;
+  const sessionId=obterIdSessaoApp();
+  if(!sessionId)return false;
+  const{data,error}=await db.rpc("sessao_app_eh_atual",{p_session_id:sessionId});
+  if(error){
+    console.error("Falha ao validar sessão exclusiva:",error);
+    return true;
+  }
+  return data===true;
 }
 async function encerrarSessaoPorOutroAparelho(){
-painelAtivo=false;
+  painelAtivo=false;
 
-// Desativa imediatamente o Push deste aparelho antes de remover a sessão local.
-try{
-if(pushDisponivel()){
-const assinatura=await obterAssinaturaPush();
-if(assinatura){
-const{error}=await db.rpc("desativar_push_deste_aparelho",{
-p_endpoint.endpoint
-});
-if(error)console.error("Falha ao desativar Push do aparelho anterior:",error);
-}
-}
-}catch(e){
-console.error("Falha ao localizar/desativar Push do aparelho anterior:",e);
-}
+  // Desativa imediatamente o Push deste aparelho antes de remover a sessão local.
+  try{
+    if(pushDisponivel()){
+      const assinatura=await obterAssinaturaPush();
+      if(assinatura){
+        const{error}=await db.rpc("desativar_push_deste_aparelho",{
+          p_endpoint:assinatura.endpoint
+        });
+        if(error)console.error("Falha ao desativar Push do aparelho anterior:",error);
+      }
+    }
+  }catch(e){
+    console.error("Falha ao localizar/desativar Push do aparelho anterior:",e);
+  }
 
-localStorage.removeItem(APP_SESSION_KEY);
-await db.auth.signOut({scope:"local"});
-atualizarBotaoNotificacoes(false);
-mostrarLogin("Esta conta foi aberta em outro aparelho. O acesso e as notificações deste dispositivo foram desativados.");
+  localStorage.removeItem(APP_SESSION_KEY);
+  await db.auth.signOut({scope:"local"});
+  atualizarBotaoNotificacoes(false);
+  mostrarLogin("Esta conta foi aberta em outro aparelho. O acesso e as notificações deste dispositivo foram desativados.");
 }
 
 function esconderTudo(){["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>document.getElementById(id).classList.add("escondido"))}
@@ -711,124 +709,122 @@ function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";esconderTudo
 function mostrarAguardando(email){painelAtivo=false;telaAtual="aguardando";esconderTudo();document.getElementById("aguardandoBox").classList.remove("escondido");document.getElementById("emailAguardando").innerText=email||""}
 function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;carregarControleEnvio();carregar();carregarLeitura();carregarProjecoes();carregarRosas();consultarEstadoNotificacoes();carregarAvisos()}
 async function criarConta(){
-const nome=document.getElementById("cadNome").value.trim(),email=document.getElementById("cadEmail").value.trim(),telefone=document.getElementById("cadTelefone").value.trim(),senha=document.getElementById("cadSenha").value.trim();
-if(!nome||!email||!telefone||!senha){document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";return}
-document.getElementById("cadMsg").innerHTML="Criando cadastro...";
+  const nome=document.getElementById("cadNome").value.trim(),email=document.getElementById("cadEmail").value.trim(),telefone=document.getElementById("cadTelefone").value.trim(),senha=document.getElementById("cadSenha").value.trim();
+  if(!nome||!email||!telefone||!senha){document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";return}
+  document.getElementById("cadMsg").innerHTML="Criando cadastro...";
 
-try{
-const userAgent=navigator.userAgent||"";
-let ipDisponivel=null;
+  try{
+    const userAgent=navigator.userAgent||"";
+    let ipDisponivel=null;
 
-// Navegadores não fornecem o IP público diretamente. O campo permanece
-// preparado para receber um IP confiável quando houver proxy/Edge Function.
-const{data:cadastroLiberado,error:erroValidacao}=await db.rpc("validar_novo_cadastro",{
-  p_email:email,
-  p_user_agent:userAgent,
-  p_ip:ipDisponivel
-});
+    // Navegadores não fornecem o IP público diretamente. O campo permanece
+    // preparado para receber um IP confiável quando houver proxy/Edge Function.
+    const{data:cadastroLiberado,error:erroValidacao}=await db.rpc("validar_novo_cadastro",{
+      p_email:email,
+      p_user_agent:userAgent,
+      p_ip:ipDisponivel
+    });
 
-if(erroValidacao){
-  console.error("Falha ao validar novo cadastro:",erroValidacao);
-  document.getElementById("cadMsg").innerHTML="<span class='erro'>Não foi possível validar o cadastro agora. Tente novamente em alguns minutos.</span>";
-  return;
+    if(erroValidacao){
+      console.error("Falha ao validar novo cadastro:",erroValidacao);
+      document.getElementById("cadMsg").innerHTML="<span class='erro'>Não foi possível validar o cadastro agora. Tente novamente em alguns minutos.</span>";
+      return;
+    }
+
+    if(cadastroLiberado!==true){
+      document.getElementById("cadMsg").innerHTML="<span class='erro'>Novos cadastros estão temporariamente bloqueados.<br>Tente novamente em alguns minutos.</span>";
+      return;
+    }
+
+    const{data,error}=await db.auth.signUp({email,password:senha,options:{emailRedirectTo:SITE_URL,data:{nome,telefone}}});
+    if(error){document.getElementById("cadMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}
+    if(data&&data.user){await db.from("perfis").upsert({id:data.user.id,nome,email,telefone,liberado:false})}
+    telaAtual="cadastro";
+    document.getElementById("cadMsg").innerHTML="Cadastro criado. Confirme seu e-mail. Depois volte aqui e clique em <b>JÁ TENHO CADASTRO / ENTRAR</b>.";
+  }catch(e){
+    console.error("Erro ao criar cadastro:",e);
+    document.getElementById("cadMsg").innerHTML="<span class='erro'>Não foi possível criar o cadastro agora. Tente novamente em alguns minutos.</span>";
+  }
 }
+async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}try{await registrarSessaoAppAtual()}catch(e){console.error(e);await db.auth.signOut({scope:"local"});document.getElementById("loginMsg").innerHTML="<span class='erro'>Não foi possível registrar este aparelho como sessão atual.</span>";return}try{await sincronizarPushNoLogin()}catch(e){console.error("Falha ao definir o aparelho atual para Push:",e)}await verificarAcesso(true)}
+async function recuperarSenha(){const email=document.getElementById("recEmail").value.trim();if(!email){document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";return}const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});document.getElementById("recMsg").innerHTML=error?"<span class='erro'>"+error.message+"</span>":"Link de recuperação enviado. Verifique seu e-mail."}
+async function salvarNovaSenha(){const senha=document.getElementById("novaSenha").value.trim();if(!senha){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";return}const{error}=await db.auth.updateUser({password:senha});if(error){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000)}
+async function verificarAcesso(redirecionarSemSessao=false){if(["cadastro","recuperar","novaSenha"].includes(telaAtual))return;const{data:sessionData}=await db.auth.getSession();if(!sessionData||!sessionData.session||!sessionData.session.user){painelAtivo=false;if(redirecionarSemSessao)mostrarLogin();return}const user=sessionData.session.user;if(telaAtual==="app"||telaAtual==="aguardando"){const sessaoAtual=await sessaoAppContinuaAtual();if(!sessaoAtual){await encerrarSessaoPorOutroAparelho();return}}const{data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();if(error||!perfil){await db.from("perfis").insert({id:user.id,nome:user.user_metadata?.nome||user.email,email:user.email,telefone:user.user_metadata?.telefone||"",liberado:false});mostrarAguardando(user.email);return}if(perfil.liberado===true){
+  const entrandoNoApp=telaAtual!=="app";
 
-if(cadastroLiberado!==true){
-  document.getElementById("cadMsg").innerHTML="<span class='erro'>Novos cadastros estão temporariamente bloqueados.<br>Tente novamente em alguns minutos.</span>";
-  return;
-}
+  if(entrandoNoApp){
+    await sincronizarFinanceiro("ENTRADA_APP");
 
-const{data,error}=await db.auth.signUp({email,password:senha,options:{emailRedirectTo:SITE_URL,data:{nome,telefone}}});
-if(error){document.getElementById("cadMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}
-if(data&&data.user){await db.from("perfis").upsert({id:data.user.id,nome,email,telefone,liberado:false})}
-telaAtual="cadastro";
-document.getElementById("cadMsg").innerHTML="Cadastro criado. Confirme seu e-mail. Depois volte aqui e clique em <b>JÁ TENHO CADASTRO / ENTRAR</b>.";
+    if(FINANCEIRO.bloquearLogin){
+      const msg=[FINANCEIRO.titulo,FINANCEIRO.mensagem]
+        .filter(Boolean)
+        .join("<br><br>");
+      await db.auth.signOut({scope:"local"});
+      mostrarLogin(msg);
+      return;
+    }
+  }
 
-}catch(e){
-console.error("Erro ao criar cadastro:",e);
-document.getElementById("cadMsg").innerHTML="<span class='erro'>Não foi possível criar o cadastro agora. Tente novamente em alguns minutos.</span>";
-}
-}
-async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}try{await registrarSessaoAppAtual()}catch(e){console.error(e);await db.auth.signOut({scope:"local"});document.getElementById("loginMsg").innerHTML="<span class='erro'>Não foi possível registrar este aparelho como sessão atual.</span>";return}try{await sincronizarPushNoLogin()}catch(e){console.error("Falha ao definir o aparelho atual para Push:",e)}await verificarAcesso(true)}
-async function recuperarSenha(){const email=document.getElementById("recEmail").value.trim();if(!email){document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";return}const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo});document.getElementById("recMsg").innerHTML=error?"<span class='erro'>"+error.message+"</span>":"Link de recuperação enviado. Verifique seu e-mail."}
-async function salvarNovaSenha(){const senha=document.getElementById("novaSenha").value.trim();if(!senha){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";return}const{error}=await db.auth.updateUser({password});if(error){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000)}
-async function verificarAcesso(redirecionarSemSessao=false){if(["cadastro","recuperar","novaSenha"].includes(telaAtual))return;const{data}=await db.auth.getSession();if(!sessionData||!sessionData.session||!sessionData.session.user){painelAtivo=false;if(redirecionarSemSessao)mostrarLogin();return}const user=sessionData.session.user;if(telaAtual==="app"||telaAtual==="aguardando"){const sessaoAtual=await sessaoAppContinuaAtual();if(!sessaoAtual){await encerrarSessaoPorOutroAparelho();return}}const{data,error}=await db.from("perfis").select("*").eq("id",user.id).single();if(error||!perfil){await db.from("perfis").insert({id.id,nome.user_metadata?.nome||user.email,email.email,telefone.user_metadata?.telefone||"",liberado});mostrarAguardando(user.email);return}if(perfil.liberado===true){
-const entrandoNoApp=telaAtual!=="app";
-
-if(entrandoNoApp){
-await sincronizarFinanceiro("ENTRADA_APP");
-
-if(FINANCEIRO.bloquearLogin){
-  const msg=[FINANCEIRO.titulo,FINANCEIRO.mensagem]
-    .filter(Boolean)
-    .join("<br><br>");
-  await db.auth.signOut({scope:"local"});
-  mostrarLogin(msg);
-  return;
-}
-
-}
-
-mostrarApp(user.email);
+  mostrarApp(user.email);
 }else{
-mostrarAguardando(user.email);
+  mostrarAguardando(user.email);
 }}
 async function sair(){painelAtivo=false;limparEstadoCentralAvisos();localStorage.removeItem(APP_SESSION_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
 function alvoNumero(alvo){return Number(String(alvo||"").replace("x","").replace("X","").trim())||0}
-function horarioValor(h){if(!h)return 999999;const p=String(h).split(":").map(Number);return(p[0]||0)3600+(p[1]||0)60+(p[2]||0)}
+function horarioValor(h){if(!h)return 999999;const p=String(h).split(":").map(Number);return(p[0]||0)*3600+(p[1]||0)*60+(p[2]||0)}
 function ehAtivo(item){return item.ativo===true}
 function nomeCategoria(item){return item.categoria||item.origem||item.tipo||"MRG"}
-function textoMultiplicador(item){if(!item.multiplicador_real)return"-";return item.horario_real?${item.multiplicador_real} às ${item.horario_real}.multiplicador_real}
-function cardAtivo(item){return <div class="sinal-card"><div class="cat">${nomeCategoria(item)}</div><div class="alvo">${item.alvo||"-"}</div><div class="status">${item.status||"-"}</div><div class="info">Horário: ${item.horario||"não informado"}</div><div class="info">VAR: ${item.variacao||"não informado"}</div><div class="info">Janela: ${item.janela||"não informada"}</div><div class="info">Score: ${item.score||"-"}</div></div>}
+function textoMultiplicador(item){if(!item.multiplicador_real)return"-";return item.horario_real?`${item.multiplicador_real} às ${item.horario_real}`:item.multiplicador_real}
+function cardAtivo(item){return `<div class="sinal-card"><div class="cat">${nomeCategoria(item)}</div><div class="alvo">${item.alvo||"-"}</div><div class="status">${item.status||"-"}</div><div class="info">Horário: ${item.horario||"não informado"}</div><div class="info">VAR: ${item.variacao||"não informado"}</div><div class="info">Janela: ${item.janela||"não informada"}</div><div class="info">Score: ${item.score||"-"}</div></div>`}
 function statusNormalizado(item){const texto=String((item.status||"")+" "+(item.resultado||"")).toUpperCase();if(texto.includes("PROTECAO")||texto.includes("PROTEÇÃO")||texto.includes("PARCIAL"))return"PROTECAO";if(texto.includes("ACERTO"))return"ACERTO";if(texto.includes("ERRO"))return"ERRO";if(texto.includes("RETIDO")||texto.includes("PRESSAO")||texto.includes("PRESSÃO"))return"RETIDO";if(texto.includes("CANCEL"))return"CANCELADO";return"OUTRO"}
-function atualizarResumoFechados(historico){const ultimos=historico.slice(0,5);if(!ultimos.length){document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Nenhum sinal fechado ainda</div>";return}let acertos=0,protecoes=0,erros=0,retidos=0;ultimos.forEach(item=>{const st=statusNormalizado(item);if(st==="ACERTO")acertos++;else if(st==="PROTECAO")protecoes++;else if(st==="ERRO")erros++;else if(st==="RETIDO"||st==="CANCELADO")retidos++});const total=ultimos.length,tc=Math.round(acertos/total100),to=Math.round((acertos+protecoes)/total100);document.getElementById("resumoFechados").innerHTML=<div class="resumo-linha">✅ <span class="resumo-destaque">Acertos: ${acertos}</span> | 🟡 <span class="resumo-protecao">Proteções: ${protecoes}</span> | ❌ <span class="resumo-erro">Erros: ${erros}</span></div><div class="resumo-linha">🟠 Retidos/Cancelados: ${retidos}</div><div class="resumo-linha">🎯 Taxa cheia: <span class="resumo-destaque">${tc}%</span> | 📌 Operacional: <span class="resumo-destaque">${to}%</span></div>}
-async function carregarControleEnvio(){if(!painelAtivo)return;const{data,error}=await db.from("controle_envio").select("").eq("id",1).single();if(error||!data)return;CONTROLE_ENVIO={snarpy_ativo.snarpy_ativo===true,hyper_ativo.hyper_ativo===true,mensagem.mensagem||""}}
+function atualizarResumoFechados(historico){const ultimos=historico.slice(0,5);if(!ultimos.length){document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Nenhum sinal fechado ainda</div>";return}let acertos=0,protecoes=0,erros=0,retidos=0;ultimos.forEach(item=>{const st=statusNormalizado(item);if(st==="ACERTO")acertos++;else if(st==="PROTECAO")protecoes++;else if(st==="ERRO")erros++;else if(st==="RETIDO"||st==="CANCELADO")retidos++});const total=ultimos.length,tc=Math.round(acertos/total*100),to=Math.round((acertos+protecoes)/total*100);document.getElementById("resumoFechados").innerHTML=`<div class="resumo-linha">✅ <span class="resumo-destaque">Acertos: ${acertos}</span> | 🟡 <span class="resumo-protecao">Proteções: ${protecoes}</span> | ❌ <span class="resumo-erro">Erros: ${erros}</span></div><div class="resumo-linha">🟠 Retidos/Cancelados: ${retidos}</div><div class="resumo-linha">🎯 Taxa cheia: <span class="resumo-destaque">${tc}%</span> | 📌 Operacional: <span class="resumo-destaque">${to}%</span></div>`}
+async function carregarControleEnvio(){if(!painelAtivo)return;const{data,error}=await db.from("controle_envio").select("*").eq("id",1).single();if(error||!data)return;CONTROLE_ENVIO={snarpy_ativo:data.snarpy_ativo===true,hyper_ativo:data.hyper_ativo===true,mensagem:data.mensagem||""}}
 function existePausaOperacional(){return!(CONTROLE_ENVIO.snarpy_ativo===true&&CONTROLE_ENVIO.hyper_ativo===true)}
 function mensagemPausaOperacional(){if(CONTROLE_ENVIO.mensagem&&String(CONTROLE_ENVIO.mensagem).trim())return String(CONTROLE_ENVIO.mensagem).trim();return"⚠️ MERCADO EM OBSERVAÇÃO\n\nNovas entradas estão temporariamente pausadas.\nOs sinais já enviados continuam sendo acompanhados até o fechamento."}
-function avisoOperacionalHTML(){if(!existePausaOperacional())return"";let detalhe="";if(CONTROLE_ENVIO.snarpy_ativo!==true&&CONTROLE_ENVIO.hyper_ativo!==true)detalhe="\n\nSNARPY e HYPER pausados temporariamente.";else if(CONTROLE_ENVIO.snarpy_ativo!==true)detalhe="\n\nSNARPY pausado temporariamente.";else if(CONTROLE_ENVIO.hyper_ativo!==true)detalhe="\n\nHYPER pausado temporariamente.";return<div class="aviso-operacional">${mensagemPausaOperacional()}${detalhe}</div>}
+function avisoOperacionalHTML(){if(!existePausaOperacional())return"";let detalhe="";if(CONTROLE_ENVIO.snarpy_ativo!==true&&CONTROLE_ENVIO.hyper_ativo!==true)detalhe="\n\nSNARPY e HYPER pausados temporariamente.";else if(CONTROLE_ENVIO.snarpy_ativo!==true)detalhe="\n\nSNARPY pausado temporariamente.";else if(CONTROLE_ENVIO.hyper_ativo!==true)detalhe="\n\nHYPER pausado temporariamente.";return`<div class="aviso-operacional">${mensagemPausaOperacional()}${detalhe}</div>`}
 function rosaVisual(texto){return String(texto||"").replace(/🟢/g,"🩷")}
 function linhasUnicas(valores){return[...new Set(valores.map(v=>String(v||"").trim()).filter(Boolean))]}
 function linhaEntradaAoVivo(linha){const t=String(linha||"").toUpperCase();return t.includes("APÓS")&&t.includes("SAIR")&&(t.includes("2C")||t.includes("4C"))}
 function modalidadeEntradaAoVivo(linha){const t=String(linha||"").toUpperCase();if(t.includes("🩷")||t.includes("ROSA")||t.includes("4C"))return"ROSA";if(t.includes("🟣")||t.includes("ROXA")||t.includes("2C"))return"ROXA";return""}
 function registroAoVivoRecente(row){const bruto=valorPrimeiro(row,["atualizado_em","data_hora","data_hora_entrada","criado_em"],"");if(!bruto)return true;const d=dataValida(bruto);if(!d)return true;const idade=Date.now()-d.getTime();return idade>=-300000&&idade<=1200000}
-function selecionarEntradasAtuais(rows){const atuais={ROXA,ROSA};for(const row of rows||[]){if(!registroAoVivoRecente(row))continue;const linhas=rosaVisual(row.mensagem||"").split(/\n+/).map(x=>x.trim()).filter(linhaEntradaAoVivo);for(const linha of linhas){const tipo=modalidadeEntradaAoVivo(linha);if(tipo&&!atuais[tipo])atuais[tipo]=linha}if(atuais.ROXA&&atuais.ROSA)break}return[atuais.ROXA,atuais.ROSA].filter(Boolean)}
+function selecionarEntradasAtuais(rows){const atuais={ROXA:null,ROSA:null};for(const row of rows||[]){if(!registroAoVivoRecente(row))continue;const linhas=rosaVisual(row.mensagem||"").split(/\n+/).map(x=>x.trim()).filter(linhaEntradaAoVivo);for(const linha of linhas){const tipo=modalidadeEntradaAoVivo(linha);if(tipo&&!atuais[tipo])atuais[tipo]=linha}if(atuais.ROXA&&atuais.ROSA)break}return[atuais.ROXA,atuais.ROSA].filter(Boolean)}
 let ULTIMA_ATUALIZACAO_RESUMOS=0;
 let RESULTADOS_RESUMO={ROXA:[],ROSA:[]};
 function tendenciaResultados(resultados){if(resultados.length<4)return"↔";const meio=Math.ceil(resultados.length/2),novos=resultados.slice(0,meio),antigos=resultados.slice(meio),taxa=lista=>lista.filter(x=>x==="WIN").length/Math.max(1,lista.length);return taxa(novos)>=taxa(antigos)?"↑":"↓"}
-function htmlResumoModalidade(tipo,resultados){const rosa=tipo==="ROSA",positivo=rosa?"🩷":"🟣",nome=rosa?"ROSA":"ROXA";if(!resultados.length)return<div class="leitura-resumo ${rosa?"rosa":"roxa"} sem-resultados" onclick="abrirHistorico('${tipo}')"><div class="leitura-resumo-nome">${positivo} ${nome}</div><div class="vazio">Aguardando primeiros resultados...</div></div>;const ultimos=resultados.slice(0,10),bolinhas=ultimos.map(r=>r==="WIN"?positivo:"🔵").join(""),percentual=Math.round(ultimos.filter(r=>r==="WIN").length/ultimos.length100);return<div class="leitura-resumo ${rosa?"rosa":"roxa"}" onclick="abrirHistorico('${tipo}')"><div class="leitura-resumo-nome">${positivo} ${nome}</div><div class="leitura-bolinhas">${bolinhas}<span class="leitura-percentual">${percentual}% ${tendenciaResultados(ultimos)}</span></div></div>}
-function renderizarResumosAoVivo(){document.getElementById("leitura").innerHTML=<div class="leitura-resumos">${htmlResumoModalidade("ROXA",RESULTADOS_RESUMO.ROXA)}${htmlResumoModalidade("ROSA",RESULTADOS_RESUMO.ROSA)}</div>}
-async function carregarResumosAoVivo(){const agora=Date.now();if(agora-ULTIMA_ATUALIZACAO_RESUMOS<5000)return;ULTIMA_ATUALIZACAO_RESUMOS=agora;const[roxos,rosa]=await Promise.all([buscarResultadosRoxos(20),db.from("executor_rosa_resultados_app").select("").order("data_hora_resultado",{ascending}).limit(10)]);RESULTADOS_RESUMO.ROXA=roxos.slice(0,10).map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");if(!rosa.error&&rosa.data)RESULTADOS_RESUMO.ROSA=rosa.data.map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");renderizarResumosAoVivo()}
-async function carregarLeitura(){if(!painelAtivo)return;const{data,error}=await db.from("leituras_ao_vivo").select("").eq("ativo",true).order("id",{ascending}).limit(12);const entradas=!error&&data?selecionarEntradasAtuais(data):[];document.getElementById("leituraCompacta").innerHTML=entradas.length?entradas.map(escaparHtml).join("<br>"):"<span class='entrada-vazia'>AGUARDANDO NOVA OPORTUNIDADE</span>";await carregarResumosAoVivo()}
-async function carregarProjecoes(){const alvo=document.getElementById("conteudoProjecoes");if(!alvo)return;const{data,error}=await db.from("projecoes_mercado").select("").eq("ativo",true).order("id",{ascending}).limit(1);alvo.innerText=(error||!data||!data.length)?"Aguardando projeções...":(data[0].mensagem||"Aguardando projeções...")}
+function htmlResumoModalidade(tipo,resultados){const rosa=tipo==="ROSA",positivo=rosa?"🩷":"🟣",nome=rosa?"ROSA":"ROXA";if(!resultados.length)return`<div class="leitura-resumo ${rosa?"rosa":"roxa"} sem-resultados" onclick="abrirHistorico('${tipo}')"><div class="leitura-resumo-nome">${positivo} ${nome}</div><div class="vazio">Aguardando primeiros resultados...</div></div>`;const ultimos=resultados.slice(0,10),bolinhas=ultimos.map(r=>r==="WIN"?positivo:"🔵").join(""),percentual=Math.round(ultimos.filter(r=>r==="WIN").length/ultimos.length*100);return`<div class="leitura-resumo ${rosa?"rosa":"roxa"}" onclick="abrirHistorico('${tipo}')"><div class="leitura-resumo-nome">${positivo} ${nome}</div><div class="leitura-bolinhas">${bolinhas}<span class="leitura-percentual">${percentual}% ${tendenciaResultados(ultimos)}</span></div></div>`}
+function renderizarResumosAoVivo(){document.getElementById("leitura").innerHTML=`<div class="leitura-resumos">${htmlResumoModalidade("ROXA",RESULTADOS_RESUMO.ROXA)}${htmlResumoModalidade("ROSA",RESULTADOS_RESUMO.ROSA)}</div>`}
+async function carregarResumosAoVivo(){const agora=Date.now();if(agora-ULTIMA_ATUALIZACAO_RESUMOS<5000)return;ULTIMA_ATUALIZACAO_RESUMOS=agora;const[roxos,rosa]=await Promise.all([buscarResultadosRoxos(20),db.from("executor_rosa_resultados_app").select("*").order("data_hora_resultado",{ascending:false}).limit(10)]);RESULTADOS_RESUMO.ROXA=roxos.slice(0,10).map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");if(!rosa.error&&rosa.data)RESULTADOS_RESUMO.ROSA=rosa.data.map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");renderizarResumosAoVivo()}
+async function carregarLeitura(){if(!painelAtivo)return;const{data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(12);const entradas=!error&&data?selecionarEntradasAtuais(data):[];document.getElementById("leituraCompacta").innerHTML=entradas.length?entradas.map(escaparHtml).join("<br>"):"<span class='entrada-vazia'>AGUARDANDO NOVA OPORTUNIDADE</span>";await carregarResumosAoVivo()}
+async function carregarProjecoes(){const alvo=document.getElementById("conteudoProjecoes");if(!alvo)return;const{data,error}=await db.from("projecoes_mercado").select("*").eq("ativo",true).order("id",{ascending:false}).limit(1);alvo.innerText=(error||!data||!data.length)?"Aguardando projeções...":(data[0].mensagem||"Aguardando projeções...")}
 function valorPrimeiro(obj,campos,padrao="-"){for(const campo of campos){const v=obj?.[campo];if(v!==undefined&&v!==null&&String(v).trim()!=="")return v}return padrao}
-function escaparHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&","<":"<",">":">",""":""","'":"'"}[c]))}
+function escaparHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
 function duas(n){return String(n).padStart(2,"0")}
-function dataValida(v){if(!v)return null;const d=new Date(v);return Number.isNaN(d.getTime())?null}
-function chaveHoraLocal(v){const s=String(v||"").trim().replace("T"," ");const m=s.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2})/);if(m)return${m[1]}-${m[2]}-${m[3]} ${m[4]};const d=dataValida(v);if(d)return${d.getFullYear()}-${duas(d.getMonth()+1)}-${duas(d.getDate())} ${duas(d.getHours())};return""}
-function horaCurtaValor(v){const s=String(v||"").trim();const m=s.match(/(?|\s)(\d{2}):(\d{2})/)||s.match(/^(\d{1,2}):(\d{2})/);if(m)return${duas(m[1])}:${m[2]};const d=dataValida(v);if(d)return${duas(d.getHours())}:${duas(d.getMinutes())};return"--:--"}
-function horaFaixa(row){if(row.faixa&&String(row.faixa).trim())return String(row.faixa).substring(0,5);const base=row.hora_inicio||row.hora||row.criado_em;const h=horaCurtaValor(base);return h==="--:--"?h.substring(0,2)+":00"}
-async function carregarRosas(){if(!painelAtivo)return;try{const{data,error}=await db.from("rosas_por_hora_app").select("").order("hora_inicio",{ascending}).limit(12);if(error||!data||!data.length){document.getElementById("rosasMini").innerText="🌹 0";ROSAS_HORAS=[];return}ROSAS_HORAS=data.map(row=>({...row,qtd(row.quantidade||row.total||row.qtd||0),hora(row),chave(row.hora_inicio||row.hora||row.criado_em)}));const chaveAtual=chaveHoraLocal(new Date());const atual=ROSAS_HORAS.find(r=>r.chave===chaveAtual);document.getElementById("rosasMini").innerText=🌹 ${atual?atual._qtd:0}}catch(e){document.getElementById("rosasMini").innerText="🌹 0";ROSAS_HORAS=[]}}
-function renderizarHorasRosas(){const alvo=document.getElementById("conteudoRosas");if(!ROSAS_HORAS.length){alvo.innerHTML="<div class='vazio'>Aguardando contagem de rosas...</div>";return}alvo.innerHTML=ROSAS_HORAS.map((r,i)=><div class="hora-rosa" onclick="abrirDetalhesRosas(${i})"><div class="hora">${escaparHtml(r._hora)}</div><div class="seta">➜</div><div class="qtd">🌹 ${r._qtd}</div></div>).join("")}
-async function abrirDetalhesRosas(indice){const selecionada=ROSAS_HORAS[indice];if(!selecionada)return;document.getElementById("tituloDetalhesRosas").innerText=🌹 ROSAS DAS ${selecionada._hora};document.getElementById("conteudoDetalhesRosas").innerHTML="<div class='vazio'>Carregando detalhes...</div>";document.getElementById("modalRosasDetalhes").classList.remove("escondido");try{const{data,error}=await db.from("rosas_detalhes_app").select("").order("id",{ascending}).limit(500);if(error||!data){document.getElementById("conteudoDetalhesRosas").innerHTML="<div class='vazio'>Erro ao carregar detalhes.</div>";return}const horaSelecionada=String(selecionada._hora||"").substring(0,2);const itens=data.filter(row=>{const horarioVelaBruto=row.horario_vela||row.horario||row.data_hora||row.criado_em||"";const horaVela=horaCurtaValor(horarioVelaBruto).substring(0,2);const horaInicioRegistro=row.hora_inicio||row.data_hora||row.hora||"";const combinaHorarioVela=horaSelecionada.length===2&&horaVela===horaSelecionada;const combinaHoraInicio=chaveHoraLocal(horaInicioRegistro)===selecionada._chave;return combinaHorarioVela||combinaHoraInicio}).sort((a,b)=>{const ha=horaCurtaValor(a.horario_vela||a.horario||a.data_hora||a.criado_em),hb=horaCurtaValor(b.horario_vela||b.horario||b.data_hora||b.criado_em);return horarioValor(ha)-horarioValor(hb)});if(!itens.length){document.getElementById("conteudoDetalhesRosas").innerHTML="<div class='vazio'>Nenhuma rosa encontrada nesse horário.</div>";return}document.getElementById("conteudoDetalhesRosas").innerHTML=itens.map((row,i)=>{const hora=horaCurtaValor(row.horario_vela||row.hora_inicio||row.criado_em||row.horario);let mult=valorPrimeiro(row,["multiplicador","multiplicador_real","valor","x"],"-");mult=String(mult).toLowerCase().includes("x")?String(mult):${mult}x;return<div class="detalhe-rosa"><div class="num">${i+1}</div><div class="hora">${escaparHtml(hora)}</div><div class="seta">➜</div><div class="mult">${escaparHtml(mult)}</div></div>}).join("")}catch(e){document.getElementById("conteudoDetalhesRosas").innerHTML="<div class='vazio'>Erro ao carregar detalhes.</div>"}}
+function dataValida(v){if(!v)return null;const d=new Date(v);return Number.isNaN(d.getTime())?null:d}
+function chaveHoraLocal(v){const s=String(v||"").trim().replace("T"," ");const m=s.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2})/);if(m)return`${m[1]}-${m[2]}-${m[3]} ${m[4]}`;const d=dataValida(v);if(d)return`${d.getFullYear()}-${duas(d.getMonth()+1)}-${duas(d.getDate())} ${duas(d.getHours())}`;return""}
+function horaCurtaValor(v){const s=String(v||"").trim();const m=s.match(/(?:T|\s)(\d{2}):(\d{2})/)||s.match(/^(\d{1,2}):(\d{2})/);if(m)return`${duas(m[1])}:${m[2]}`;const d=dataValida(v);if(d)return`${duas(d.getHours())}:${duas(d.getMinutes())}`;return"--:--"}
+function horaFaixa(row){if(row.faixa&&String(row.faixa).trim())return String(row.faixa).substring(0,5);const base=row.hora_inicio||row.hora||row.criado_em;const h=horaCurtaValor(base);return h==="--:--"?h:h.substring(0,2)+":00"}
+async function carregarRosas(){if(!painelAtivo)return;try{const{data,error}=await db.from("rosas_por_hora_app").select("*").order("hora_inicio",{ascending:false}).limit(12);if(error||!data||!data.length){document.getElementById("rosasMini").innerText="🌹 0";ROSAS_HORAS=[];return}ROSAS_HORAS=data.map(row=>({...row,_qtd:Number(row.quantidade||row.total||row.qtd||0),_hora:horaFaixa(row),_chave:chaveHoraLocal(row.hora_inicio||row.hora||row.criado_em)}));const chaveAtual=chaveHoraLocal(new Date());const atual=ROSAS_HORAS.find(r=>r._chave===chaveAtual);document.getElementById("rosasMini").innerText=`🌹 ${atual?atual._qtd:0}`}catch(e){document.getElementById("rosasMini").innerText="🌹 0";ROSAS_HORAS=[]}}
+function renderizarHorasRosas(){const alvo=document.getElementById("conteudoRosas");if(!ROSAS_HORAS.length){alvo.innerHTML="<div class='vazio'>Aguardando contagem de rosas...</div>";return}alvo.innerHTML=ROSAS_HORAS.map((r,i)=>`<div class="hora-rosa" onclick="abrirDetalhesRosas(${i})"><div class="hora">${escaparHtml(r._hora)}</div><div class="seta">➜</div><div class="qtd">🌹 ${r._qtd}</div></div>`).join("")}
+async function abrirDetalhesRosas(indice){const selecionada=ROSAS_HORAS[indice];if(!selecionada)return;document.getElementById("tituloDetalhesRosas").innerText=`🌹 ROSAS DAS ${selecionada._hora}`;document.getElementById("conteudoDetalhesRosas").innerHTML="<div class='vazio'>Carregando detalhes...</div>";document.getElementById("modalRosasDetalhes").classList.remove("escondido");try{const{data,error}=await db.from("rosas_detalhes_app").select("*").order("id",{ascending:false}).limit(500);if(error||!data){document.getElementById("conteudoDetalhesRosas").innerHTML="<div class='vazio'>Erro ao carregar detalhes.</div>";return}const horaSelecionada=String(selecionada._hora||"").substring(0,2);const itens=data.filter(row=>{const horarioVelaBruto=row.horario_vela||row.horario||row.data_hora||row.criado_em||"";const horaVela=horaCurtaValor(horarioVelaBruto).substring(0,2);const horaInicioRegistro=row.hora_inicio||row.data_hora||row.hora||"";const combinaHorarioVela=horaSelecionada.length===2&&horaVela===horaSelecionada;const combinaHoraInicio=chaveHoraLocal(horaInicioRegistro)===selecionada._chave;return combinaHorarioVela||combinaHoraInicio}).sort((a,b)=>{const ha=horaCurtaValor(a.horario_vela||a.horario||a.data_hora||a.criado_em),hb=horaCurtaValor(b.horario_vela||b.horario||b.data_hora||b.criado_em);return horarioValor(ha)-horarioValor(hb)});if(!itens.length){document.getElementById("conteudoDetalhesRosas").innerHTML="<div class='vazio'>Nenhuma rosa encontrada nesse horário.</div>";return}document.getElementById("conteudoDetalhesRosas").innerHTML=itens.map((row,i)=>{const hora=horaCurtaValor(row.horario_vela||row.hora_inicio||row.criado_em||row.horario);let mult=valorPrimeiro(row,["multiplicador","multiplicador_real","valor","x"],"-");mult=String(mult).toLowerCase().includes("x")?String(mult):`${mult}x`;return`<div class="detalhe-rosa"><div class="num">${i+1}</div><div class="hora">${escaparHtml(hora)}</div><div class="seta">➜</div><div class="mult">${escaparHtml(mult)}</div></div>`}).join("")}catch(e){document.getElementById("conteudoDetalhesRosas").innerHTML="<div class='vazio'>Erro ao carregar detalhes.</div>"}}
 function classeResultadoSurf(texto){const t=String(texto||"").toUpperCase();if(t.includes("WIN")||t.includes("ACERTO"))return"win";if(t.includes("LOSS")||t.includes("ERRO")||t.includes("RED"))return"loss";return"outro"}
 function normalizarResultadoAoVivo(row){const t=String(valorPrimeiro(row,["status_app","resultado","resultado_usuario","status","situacao"],"PENDENTE")).toUpperCase();if(t.includes("WIN")||t.includes("ACERTO")||t.includes("PROTE"))return"WIN";if(t.includes("LOSS")||t.includes("ERRO")||t.includes("RED"))return"LOSS";return t||"PENDENTE"}
-function formatarMultiplicador(v){if(v===undefined||v===null||String(v).trim()===""||String(v).trim()==="-")return"-";const s=String(v).trim().replace(/\sx$/i,""),achado=s.match(/\d+(?:[.,]\d+)?/),n=achado?Number(achado[0].replace(",","."));return Number.isFinite(n)?${n.toFixed(2)}x:"-"}
+function formatarMultiplicador(v){if(v===undefined||v===null||String(v).trim()===""||String(v).trim()==="-")return"-";const s=String(v).trim().replace(/\s*x$/i,""),achado=s.match(/\d+(?:[.,]\d+)?/),n=achado?Number(achado[0].replace(",",".")):NaN;return Number.isFinite(n)?`${n.toFixed(2)}x`:"-"}
 function resultadoFinalAoVivo(row){return["WIN","LOSS"].includes(normalizarResultadoAoVivo(row))}
 function fontesTextoResultado(row){return["mensagem","descricao","detalhes","detalhes_resultado","observacoes","casas_observadas"].map(c=>row?.[c]).filter(v=>typeof v==="string"&&v.trim()).join(" | ")}
-function valorGatilho(row){const direto=valorPrimeiro(row,["gatilho","apos","referencia","ref_mult","multiplicador_referencia","entrada_apos","gatilho_utilizado"],null);if(direto!==null)return direto;const m=fontesTextoResultado(row).match(/(?|AP[ÓO]S|REFER[EÊ]NCIA)\s*[:=·-]?\s*(\d+(?:[.,]\d+)?)\s*[xX]?/i);return m?m[1]:"-"}
+function valorGatilho(row){const direto=valorPrimeiro(row,["gatilho","apos","referencia","ref_mult","multiplicador_referencia","entrada_apos","gatilho_utilizado"],null);if(direto!==null)return direto;const m=fontesTextoResultado(row).match(/(?:GATILHO|AP[ÓO]S|REFER[EÊ]NCIA)\s*[:=·-]?\s*(\d+(?:[.,]\d+)?)\s*[xX]?/i);return m?m[1]:"-"}
 function casasEstruturadas(row){for(const campo of["casas","casas_json","casas_observadas","detalhes_json"]){let v=row?.[campo];if(typeof v==="string"){try{v=JSON.parse(v)}catch(e){continue}}if(Array.isArray(v)||v&&typeof v==="object")return v}return null}
-function camposCasa(n){const ordinal={1:["primeira_casa","resultado_casa_1"],2:["segunda_casa","resultado_casa_2"],3:["terceira_casa","resultado_casa_3"],4:["quarta_casa","resultado_casa_4"]};return[c${n}_mult,C${n}_mult,casa_${n}_mult,casa_${n},casa${n},c${n},C${n},valor_casa_${n},valor_c${n},c${n}_valor,...(ordinal[n]||[])]}
-function valorCasa(row,n){const direto=valorPrimeiro(row,camposCasa(n),null);if(direto!==null)return direto;const casas=casasEstruturadas(row);if(Array.isArray(casas)){const item=casas[n-1];if(item&&typeof item==="object")return valorPrimeiro(item,["valor","multiplicador","resultado","x"],"-");if(item!==undefined&&item!==null)return item}else if(casas){const aninhado=valorPrimeiro(casas,camposCasa(n),null);if(aninhado!==null)return aninhado}const nomes=[null,/(?\s1|1\s[ªA]\sCASA|PRIMEIRA\sCASA|CASA[\s-]1)/i,/(?\s2|2\s*[ªA]\sCASA|SEGUNDA\sCASA|CASA[\s-]2)/i,/(?\s3|3\s*[ªA]\sCASA|TERCEIRA\sCASA|CASA[\s-]3)/i,/(?\s4|4\s*[ªA]\sCASA|QUARTA\sCASA|CASA[\s-]4)/i];const m=fontesTextoResultado(row).match(new RegExp(${nomes[n].source}\\s*[:=·-]?\\s*(\\d+(?:[.,]\\d+)?)\\s*[xX]?,"i"));return m?m[1]:"-"}
+function camposCasa(n){const ordinal={1:["primeira_casa","resultado_casa_1"],2:["segunda_casa","resultado_casa_2"],3:["terceira_casa","resultado_casa_3"],4:["quarta_casa","resultado_casa_4"]};return[`c${n}_mult`,`C${n}_mult`,`casa_${n}_mult`,`casa_${n}`,`casa${n}`,`c${n}`,`C${n}`,`valor_casa_${n}`,`valor_c${n}`,`c${n}_valor`,...(ordinal[n]||[])]}
+function valorCasa(row,n){const direto=valorPrimeiro(row,camposCasa(n),null);if(direto!==null)return direto;const casas=casasEstruturadas(row);if(Array.isArray(casas)){const item=casas[n-1];if(item&&typeof item==="object")return valorPrimeiro(item,["valor","multiplicador","resultado","x"],"-");if(item!==undefined&&item!==null)return item}else if(casas){const aninhado=valorPrimeiro(casas,camposCasa(n),null);if(aninhado!==null)return aninhado}const nomes=[null,/(?:C\s*1|1\s*[ªA]\s*CASA|PRIMEIRA\s*CASA|CASA[_\s-]*1)/i,/(?:C\s*2|2\s*[ªA]\s*CASA|SEGUNDA\s*CASA|CASA[_\s-]*2)/i,/(?:C\s*3|3\s*[ªA]\s*CASA|TERCEIRA\s*CASA|CASA[_\s-]*3)/i,/(?:C\s*4|4\s*[ªA]\s*CASA|QUARTA\s*CASA|CASA[_\s-]*4)/i];const m=fontesTextoResultado(row).match(new RegExp(`${nomes[n].source}\\s*[:=·-]?\\s*(\\d+(?:[.,]\\d+)?)\\s*[xX]?`,"i"));return m?m[1]:"-"}
 function resultadoCompletoRoxo(row){return resultadoFinalAoVivo(row)&&formatarMultiplicador(valorGatilho(row))!=="-"&&formatarMultiplicador(valorCasa(row,1))!=="-"&&formatarMultiplicador(valorCasa(row,2))!=="-"}
 function resultadoCompletoRosa(row){return resultadoFinalAoVivo(row)&&formatarMultiplicador(valorGatilho(row))!=="-"&&[1,2,3,4].some(n=>formatarMultiplicador(valorCasa(row,n))!=="-")}
-function faixaSaida(row,padraoMin,padraoMax){const pronta=valorPrimeiro(row,["faixa_saida","saida","alvo_saida"],null);if(pronta!==null&&/\d/.test(String(pronta))&&/[AaÀà-]/.test(String(pronta)))return String(pronta).replace(/\s+/g," ").trim();const min=valorPrimeiro(row,["saida_min","saidaMin","alvo_min","saida_minima"],padraoMin),max=valorPrimeiro(row,["saida_max","saidaMax","alvo_max","saida_maxima"],padraoMax);return${String(min).replace(/x$/i,"")}x A ${String(max).replace(/x$/i,"")}x}
+function faixaSaida(row,padraoMin,padraoMax){const pronta=valorPrimeiro(row,["faixa_saida","saida","alvo_saida"],null);if(pronta!==null&&/\d/.test(String(pronta))&&/[AaÀà-]/.test(String(pronta)))return String(pronta).replace(/\s+/g," ").trim();const min=valorPrimeiro(row,["saida_min","saidaMin","alvo_min","saida_minima"],padraoMin),max=valorPrimeiro(row,["saida_max","saidaMax","alvo_max","saida_maxima"],padraoMax);return`${String(min).replace(/x$/i,"")}x A ${String(max).replace(/x$/i,"")}x`}
 function dataResultado(row){return valorPrimeiro(row,["data_hora_resultado","data_hora_entrada","horario_entrada","horario_chamada","horario_sinal","data_hora","atualizado_em","criado_em","horario","hora"],"")}
-function resultadosRoxosValidos(rows){const vistos=new Set(),finais=(rows||[]).filter(resultadoFinalAoVivo),preferidos=finais.filter(row=>formatarMultiplicador(valorGatilho(row))!=="-"||formatarMultiplicador(valorCasa(row,1))!=="-"||formatarMultiplicador(valorCasa(row,2))!=="-"),base=preferidos.length?preferidos,unicos=base.filter(row=>{const chave=[dataResultado(row),normalizarResultadoAoVivo(row),formatarMultiplicador(valorGatilho(row)),formatarMultiplicador(valorCasa(row,1)),formatarMultiplicador(valorCasa(row,2))].join("|");if(vistos.has(chave))return false;vistos.add(chave);return true}),comHora=unicos.filter(row=>!["00:00","--:--"].includes(horaCurtaValor(dataResultado(row))));return comHora.length?comHora}
-async function buscarResultadosRoxos(limite=60){const nova=await db.from("surf_roxo_resultados_v2_app").select("").order("data_hora_resultado",{ascending}).limit(limite),novos=!nova.error?resultadosRoxosValidos(nova.data):[];if(novos.length>=limite)return novos.slice(0,limite);const antiga=await db.from("surf_roxo_resultados_app").select("").order("id",{ascending}).limit(Math.max(limite,60));if(antiga.error)return novos.slice(0,limite);const antigos=resultadosRoxosValidos(antiga.data),vistos=new Set(),combinados=[];for(const row of[...novos,...antigos]){const chave=[dataResultado(row),normalizarResultadoAoVivo(row),formatarMultiplicador(valorGatilho(row)),formatarMultiplicador(valorCasa(row,1)),formatarMultiplicador(valorCasa(row,2))].join("|");if(vistos.has(chave))continue;vistos.add(chave);combinados.push(row);if(combinados.length>=limite)break}return combinados}
-function casasRosa(row){const prontas=[1,2].map(n=>{const numero=valorPrimeiro(row,[maior_${n}_casa,maior${n}_casa,casa_maior_${n}],null),valor=valorPrimeiro(row,[maior_${n}_mult,maior${n}_mult,valor_maior_${n}],null);return{casa===null?"-"(numero).toUpperCase().startsWith("C")?String(numero).toUpperCase():C${numero},valor}}).filter(x=>x.casa!=="-"&&formatarMultiplicador(x.valor)!=="-");if(prontas.length)return prontas;return[1,2,3,4].map(n=>({casa:C${n},valor(row,n)})).filter(x=>formatarMultiplicador(x.valor)!=="-").sort((a,b)=>Number(String(b.valor).replace(/x/ig,"").replace(",","."))-Number(String(a.valor).replace(/x/ig,"").replace(",","."))).slice(0,2)}
-function itemHistoricoRoxo(row,i){const resultado=normalizarResultadoAoVivo(row),hora=horaCurtaValor(dataResultado(row)),gatilho=formatarMultiplicador(valorGatilho(row)),casa1=formatarMultiplicador(valorCasa(row,1)),casa2=formatarMultiplicador(valorCasa(row,2));return<div class="surf-item"><div class="surf-topo"><div class="surf-num">${i+1}</div><div class="surf-hora">🟣 ${escaparHtml(resultado)} · ${escaparHtml(hora)}</div><div class="surf-status ${classeResultadoSurf(resultado)}">${escaparHtml(resultado)}</div></div><div class="surf-info"><b>Gatilho:</b> ${escaparHtml(gatilho)}<br><b>1ª casa:</b> ${escaparHtml(casa1)}<br><b>2ª casa:</b> ${escaparHtml(casa2)}<br><b>Saída:</b> ${escaparHtml(faixaSaida(row,2,3))}</div></div>}
-function itemHistoricoRosa(row,i){const resultado=normalizarResultadoAoVivo(row),hora=horaCurtaValor(dataResultado(row)),gatilho=formatarMultiplicador(valorGatilho(row)),maiores=casasRosa(row),m1=maiores[0]||{casa:"-",valor:"-"},m2=maiores[1]||{casa:"-",valor:"-"};return<div class="surf-item rosa"><div class="surf-topo"><div class="surf-num">${i+1}</div><div class="surf-hora">🩷 ${escaparHtml(resultado)} · ${escaparHtml(hora)}</div><div class="surf-status ${classeResultadoSurf(resultado)}">${escaparHtml(resultado)}</div></div><div class="surf-info"><b>Gatilho:</b> ${escaparHtml(gatilho)}<br><b>Saída:</b> ${escaparHtml(faixaSaida(row,5,10))}<br><b>1ª maior:</b> ${escaparHtml(m1.casa)} · ${escaparHtml(formatarMultiplicador(m1.valor))}<br><b>2ª maior:</b> ${escaparHtml(m2.casa)} · ${escaparHtml(formatarMultiplicador(m2.valor))}</div></div>}
-async function carregarHistoricoAoVivo(tipo){const alvo=document.getElementById("conteudoAoVivo"),rosa=tipo==="ROSA";alvo.innerHTML="<div class='vazio'>Carregando resultados...</div>";try{let exibiveis=[];if(rosa){const{data,error}=await db.from("executor_rosa_resultados_app").select("").order("data_hora_resultado",{ascending}).limit(60);if(error||!data){alvo.innerHTML="<div class='vazio'>Erro ao carregar resultados Rosa.</div>";return}const finais=data.filter(resultadoFinalAoVivo),completos=finais.filter(resultadoCompletoRosa);exibiveis=(completos.length?completos).slice(0,20)}else{exibiveis=(await buscarResultadosRoxos(60)).slice(0,20)}if(!exibiveis.length){alvo.innerHTML="<div class='vazio'>Nenhum resultado finalizado encontrado.</div>";return}alvo.innerHTML=exibiveis.map(rosa?itemHistoricoRosa).join("")}catch(e){console.error("Falha no histórico ao vivo:",e);alvo.innerHTML="<div class='vazio'>Erro ao carregar resultados.</div>"}}
+function resultadosRoxosValidos(rows){const vistos=new Set(),finais=(rows||[]).filter(resultadoFinalAoVivo),preferidos=finais.filter(row=>formatarMultiplicador(valorGatilho(row))!=="-"||formatarMultiplicador(valorCasa(row,1))!=="-"||formatarMultiplicador(valorCasa(row,2))!=="-"),base=preferidos.length?preferidos:finais,unicos=base.filter(row=>{const chave=[dataResultado(row),normalizarResultadoAoVivo(row),formatarMultiplicador(valorGatilho(row)),formatarMultiplicador(valorCasa(row,1)),formatarMultiplicador(valorCasa(row,2))].join("|");if(vistos.has(chave))return false;vistos.add(chave);return true}),comHora=unicos.filter(row=>!["00:00","--:--"].includes(horaCurtaValor(dataResultado(row))));return comHora.length?comHora:unicos}
+async function buscarResultadosRoxos(limite=60){const nova=await db.from("surf_roxo_resultados_v2_app").select("*").order("data_hora_resultado",{ascending:false}).limit(limite),novos=!nova.error?resultadosRoxosValidos(nova.data):[];if(novos.length>=limite)return novos.slice(0,limite);const antiga=await db.from("surf_roxo_resultados_app").select("*").order("id",{ascending:false}).limit(Math.max(limite,60));if(antiga.error)return novos.slice(0,limite);const antigos=resultadosRoxosValidos(antiga.data),vistos=new Set(),combinados=[];for(const row of[...novos,...antigos]){const chave=[dataResultado(row),normalizarResultadoAoVivo(row),formatarMultiplicador(valorGatilho(row)),formatarMultiplicador(valorCasa(row,1)),formatarMultiplicador(valorCasa(row,2))].join("|");if(vistos.has(chave))continue;vistos.add(chave);combinados.push(row);if(combinados.length>=limite)break}return combinados}
+function casasRosa(row){const prontas=[1,2].map(n=>{const numero=valorPrimeiro(row,[`maior_${n}_casa`,`maior${n}_casa`,`casa_maior_${n}`],null),valor=valorPrimeiro(row,[`maior_${n}_mult`,`maior${n}_mult`,`valor_maior_${n}`],null);return{casa:numero===null?"-":String(numero).toUpperCase().startsWith("C")?String(numero).toUpperCase():`C${numero}`,valor}}).filter(x=>x.casa!=="-"&&formatarMultiplicador(x.valor)!=="-");if(prontas.length)return prontas;return[1,2,3,4].map(n=>({casa:`C${n}`,valor:valorCasa(row,n)})).filter(x=>formatarMultiplicador(x.valor)!=="-").sort((a,b)=>Number(String(b.valor).replace(/x/ig,"").replace(",","."))-Number(String(a.valor).replace(/x/ig,"").replace(",","."))).slice(0,2)}
+function itemHistoricoRoxo(row,i){const resultado=normalizarResultadoAoVivo(row),hora=horaCurtaValor(dataResultado(row)),gatilho=formatarMultiplicador(valorGatilho(row)),casa1=formatarMultiplicador(valorCasa(row,1)),casa2=formatarMultiplicador(valorCasa(row,2));return`<div class="surf-item"><div class="surf-topo"><div class="surf-num">${i+1}</div><div class="surf-hora">🟣 ${escaparHtml(resultado)} · ${escaparHtml(hora)}</div><div class="surf-status ${classeResultadoSurf(resultado)}">${escaparHtml(resultado)}</div></div><div class="surf-info"><b>Gatilho:</b> ${escaparHtml(gatilho)}<br><b>1ª casa:</b> ${escaparHtml(casa1)}<br><b>2ª casa:</b> ${escaparHtml(casa2)}<br><b>Saída:</b> ${escaparHtml(faixaSaida(row,2,3))}</div></div>`}
+function itemHistoricoRosa(row,i){const resultado=normalizarResultadoAoVivo(row),hora=horaCurtaValor(dataResultado(row)),gatilho=formatarMultiplicador(valorGatilho(row)),maiores=casasRosa(row),m1=maiores[0]||{casa:"-",valor:"-"},m2=maiores[1]||{casa:"-",valor:"-"};return`<div class="surf-item rosa"><div class="surf-topo"><div class="surf-num">${i+1}</div><div class="surf-hora">🩷 ${escaparHtml(resultado)} · ${escaparHtml(hora)}</div><div class="surf-status ${classeResultadoSurf(resultado)}">${escaparHtml(resultado)}</div></div><div class="surf-info"><b>Gatilho:</b> ${escaparHtml(gatilho)}<br><b>Saída:</b> ${escaparHtml(faixaSaida(row,5,10))}<br><b>1ª maior:</b> ${escaparHtml(m1.casa)} · ${escaparHtml(formatarMultiplicador(m1.valor))}<br><b>2ª maior:</b> ${escaparHtml(m2.casa)} · ${escaparHtml(formatarMultiplicador(m2.valor))}</div></div>`}
+async function carregarHistoricoAoVivo(tipo){const alvo=document.getElementById("conteudoAoVivo"),rosa=tipo==="ROSA";alvo.innerHTML="<div class='vazio'>Carregando resultados...</div>";try{let exibiveis=[];if(rosa){const{data,error}=await db.from("executor_rosa_resultados_app").select("*").order("data_hora_resultado",{ascending:false}).limit(60);if(error||!data){alvo.innerHTML="<div class='vazio'>Erro ao carregar resultados Rosa.</div>";return}const finais=data.filter(resultadoFinalAoVivo),completos=finais.filter(resultadoCompletoRosa);exibiveis=(completos.length?completos:finais).slice(0,20)}else{exibiveis=(await buscarResultadosRoxos(60)).slice(0,20)}if(!exibiveis.length){alvo.innerHTML="<div class='vazio'>Nenhum resultado finalizado encontrado.</div>";return}alvo.innerHTML=exibiveis.map(rosa?itemHistoricoRosa:itemHistoricoRoxo).join("")}catch(e){console.error("Falha no histórico ao vivo:",e);alvo.innerHTML="<div class='vazio'>Erro ao carregar resultados.</div>"}}
 function abrirHistorico(tipo){const rosa=tipo==="ROSA",caixa=document.getElementById("caixaHistoricoAoVivo");caixa.classList.toggle("rosa",rosa);caixa.classList.toggle("surf",!rosa);document.getElementById("tituloHistoricoAoVivo").innerText=rosa?"🩷 RESULTADOS DO EXECUTOR ROSA":"🟣 RESULTADOS DO SURF ROXO";document.getElementById("modalHistoricoAoVivo").classList.remove("escondido");carregarHistoricoAoVivo(tipo)}
 function fecharHistoricoAoVivo(){document.getElementById("modalHistoricoAoVivo").classList.add("escondido")}
 function abrirRosas(){renderizarHorasRosas();document.getElementById("modalRosas").classList.remove("escondido")}
@@ -839,25 +835,24 @@ function fecharProjecoes(){document.getElementById("modalProjecoes").classList.a
 async function carregar(){if(!painelAtivo)return;await carregarControleEnvio();
 
 if(FINANCEIRO.bloquearSinais){
-const titulo=String(FINANCEIRO.titulo||"").trim();
-const mensagem=String(FINANCEIRO.mensagem||"").trim();
-const textoBotao=String(FINANCEIRO.textoBotaoAcao||"").trim();
-const url=String(FINANCEIRO.urlAcao||"").trim();
-const botao=(textoBotao&&/^https:///i.test(url))
-?<button type="button" onclick="FINANCEIRO_RETORNO_EXTERNO=true;window.open('${url.replace(/'/g,"&#39;")}','_blank')">${escaparHtml(textoBotao)}</button>
-:"";
-document.getElementById("ativos").innerHTML=
-<div class="aviso-operacional">${titulo?<b>${escaparHtml(titulo)}</b><br><br>:""}${escaparHtml(mensagem)}${botao}</div>;
-document.getElementById("resumoFechados").innerHTML="<div class='vazio'></div>";
-document.getElementById("historico").innerHTML="<div class='vazio'></div>";
-return;
+  const titulo=String(FINANCEIRO.titulo||"").trim();
+  const mensagem=String(FINANCEIRO.mensagem||"").trim();
+  const textoBotao=String(FINANCEIRO.textoBotaoAcao||"").trim();
+  const url=String(FINANCEIRO.urlAcao||"").trim();
+  const botao=(textoBotao&&/^https:\/\//i.test(url))
+    ?`<button type="button" onclick="FINANCEIRO_RETORNO_EXTERNO=true;window.open('${url.replace(/'/g,"&#39;")}','_blank')">${escaparHtml(textoBotao)}</button>`
+    :"";
+  document.getElementById("ativos").innerHTML=
+    `<div class="aviso-operacional">${titulo?`<b>${escaparHtml(titulo)}</b><br><br>`:""}${escaparHtml(mensagem)}${botao}</div>`;
+  document.getElementById("resumoFechados").innerHTML="<div class='vazio'></div>";
+  document.getElementById("historico").innerHTML="<div class='vazio'></div>";
+  return;
 }
 
-const{data,error}=await db.from("sinais").select("*").order("id",{ascending}).limit(60);if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Verificar Supabase</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";return}let ativos=(data||[]).filter(ehAtivo),historico=(data||[]).filter(item=>!ehAtivo(item));ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h(a.alvo)-alvoNumero(b.alvo)});ativos=ativos.slice(0,3);historico=historico.slice(0,20);atualizarResumoFechados(historico);let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";const aviso=avisoOperacionalHTML();document.getElementById("ativos").innerHTML=ativos.length?${aviso}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>:(aviso?aviso:"<div class='vazio'>Nenhum sinal ativo no momento</div>");document.getElementById("historico").innerHTML=historico.length?historico.map(item=><div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>"}
+const{data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Verificar Supabase</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";return}let ativos=(data||[]).filter(ehAtivo),historico=(data||[]).filter(item=>!ehAtivo(item));ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo)});ativos=ativos.slice(0,3);historico=historico.slice(0,20);atualizarResumoFechados(historico);let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";const aviso=avisoOperacionalHTML();document.getElementById("ativos").innerHTML=ativos.length?`${aviso}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:(aviso?aviso:"<div class='vazio'>Nenhum sinal ativo no momento</div>");document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`<div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>"}
 registrarServiceWorker();
 db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY")mostrarNovaSenha()});if(window.location.hash.includes("type=recovery"))mostrarNovaSenha();else mostrarLogin();
 setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},10000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);setInterval(carregarAvisos,30000);setInterval(verificarFinanceiroPeriodico,FINANCEIRO_INTERVALO_MS);
 </script>
-
 </body>
 </html>
