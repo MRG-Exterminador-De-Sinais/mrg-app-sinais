@@ -96,6 +96,17 @@ select{
 
 
 .cobranca-modal-grade{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cobranca-status{margin-top:10px;color:#ffaa00;text-align:center;white-space:pre-wrap}.cobranca-acoes{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cobranca-link{word-break:break-all;color:#00ff88;font-size:12px;margin-top:8px}@media(max-width:600px){.cobranca-modal-grade,.cobranca-acoes{grid-template-columns:1fr}}
+
+/* MRG ADM ORGANIZADO */
+.menu-adm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.menu-adm button{margin:0;padding:11px 7px;font-size:12px;background:#222;color:#ddd;border:1px solid #444}
+.menu-adm button.ativo{background:#00ff88;color:#000;border-color:#00ff88}
+.secao-adm.escondido{display:none!important}
+.categorias-usuarios{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0}
+.categorias-usuarios button{margin:0;padding:9px 5px;font-size:11px;background:#252525;color:#ddd;border:1px solid #444}
+.categorias-usuarios button.ativo{background:#00ff88;color:#000}
+.contador-cat{display:block;font-size:16px;font-weight:900;margin-bottom:2px}
+@media(max-width:600px){.menu-adm{grid-template-columns:1fr 1fr}.categorias-usuarios{grid-template-columns:1fr 1fr}.categorias-usuarios button:last-child{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -104,78 +115,87 @@ select{
 <div id="loginBox" class="card"><div class="titulo">ENTRAR COMO ADMINISTRADOR</div><input id="loginEmail" type="email" placeholder="E-mail do administrador"><input id="loginSenha" type="password" placeholder="Senha"><button onclick="entrar()">ENTRAR</button><div id="loginMsg" class="msg">Use seu login cadastrado no Supabase.</div></div>
 <div id="adminBox" class="escondido">
 <div class="usuario-admin">Administrador: <span id="adminEmail"></span></div>
-<div class="card"><div class="titulo">RESUMO FINANCEIRO DO MÊS</div><div id="resumoFinanceiro" class="vazio">Carregando resumo...</div><button class="hist" onclick="abrirConfigFinanceira()">⚙️ EDITAR VALORES E PLANOS</button><button class="bloquear" onclick="bloquearAtrasados()">BLOQUEAR VENCIDOS FORA DA CARÊNCIA</button><button class="cobranca" onclick="abrirModalManutencao()">⚠️ MANUTENÇÃO</button></div>
-<div class="card"><div class="titulo">CONTROLE OPERACIONAL</div><div class="controle-operacional-botoes"><button id="btnSnarpy" class="btn-toggle ativo" onclick="alternarSnarpy()">🟢 SNARPY</button><button id="btnHyper" class="btn-toggle ativo" onclick="alternarHyper()">🟢 HYPER</button><button id="btnTodos" class="btn-toggle ativo" onclick="alternarTodos()">🟢 TODOS</button></div><div id="statusControleEnvio" class="status-controle">Carregando controle...</div><textarea id="mensagemControleEnvio" placeholder="Mensagem livre para aparecer como caixinha nos SINAIS ATIVOS."></textarea><button onclick="salvarMensagemControle()">SALVAR MENSAGEM</button></div>
 
-
-<div class="card">
-  <div class="titulo">MENSAGENS FINANCEIRAS AUTOMÁTICAS</div>
-  <div class="linha">
-    O sistema usa mensagens padrão para vencimento, atraso, bloqueio, reinscrição e fim do período gratuito.
-    Abra esta área apenas quando quiser alterar o padrão enviado automaticamente.
-  </div>
-  <button class="hist" onclick="abrirGerenciadorModelos()">⚙️ GERENCIAR MENSAGENS AUTOMÁTICAS</button>
+<div class="menu-adm">
+  <button id="menuResumo" class="ativo" onclick="mostrarSecaoAdm('resumo')">📊 RESUMO</button>
+  <button id="menuClientes" onclick="mostrarSecaoAdm('clientes')">👥 CLIENTES</button>
+  <button id="menuFinanceiro" onclick="mostrarSecaoAdm('financeiro')">💰 FINANCEIRO</button>
+  <button id="menuAvisos" onclick="mostrarSecaoAdm('avisos')">📣 AVISOS</button>
+  <button id="menuOperacional" onclick="mostrarSecaoAdm('operacional')">⚙️ OPERACIONAL</button>
+  <button class="bloquear" onclick="sair()">SAIR</button>
 </div>
 
-<div class="card">
-  <div class="titulo">CENTRAL DE AVISOS GERAIS</div>
-  <input id="avisoId" type="hidden">
-  <input id="avisoTitulo" placeholder="Título do aviso">
-  <textarea id="avisoMensagem" placeholder="Mensagem que aparecerá no aplicativo"></textarea>
-
-  <div class="duas-colunas">
-    <div>
-      <div class="linha"><b>Destino:</b></div>
-      <select id="avisoDestino" onchange="atualizarDestinoAviso()">
-        <option value="todos">Todos os usuários</option>
-        <option value="usuario">Usuário específico</option>
-      </select>
-    </div>
-    <div>
-      <div class="linha"><b>Prioridade:</b></div>
-      <select id="avisoPrioridade">
-        <option value="0">0 - Informativo</option>
-        <option value="1">1 - Atenção</option>
-        <option value="2">2 - Importante</option>
-        <option value="3">3 - Crítico</option>
-      </select>
-    </div>
+<section id="secaoResumo" class="secao-adm">
+  <div class="card">
+    <div class="titulo">RESUMO FINANCEIRO DO MÊS</div>
+    <div id="resumoFinanceiro" class="vazio">Carregando resumo...</div>
+    <button class="bloquear" onclick="bloquearAtrasados()">BLOQUEAR VENCIDOS FORA DA CARÊNCIA</button>
   </div>
+</section>
 
-  <div id="avisoUsuarioBox" class="escondido">
-    <div class="linha"><b>Usuário:</b></div>
-    <select id="avisoUsuarioId">
-      <option value="">Selecione um usuário</option>
-    </select>
-  </div>
-
-  <div class="duas-colunas">
-    <div>
-      <div class="linha"><b>Início:</b></div>
-      <input id="avisoInicio" type="datetime-local">
+<section id="secaoClientes" class="secao-adm escondido">
+  <div class="card">
+    <div class="topo-controle"><div class="titulo">CONTROLE DE CLIENTES</div><button class="btn-lupa" onclick="toggleBusca()">🔍</button></div>
+    <input id="campoBusca" placeholder="Nome, e-mail, telefone ou status" onkeyup="filtrarUsuarios()">
+    <div class="categorias-usuarios">
+      <button id="catAguardando" class="ativo" onclick="selecionarCategoriaUsuario('AGUARDANDO')"><span id="nAguardando" class="contador-cat">0</span>AGUARDANDO</button>
+      <button id="catAtivos" onclick="selecionarCategoriaUsuario('ATIVOS')"><span id="nAtivos" class="contador-cat">0</span>ATIVOS</button>
+      <button id="catFree" onclick="selecionarCategoriaUsuario('FREE')"><span id="nFree" class="contador-cat">0</span>FREE</button>
+      <button id="catInativos" onclick="selecionarCategoriaUsuario('INATIVOS')"><span id="nInativos" class="contador-cat">0</span>INATIVOS</button>
+      <button id="catBloqueados" onclick="selecionarCategoriaUsuario('BLOQUEADOS')"><span id="nBloqueados" class="contador-cat">0</span>BLOQUEADOS</button>
     </div>
-    <div>
-      <div class="linha"><b>Fim (opcional):</b></div>
-      <input id="avisoFim" type="datetime-local">
-    </div>
+    <button onclick="carregarUsuarios()">ATUALIZAR LISTA</button>
+    <div id="listaUsuarios" class="vazio">Carregando usuários...</div>
   </div>
+</section>
 
-  <label class="check-linha"><input id="avisoObrigatorio" type="checkbox"> Leitura obrigatória</label>
-  <label class="check-linha"><input id="avisoDescartavel" type="checkbox" checked> Sumir após o usuário confirmar</label>
-  <label class="check-linha"><input id="avisoAtivo" type="checkbox" checked> Publicar como ativo</label>
+<section id="secaoFinanceiro" class="secao-adm escondido">
+  <div class="card">
+    <div class="titulo">FINANCEIRO E PAGBANK</div>
+    <div class="linha">Valores, planos, descontos e cobranças ficam concentrados nesta área.</div>
+    <button class="cobranca" onclick="abrirConfigFinanceira()">⚙️ EDITAR VALORES E PLANOS</button>
+    <button class="hist" onclick="abrirGerenciadorModelos()">MENSAGENS FINANCEIRAS AUTOMÁTICAS</button>
+  </div>
+</section>
 
-  <button onclick="salvarAvisoAdmin()">PUBLICAR AVISO</button>
-  <button id="btnCancelarEdicaoAviso" class="hist escondido" onclick="limparFormularioAviso()">CANCELAR EDIÇÃO</button>
-  <div id="avisoAdminMsg" class="msg"></div>
+<section id="secaoAvisos" class="secao-adm escondido">
+  <div class="card">
+    <div class="titulo">CENTRAL DE AVISOS GERAIS</div>
+    <input id="avisoId" type="hidden">
+    <input id="avisoTitulo" placeholder="Título do aviso">
+    <textarea id="avisoMensagem" placeholder="Mensagem que aparecerá no aplicativo"></textarea>
+    <div class="duas-colunas">
+      <div><div class="linha"><b>Destino:</b></div><select id="avisoDestino" onchange="atualizarDestinoAviso()"><option value="todos">Todos os usuários</option><option value="usuario">Usuário específico</option></select></div>
+      <div><div class="linha"><b>Prioridade:</b></div><select id="avisoPrioridade"><option value="0">0 - Informativo</option><option value="1">1 - Atenção</option><option value="2">2 - Importante</option><option value="3">3 - Crítico</option></select></div>
+    </div>
+    <div id="avisoUsuarioBox" class="escondido"><div class="linha"><b>Usuário:</b></div><select id="avisoUsuarioId"><option value="">Selecione um usuário</option></select></div>
+    <div class="duas-colunas">
+      <div><div class="linha"><b>Início:</b></div><input id="avisoInicio" type="datetime-local"></div>
+      <div><div class="linha"><b>Fim (opcional):</b></div><input id="avisoFim" type="datetime-local"></div>
+    </div>
+    <label class="check-linha"><input id="avisoObrigatorio" type="checkbox"> Leitura obrigatória</label>
+    <label class="check-linha"><input id="avisoDescartavel" type="checkbox" checked> Sumir após o usuário confirmar</label>
+    <label class="check-linha"><input id="avisoAtivo" type="checkbox" checked> Publicar como ativo</label>
+    <button onclick="salvarAvisoAdmin()">PUBLICAR AVISO</button>
+    <button id="btnCancelarEdicaoAviso" class="hist escondido" onclick="limparFormularioAviso()">CANCELAR EDIÇÃO</button>
+    <div id="avisoAdminMsg" class="msg"></div>
+    <div class="titulo" style="margin-top:18px">AVISOS CADASTRADOS</div>
+    <button class="hist" onclick="carregarAvisosAdmin()">ATUALIZAR AVISOS</button>
+    <div id="listaAvisosAdmin" class="vazio">Carregando avisos...</div>
+  </div>
+</section>
 
-  <div class="titulo" style="margin-top:18px">AVISOS CADASTRADOS</div>
-  <button class="hist" onclick="carregarAvisosAdmin()">ATUALIZAR AVISOS</button>
-  <div id="listaAvisosAdmin" class="vazio">Carregando avisos...</div>
+<section id="secaoOperacional" class="secao-adm escondido">
+  <div class="card">
+    <div class="titulo">CONTROLE OPERACIONAL</div>
+    <div class="controle-operacional-botoes"><button id="btnSnarpy" class="btn-toggle ativo" onclick="alternarSnarpy()">🟢 SNARPY</button><button id="btnHyper" class="btn-toggle ativo" onclick="alternarHyper()">🟢 HYPER</button><button id="btnTodos" class="btn-toggle ativo" onclick="alternarTodos()">🟢 TODOS</button></div>
+    <div id="statusControleEnvio" class="status-controle">Carregando controle...</div>
+    <textarea id="mensagemControleEnvio" placeholder="Mensagem livre para aparecer como caixinha nos SINAIS ATIVOS."></textarea>
+    <button onclick="salvarMensagemControle()">SALVAR MENSAGEM</button>
+  </div>
+  <div class="card"><div class="titulo">MANUTENÇÃO</div><button class="cobranca" onclick="abrirModalManutencao()">⚠️ MANUTENÇÃO PROGRAMADA</button></div>
+</section>
 </div>
-
-<div class="card"><div class="topo-controle"><div class="titulo">CONTROLE DE USUÁRIOS</div><button class="btn-lupa" onclick="toggleBusca()">🔍</button></div><input id="campoBusca" placeholder="Nome, e-mail, telefone ou status" onkeyup="filtrarUsuarios()"><button onclick="carregarUsuarios()">ATUALIZAR LISTA</button><div id="listaUsuarios" class="vazio">Carregando usuários...</div></div>
-<button class="bloquear" onclick="sair()">SAIR DO ADMIN</button>
-</div></div>
 
 <div id="modalHistorico" class="modal-fundo escondido" onclick="fecharHistorico()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">HISTÓRICO FINANCEIRO</div><div id="conteudoHistorico" class="vazio">Carregando histórico...</div><button class="btn-fechar" onclick="fecharHistorico()">FECHAR</button></div></div>
 <div id="modalPago" class="modal-fundo escondido" onclick="fecharModalPago()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">REGISTRAR PAGAMENTO</div><div id="pagoUsuario" class="nome"></div><input id="pagoPerfilId" type="hidden"><div class="duas-colunas"><div><div class="linha"><b>Mensalidade:</b></div><input id="pagoMensalidade" type="number" min="0" step="0.01"></div><div><div class="linha"><b>Inscrição/reinscrição:</b></div><input id="pagoInscricao" type="number" min="0" step="0.01" value="0"></div></div><div class="linha"><b>Total recebido:</b></div><input id="pagoTotal" type="number" min="0" step="0.01"><div class="duas-colunas"><div><div class="linha"><b>Data:</b></div><input id="pagoData" type="date"></div><div><div class="linha"><b>Validade:</b></div><input id="pagoValidade" type="date"></div></div><div class="linha"><b>Observação:</b></div><textarea id="pagoObservacao"></textarea><div class="aviso-modal">Validade sugerida: último dia do mês seguinte. Carência automática: 5 dias.</div><button class="pago" onclick="salvarPagamento()">SALVAR PAGAMENTO</button><button class="btn-fechar" onclick="fecharModalPago()">CANCELAR</button></div></div>
@@ -291,101 +311,25 @@ select{
 </div>
 
 
-<div id="modalCobrancaPix" class="modal-fundo escondido" onclick="fecharModalCobrancaPix()">
-  <div class="modal-caixa" onclick="event.stopPropagation()">
-    <div class="titulo">GERAR COBRANÇA PAGBANK</div>
-    <div id="cobrancaUsuario" class="nome"></div>
-    <input id="cobrancaPerfilId" type="hidden">
-    <input id="cobrancaTelefone" type="hidden">
-    <input id="cobrancaNome" type="hidden">
-    <input id="cobrancaEmail" type="hidden">
-
-    <div class="linha"><b>Plano de acesso:</b></div>
-    <select id="cobrancaPlanoDias" onchange="atualizarPreviaPlano()">
-      <option value="30">30 DIAS — sem desconto</option>
-      <option value="90">90 DIAS — 7% de desconto</option>
-      <option value="180">180 DIAS — 10% de desconto</option>
-      <option value="365">365 DIAS — 22% de desconto</option>
-    </select>
-    <div id="cobrancaPreviaPlano" class="modelo-financeiro-status"></div>
-
-    <div class="linha"><b>Modo:</b></div>
-    <select id="cobrancaModo" onchange="atualizarModoCobranca()">
-      <option value="AUTOMATICA">AUTOMÁTICA — valor calculado pelo sistema</option>
-      <option value="MANUAL">MANUAL — desconto, acréscimo ou valor especial</option>
-    </select>
-
-    <div class="cobranca-modal-grade">
-      <div>
-        <div class="linha"><b>Valor final manual (opcional):</b></div>
-        <input id="cobrancaValorManual" type="number" min="0" step="0.01" placeholder="Deixe vazio para cálculo automático">
-      </div>
-      <div>
-        <div class="linha"><b>Prazo do PIX (dias):</b></div>
-        <input id="cobrancaPrazoDias" type="number" min="1" max="30" value="1">
-      </div>
-      <div>
-        <div class="linha"><b>Desconto administrativo R$:</b></div>
-        <input id="cobrancaDesconto" type="number" min="0" step="0.01" value="0">
-      </div>
-      <div>
-        <div class="linha"><b>Acréscimo R$:</b></div>
-        <input id="cobrancaAcrescimo" type="number" min="0" step="0.01" value="0">
-      </div>
-    </div>
-
-    <div class="linha"><b>CPF/CNPJ do pagador:</b></div>
-    <input id="cobrancaDocumento" inputmode="numeric" placeholder="Somente números">
-
-    <div class="linha"><b>Observação interna:</b></div>
-    <textarea id="cobrancaObservacao" placeholder="Desconto concedido, prazo especial, negociação etc."></textarea>
-
-    <label class="check-linha"><input id="cobrancaSubstituir" type="checkbox"> Substituir cobrança pendente existente</label>
-
-    <button class="cobranca" onclick="gerarCobrancaPix()">GERAR PIX</button>
-    <div id="cobrancaStatus" class="cobranca-status"></div>
-    <div id="cobrancaResultado" class="escondido">
-      <div class="cobranca-link" id="cobrancaLink"></div>
-      <div class="cobranca-acoes">
-        <button onclick="abrirLinkCobranca()">ABRIR PAGAMENTO</button>
-        <button class="whats" onclick="enviarCobrancaWhatsapp()">ENVIAR WHATSAPP</button>
-      </div>
-    </div>
-    <button class="btn-fechar" onclick="fecharModalCobrancaPix()">FECHAR</button>
-  </div>
-</div>
+<div id="modalCobrancaPix" class="modal-fundo escondido" onclick="fecharModalCobrancaPix()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">GERAR COBRANÇA PAGBANK</div><div id="cobrancaUsuario" class="nome"></div><input id="cobrancaPerfilId" type="hidden"><input id="cobrancaTelefone" type="hidden"><input id="cobrancaNome" type="hidden"><input id="cobrancaEmail" type="hidden"><div class="linha"><b>Modo:</b></div><select id="cobrancaModo" onchange="atualizarModoCobranca()"><option value="AUTOMATICA">AUTOMÁTICA — valor calculado pelo Supabase</option><option value="MANUAL">MANUAL — desconto, acréscimo ou valor especial</option></select><div class="cobranca-modal-grade"><div><div class="linha"><b>Valor final manual (opcional):</b></div><input id="cobrancaValorManual" type="number" min="0" step="0.01" placeholder="Deixe vazio para cálculo automático"></div><div><div class="linha"><b>Prazo do PIX (dias):</b></div><input id="cobrancaPrazoDias" type="number" min="1" max="30" value="1"></div><div><div class="linha"><b>Desconto R$:</b></div><input id="cobrancaDesconto" type="number" min="0" step="0.01" value="0"></div><div><div class="linha"><b>Acréscimo R$:</b></div><input id="cobrancaAcrescimo" type="number" min="0" step="0.01" value="0"></div></div><div class="linha"><b>CPF/CNPJ do pagador (opcional até o PagBank exigir):</b></div><input id="cobrancaDocumento" inputmode="numeric" placeholder="Somente números"><div class="linha"><b>Observação interna:</b></div><textarea id="cobrancaObservacao" placeholder="Desconto concedido, prazo especial, negociação etc."></textarea><label class="check-linha"><input id="cobrancaSubstituir" type="checkbox"> Substituir cobrança pendente existente</label><button class="cobranca" onclick="gerarCobrancaPix()">GERAR PIX</button><div id="cobrancaStatus" class="cobranca-status"></div><div id="cobrancaResultado" class="escondido"><div class="cobranca-link" id="cobrancaLink"></div><div class="cobranca-acoes"><button onclick="abrirLinkCobranca()">ABRIR PAGAMENTO</button><button class="whats" onclick="enviarCobrancaWhatsapp()">ENVIAR WHATSAPP</button></div></div><button class="btn-fechar" onclick="fecharModalCobrancaPix()">FECHAR</button></div></div>
 
 <div id="modalConfigFinanceira" class="modal-fundo escondido" onclick="fecharConfigFinanceira()">
-  <div class="modal-caixa modal-caixa-financeiro" onclick="event.stopPropagation()">
-    <div class="titulo">EDITAR VALORES E PLANOS</div>
-    <div class="linha">Estas alterações valem somente para novas cobranças. Cobranças já emitidas não são modificadas.</div>
-
-    <div class="duas-colunas">
-      <div><div class="linha"><b>Inscrição R$:</b></div><input id="cfgInscricao" type="number" min="0" step="0.01"></div>
-      <div><div class="linha"><b>Mensalidade 30 dias R$:</b></div><input id="cfgMensalidade" type="number" min="0" step="0.01"></div>
-    </div>
-
-    <div class="duas-colunas">
-      <div><div class="linha"><b>Desconto 90 dias %:</b></div><input id="cfgDesc90" type="number" min="0" max="100" step="0.01"></div>
-      <div><div class="linha"><b>Desconto 180 dias %:</b></div><input id="cfgDesc180" type="number" min="0" max="100" step="0.01"></div>
-    </div>
-
-    <div class="linha"><b>Desconto 365 dias %:</b></div>
-    <input id="cfgDesc365" type="number" min="0" max="100" step="0.01">
-
-    <div id="cfgPrevia" class="modelo-financeiro-status"></div>
-    <button onclick="salvarConfigFinanceira()">SALVAR VALORES E PLANOS</button>
-    <button class="btn-fechar" onclick="fecharConfigFinanceira()">CANCELAR</button>
-    <div id="cfgStatus" class="msg"></div>
-  </div>
-</div>
+<div class="modal-caixa modal-caixa-financeiro" onclick="event.stopPropagation()">
+<div class="titulo">EDITAR VALORES E PLANOS</div>
+<div class="linha">Alterações valem para novas cobranças.</div>
+<div class="duas-colunas"><div><div class="linha"><b>Inscrição R$:</b></div><input id="cfgInscricao" type="number" min="0" step="0.01"></div><div><div class="linha"><b>Mensalidade 30 dias R$:</b></div><input id="cfgMensalidade" type="number" min="0" step="0.01"></div></div>
+<div class="duas-colunas"><div><div class="linha"><b>Desconto 90 dias %:</b></div><input id="cfgDesc90" type="number" min="0" max="100" step="0.01"></div><div><div class="linha"><b>Desconto 180 dias %:</b></div><input id="cfgDesc180" type="number" min="0" max="100" step="0.01"></div></div>
+<div class="linha"><b>Desconto 365 dias %:</b></div><input id="cfgDesc365" type="number" min="0" max="100" step="0.01">
+<div id="cfgPrevia" class="modelo-financeiro-status"></div>
+<button onclick="salvarConfigFinanceira()">SALVAR VALORES E PLANOS</button><button class="btn-fechar" onclick="fecharConfigFinanceira()">CANCELAR</button><div id="cfgStatus" class="msg"></div>
+</div></div>
 <script>
 const SUPABASE_URL="https://bflptqejltvwfjhixwpj.supabase.co";
 const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const ADMIN_EMAIL="maiconrodrigoguth@gmail.com";
 const DIAS_CARENCIA=5;
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-window.USUARIOS_CACHE=[];window.AVISOS_CACHE=[];window.MODELOS_FINANCEIROS_CACHE=[];window.RECEITA_MES=0;window.CONTROLE_ENVIO={snarpy_ativo:true,hyper_ativo:true,mensagem:""};window.CONFIG_FINANCEIRA=null;
+window.USUARIOS_CACHE=[];window.AVISOS_CACHE=[];window.MODELOS_FINANCEIROS_CACHE=[];window.RECEITA_MES=0;window.CONTROLE_ENVIO={snarpy_ativo:true,hyper_ativo:true,mensagem:""};window.CONFIG_FINANCEIRA=null;window.CATEGORIA_USUARIO="AGUARDANDO";
 const $=id=>document.getElementById(id);
 function texto(v){return v===null||v===undefined||v===""?"-":String(v)}
 function limparTelefone(v){return String(v||"").replace(/\D/g,"")}
@@ -405,6 +349,50 @@ function statusFinanceiroReal(u){const st=String(u.status_pagamento||"PENDENTE")
 function vencidoForaCarencia(u){if(u.liberado!==true)return false;const st=String(u.status_pagamento||"").toUpperCase(),h=hojeISO();if(st==="FREE")return u.validade_free&&!menorIgual(h,u.validade_free);if(st==="PAGO")return u.carencia_ate&&!menorIgual(h,u.carencia_ate);return false}
 function badgeLiberado(v){return v?"<span class='badge liberado'>LIBERADO</span>":"<span class='badge bloqueado'>BLOQUEADO / AGUARDANDO</span>"}
 function badgeFinanceiro(st){if(st==="PAGO")return"<span class='badge financeiro-pago'>PAGO</span>";if(st==="FREE")return"<span class='badge financeiro-free'>FREE</span>";if(st==="ATRASADO")return"<span class='badge financeiro-atrasado'>ATRASADO / CARÊNCIA</span>";if(st==="VENCIDO")return"<span class='badge financeiro-atrasado'>VENCIDO</span>";if(st==="BLOQUEADO")return"<span class='badge bloqueado'>BLOQUEADO</span>";return"<span class='badge financeiro-pendente'>PENDENTE</span>"}
+
+function mostrarSecaoAdm(nome){
+  ["Resumo","Clientes","Financeiro","Avisos","Operacional"].forEach(n=>{
+    const sec=$("secao"+n),btn=$("menu"+n);
+    if(sec)sec.classList.toggle("escondido",n.toLowerCase()!==nome);
+    if(btn)btn.classList.toggle("ativo",n.toLowerCase()===nome);
+  });
+}
+function categoriaUsuario(u){
+  const st=statusFinanceiroReal(u);
+  if(u.liberado!==true){
+    if(st==="PENDENTE"||String(u.status_pagamento||"PENDENTE").toUpperCase()==="PENDENTE")return"AGUARDANDO";
+    return"BLOQUEADOS";
+  }
+  if(st==="FREE")return"FREE";
+  if(st==="PAGO"||st==="ATRASADO")return"ATIVOS";
+  return"INATIVOS";
+}
+function atualizarCategoriasUsuarios(){
+  const c={AGUARDANDO:0,ATIVOS:0,FREE:0,INATIVOS:0,BLOQUEADOS:0};
+  window.USUARIOS_CACHE.forEach(u=>c[categoriaUsuario(u)]++);
+  $("nAguardando").innerText=c.AGUARDANDO;$("nAtivos").innerText=c.ATIVOS;$("nFree").innerText=c.FREE;$("nInativos").innerText=c.INATIVOS;$("nBloqueados").innerText=c.BLOQUEADOS;
+}
+function selecionarCategoriaUsuario(cat){
+  window.CATEGORIA_USUARIO=cat;
+  ["Aguardando","Ativos","Free","Inativos","Bloqueados"].forEach(n=>$("cat"+n)?.classList.toggle("ativo",n.toUpperCase()===cat));
+  filtrarUsuarios();
+}
+const FUNCAO_COBRANCA="pagbank-criar-cobranca";
+async function invocarFinanceiro(body){
+  const{data,error}=await db.functions.invoke(FUNCAO_COBRANCA,{body});
+  if(error)throw new Error(error.message||"Erro financeiro.");
+  if(!data?.sucesso)throw new Error(data?.erro||"Falha financeira.");
+  return data;
+}
+function previaPlano(dias,cfg=window.CONFIG_FINANCEIRA){
+  if(!cfg)return null;dias=Number(dias);const qtd=dias===90?3:dias===180?6:dias===365?12:1;
+  const pct=dias===90?Number(cfg.desconto_plano_90||0):dias===180?Number(cfg.desconto_plano_180||0):dias===365?Number(cfg.desconto_plano_365||0):0;
+  const base=Number(cfg.valor_mensalidade||0)*qtd;return{dias,pct,total:base-(base*pct/100)};
+}
+function atualizarPreviaConfig(){const cfg={valor_mensalidade:Number($("cfgMensalidade").value||0),desconto_plano_90:Number($("cfgDesc90").value||0),desconto_plano_180:Number($("cfgDesc180").value||0),desconto_plano_365:Number($("cfgDesc365").value||0)};const a=[30,90,180,365].map(d=>previaPlano(d,cfg));$("cfgPrevia").innerHTML=a.map(x=>`${x.dias}d: <b>${moeda(x.total)}</b>`).join(" | ")}
+async function abrirConfigFinanceira(){$("modalConfigFinanceira").classList.remove("escondido");$("cfgStatus").innerText="Carregando...";try{const r=await invocarFinanceiro({acao:"OBTER_CONFIG_FINANCEIRA"}),c=r.config;window.CONFIG_FINANCEIRA=c;$("cfgInscricao").value=Number(c.valor_inscricao||0).toFixed(2);$("cfgMensalidade").value=Number(c.valor_mensalidade||0).toFixed(2);$("cfgDesc90").value=Number(c.desconto_plano_90||0);$("cfgDesc180").value=Number(c.desconto_plano_180||0);$("cfgDesc365").value=Number(c.desconto_plano_365||0);$("cfgStatus").innerText="";atualizarPreviaConfig()}catch(e){$("cfgStatus").innerHTML=`<span class="erro">${escHtml(e.message)}</span>`}}
+function fecharConfigFinanceira(){$("modalConfigFinanceira").classList.add("escondido")}
+async function salvarConfigFinanceira(){const st=$("cfgStatus"),body={acao:"SALVAR_CONFIG_FINANCEIRA",valor_inscricao:Number($("cfgInscricao").value||0),valor_mensalidade:Number($("cfgMensalidade").value||0),desconto_plano_90:Number($("cfgDesc90").value||0),desconto_plano_180:Number($("cfgDesc180").value||0),desconto_plano_365:Number($("cfgDesc365").value||0)};if(!confirm("Salvar estes valores para novas cobranças?"))return;st.innerText="Salvando...";try{const r=await invocarFinanceiro(body);window.CONFIG_FINANCEIRA=r.config;st.innerText="Valores salvos.";atualizarPreviaConfig()}catch(e){st.innerHTML=`<span class="erro">${escHtml(e.message)}</span>`}}
 async function entrar(){const email=$("loginEmail").value.trim(),password=$("loginSenha").value.trim();if(!email||!password){$("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}if(email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){$("loginMsg").innerHTML="<span class='erro'>Este e-mail não é administrador.</span>";return}const{error}=await db.auth.signInWithPassword({email,password});if(error){$("loginMsg").innerHTML="<span class='erro'>Login inválido ou e-mail não confirmado.</span>";return}verificarAdmin()}
 async function verificarAdmin(){const{data}=await db.auth.getSession();const u=data?.session?.user;if(!u){$("loginBox").classList.remove("escondido");$("adminBox").classList.add("escondido");return}if(String(u.email).toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await db.auth.signOut();return}$("loginBox").classList.add("escondido");$("adminBox").classList.remove("escondido");$("adminEmail").innerText=u.email;await carregarUsuarios();await carregarControleEnvio();await carregarModelosFinanceiros();await carregarAvisosAdmin()}
 async function carregarControleEnvio(){const{data,error}=await db.from("controle_envio").select("*").eq("id",1).single();if(error||!data){$("statusControleEnvio").innerText="Erro ao carregar controle operacional.";return}window.CONTROLE_ENVIO=data;$("mensagemControleEnvio").value=data.mensagem||"";atualizarBotoesControle()}
@@ -798,12 +786,12 @@ async function excluirAvisoAdmin(id){
 }
 
 async function carregarReceitaMes(){const i=new Date();i.setDate(1);i.setHours(0,0,0,0);const f=new Date(i.getFullYear(),i.getMonth()+1,1);const{data,error}=await db.from("historico_financeiro").select("valor_total,valor,acao,criado_em").gte("criado_em",i.toISOString()).lt("criado_em",f.toISOString());window.RECEITA_MES=error?0:(data||[]).reduce((s,h)=>s+(String(h.acao).toUpperCase()==="PAGO"?Number(h.valor_total??h.valor??0):0),0)}
-async function carregarUsuarios(){$("listaUsuarios").innerHTML="<div class='vazio'>Carregando usuários...</div>";const{data,error}=await db.from("perfis").select("*").order("nome",{ascending:true});if(error){$("listaUsuarios").innerHTML="<div class='erro'>"+error.message+"</div>";return}await carregarReceitaMes();window.USUARIOS_CACHE=data||[];preencherUsuariosAviso();atualizarResumoFinanceiro(data||[]);renderizarUsuarios(data||[])}
+async function carregarUsuarios(){$("listaUsuarios").innerHTML="<div class='vazio'>Carregando usuários...</div>";const{data,error}=await db.from("perfis").select("*").order("nome",{ascending:true});if(error){$("listaUsuarios").innerHTML="<div class='erro'>"+error.message+"</div>";return}await carregarReceitaMes();window.USUARIOS_CACHE=data||[];preencherUsuariosAviso();atualizarResumoFinanceiro(data||[]);atualizarCategoriasUsuarios();filtrarUsuarios()}
 function atualizarResumoFinanceiro(lista){let pagos=0,pend=0,atras=0,free=0,lib=0,bloq=0;lista.forEach(u=>{const st=statusFinanceiroReal(u);if(st==="PAGO")pagos++;else if(st==="FREE")free++;else if(st==="ATRASADO"||st==="VENCIDO")atras++;else pend++;u.liberado?lib++:bloq++});$("resumoFinanceiro").innerHTML=`<div class="resumo-grid"><div class="resumo-item"><div class="resumo-num">${pagos}</div><div class="resumo-label">PAGOS</div></div><div class="resumo-item"><div class="resumo-num">${pend}</div><div class="resumo-label">PENDENTES</div></div><div class="resumo-item"><div class="resumo-num">${atras}</div><div class="resumo-label">ATRASADOS</div></div><div class="resumo-item"><div class="resumo-num">${free}</div><div class="resumo-label">FREE</div></div><div class="resumo-item"><div class="resumo-num">${lib}</div><div class="resumo-label">LIBERADOS</div></div><div class="resumo-item"><div class="resumo-num">${bloq}</div><div class="resumo-label">BLOQUEADOS</div></div></div><div class="receita">Receita do mês: ${moeda(window.RECEITA_MES)}</div>`}
 function esc(v){return String(v||"").replace(/'/g,"&#39;")}
 function renderizarUsuarios(lista){if(!lista.length){$("listaUsuarios").innerHTML="<div class='vazio'>Nenhum usuário encontrado.</div>";return}$("listaUsuarios").innerHTML=lista.map(u=>{const st=statusFinanceiroReal(u),n=texto(u.nome),e=texto(u.email),t=texto(u.telefone);return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeLiberado(u.liberado===true)}</div><div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="linha"><b>Último free:</b> ${formatarDataBR(u.data_free)}</div><div class="linha"><b>Validade free:</b> ${formatarDataBR(u.validade_free)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button><button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button></div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${u.id}','${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`}).join("")}
 function toggleBusca(){const c=$("campoBusca");if(!c.style.display||c.style.display==="none"){c.style.display="block";c.focus()}else{c.value="";c.style.display="none";renderizarUsuarios(window.USUARIOS_CACHE)}}
-function filtrarUsuarios(){const q=$("campoBusca").value.toLowerCase().trim();renderizarUsuarios(!q?window.USUARIOS_CACHE:window.USUARIOS_CACHE.filter(u=>[u.nome,u.email,u.telefone,statusFinanceiroReal(u)].some(v=>String(v||"").toLowerCase().includes(q))))}
+function filtrarUsuarios(){const q=$("campoBusca").value.toLowerCase().trim();let lista=window.USUARIOS_CACHE.filter(u=>categoriaUsuario(u)===window.CATEGORIA_USUARIO);if(q)lista=lista.filter(u=>[u.nome,u.email,u.telefone,statusFinanceiroReal(u)].some(v=>String(v||"").toLowerCase().includes(q)));renderizarUsuarios(lista)}
 async function registrarHistorico(x){const{error}=await db.from("historico_financeiro").insert({perfil_id:x.perfil_id,nome:x.nome,email:x.email,acao:x.acao,valor:Number(x.total||0),valor_total:Number(x.total||0),valor_mensalidade:Number(x.mensalidade||0),valor_inscricao:Number(x.inscricao||0),data_pagamento:x.data||null,validade_inicio:x.inicio||null,validade_fim:x.fim||null,observacao:x.obs||null,criado_em:agoraISO()});if(error)throw error}
 function abrirModalPago(id){const u=usuario(id);if(!u)return;$("pagoPerfilId").value=id;$("pagoUsuario").innerText=`${u.nome} — ${u.email}`;$("pagoMensalidade").value="";$("pagoInscricao").value="0";$("pagoTotal").value="";$("pagoData").value=hojeISO();$("pagoValidade").value=fimMesSeguinte();$("pagoObservacao").value="";$("modalPago").classList.remove("escondido")}
 function fecharModalPago(){$("modalPago").classList.add("escondido")}
@@ -819,103 +807,6 @@ async function abrirHistorico(id,nome){$("modalHistorico").classList.remove("esc
 function fecharHistorico(){$("modalHistorico").classList.add("escondido")}
 async function recarregarMantendoBusca(){const c=$("campoBusca"),q=c.value,aberto=c.style.display!=="none";await carregarUsuarios();if(aberto&&q){c.value=q;filtrarUsuarios()}}
 function abrirWhatsapp(tel,nome,email){tel=limparTelefone(tel);if(!tel){alert("Sem telefone cadastrado.");return}if(tel.length===10||tel.length===11)tel="55"+tel;window.open("https://wa.me/"+tel+"?text="+encodeURIComponent(`Olá ${nome}, seu cadastro no MRG foi localizado. E-mail: ${email}.`),"_blank")}
-
-const FUNCAO_COBRANCA="pagbank-criar-cobranca";
-
-async function invocarFinanceiro(body){
-  const {data,error}=await db.functions.invoke(FUNCAO_COBRANCA,{body});
-  if(error)throw new Error(error.message||"Erro ao chamar função financeira.");
-  if(!data?.sucesso)throw new Error(data?.erro||"Falha na função financeira.");
-  return data;
-}
-
-function calcularPreviaPlano(dias,cfg=window.CONFIG_FINANCEIRA){
-  if(!cfg)return null;
-  dias=Number(dias||30);
-  const qtd=dias===90?3:dias===180?6:dias===365?12:1;
-  const pct=dias===90?Number(cfg.desconto_plano_90||0):dias===180?Number(cfg.desconto_plano_180||0):dias===365?Number(cfg.desconto_plano_365||0):0;
-  const base=Number(cfg.valor_mensalidade||0)*qtd;
-  const desconto=base*pct/100;
-  return {dias,qtd,pct,base,desconto,total:base-desconto};
-}
-
-function atualizarPreviaPlano(){
-  const box=$("cobrancaPreviaPlano");
-  if(!box)return;
-  const p=calcularPreviaPlano($("cobrancaPlanoDias")?.value||30);
-  box.innerText=p
-    ?`${p.dias} dias: ${moeda(p.base)} - ${p.pct}% = ${moeda(p.total)} em mensalidades. Inscrição/reinscrição, quando aplicável, é cobrada integralmente.`
-    :"Carregando valores financeiros...";
-}
-
-function atualizarPreviaConfig(){
-  const cfg={
-    valor_mensalidade:Number($("cfgMensalidade").value||0),
-    desconto_plano_90:Number($("cfgDesc90").value||0),
-    desconto_plano_180:Number($("cfgDesc180").value||0),
-    desconto_plano_365:Number($("cfgDesc365").value||0)
-  };
-  const p30=calcularPreviaPlano(30,cfg),p90=calcularPreviaPlano(90,cfg),p180=calcularPreviaPlano(180,cfg),p365=calcularPreviaPlano(365,cfg);
-  $("cfgPrevia").innerHTML=`30d: <b>${moeda(p30.total)}</b> | 90d: <b>${moeda(p90.total)}</b> | 180d: <b>${moeda(p180.total)}</b> | 365d: <b>${moeda(p365.total)}</b>`;
-}
-
-async function carregarConfigFinanceiraAdmin(){
-  const r=await invocarFinanceiro({acao:"OBTER_CONFIG_FINANCEIRA"});
-  window.CONFIG_FINANCEIRA=r.config;
-  atualizarPreviaPlano();
-  return r.config;
-}
-
-async function abrirConfigFinanceira(){
-  $("modalConfigFinanceira").classList.remove("escondido");
-  $("cfgStatus").innerText="Carregando...";
-  try{
-    const c=await carregarConfigFinanceiraAdmin();
-    $("cfgInscricao").value=Number(c.valor_inscricao||0).toFixed(2);
-    $("cfgMensalidade").value=Number(c.valor_mensalidade||0).toFixed(2);
-    $("cfgDesc90").value=Number(c.desconto_plano_90||0);
-    $("cfgDesc180").value=Number(c.desconto_plano_180||0);
-    $("cfgDesc365").value=Number(c.desconto_plano_365||0);
-    $("cfgStatus").innerText="";
-    atualizarPreviaConfig();
-  }catch(e){
-    $("cfgStatus").innerHTML=`<span class="erro">${escHtml(e.message)}</span>`;
-  }
-}
-
-function fecharConfigFinanceira(){$("modalConfigFinanceira").classList.add("escondido")}
-
-async function salvarConfigFinanceira(){
-  const status=$("cfgStatus");
-  const payload={
-    acao:"SALVAR_CONFIG_FINANCEIRA",
-    valor_inscricao:Number($("cfgInscricao").value||0),
-    valor_mensalidade:Number($("cfgMensalidade").value||0),
-    desconto_plano_90:Number($("cfgDesc90").value||0),
-    desconto_plano_180:Number($("cfgDesc180").value||0),
-    desconto_plano_365:Number($("cfgDesc365").value||0)
-  };
-  if(payload.valor_inscricao<0||payload.valor_mensalidade<=0||[payload.desconto_plano_90,payload.desconto_plano_180,payload.desconto_plano_365].some(v=>v<0||v>100)){
-    status.innerHTML="<span class='erro'>Confira os valores e percentuais.</span>";
-    return;
-  }
-  if(!confirm("Salvar estes valores para as NOVAS cobranças?"))return;
-  status.innerText="Salvando...";
-  try{
-    const r=await invocarFinanceiro(payload);
-    window.CONFIG_FINANCEIRA=r.config;
-    status.innerText="Valores e planos salvos.";
-    atualizarPreviaConfig();
-    atualizarPreviaPlano();
-  }catch(e){
-    status.innerHTML=`<span class="erro">${escHtml(e.message)}</span>`;
-  }
-}
-
-["cfgMensalidade","cfgDesc90","cfgDesc180","cfgDesc365"].forEach(id=>{
-  document.addEventListener("input",e=>{if(e.target?.id===id)atualizarPreviaConfig()});
-});
-
 let COBRANCA_ATUAL=null;
 function abrirCobranca(id,tel,nome,email){
   $("cobrancaPerfilId").value=id;
@@ -924,7 +815,6 @@ function abrirCobranca(id,tel,nome,email){
   $("cobrancaEmail").value=email||"";
   $("cobrancaUsuario").innerText=`${nome} — ${email}`;
   $("cobrancaModo").value="AUTOMATICA";
-  $("cobrancaPlanoDias").value="30";
   $("cobrancaValorManual").value="";
   $("cobrancaDesconto").value="0";
   $("cobrancaAcrescimo").value="0";
@@ -936,8 +826,6 @@ function abrirCobranca(id,tel,nome,email){
   $("cobrancaResultado").classList.add("escondido");
   COBRANCA_ATUAL=null;
   atualizarModoCobranca();
-  atualizarPreviaPlano();
-  if(!window.CONFIG_FINANCEIRA)carregarConfigFinanceiraAdmin().catch(()=>{});
   $("modalCobrancaPix").classList.remove("escondido");
 }
 function fecharModalCobrancaPix(){$("modalCobrancaPix").classList.add("escondido")}
@@ -957,13 +845,12 @@ async function gerarCobrancaPix(){
     valor_manual:$("cobrancaValorManual").value?Number($("cobrancaValorManual").value):null,
     desconto:Number($("cobrancaDesconto").value||0),
     acrescimo:Number($("cobrancaAcrescimo").value||0),
-    prazo_dias:Number($("cobrancaPrazoDias").value||1),
-    plano_dias:Number($("cobrancaPlanoDias").value||30),
+    prazo_dias:Number($("cobrancaPrazoDias").value||1),plano_dias:30,
     documento:$("cobrancaDocumento").value.trim()||null,
     observacao:$("cobrancaObservacao").value.trim()||null,
     substituir_aberta:$("cobrancaSubstituir").checked
   };
-  const{data,error}=await db.functions.invoke("rapid-task",{body:payload});
+  const{data,error}=await db.functions.invoke(FUNCAO_COBRANCA,{body:payload});
   if(error){status.innerHTML=`<span class="erro">${escHtml(error.message||"Erro ao chamar função.")}</span>`;return}
   if(!data?.sucesso){status.innerHTML=`<span class="erro">${escHtml(data?.erro||"Falha ao criar cobrança.")}</span>`;return}
   COBRANCA_ATUAL=data.cobranca;
@@ -992,6 +879,7 @@ async function removerManutencao(){const{error}=await db.from("leituras_ao_vivo"
 async function sair(){await db.auth.signOut();$("adminBox").classList.add("escondido");$("loginBox").classList.remove("escondido");$("loginMsg").innerText="Sessão encerrada."}
 limparFormularioAviso();
 verificarAdmin();
+["cfgMensalidade","cfgDesc90","cfgDesc180","cfgDesc365"].forEach(id=>document.addEventListener("input",e=>{if(e.target?.id===id)atualizarPreviaConfig()}));
 </script>
 </body>
 </html>
