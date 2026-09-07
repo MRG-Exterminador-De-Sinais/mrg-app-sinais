@@ -878,6 +878,7 @@ function selecionarEstadoAoVivo(rows){
 }
 
 const ENTRADAS_AO_VIVO={ROXA:null,ROSA:null};
+const ENTRADAS_ENCERRADAS={ROXA:new Set(),ROSA:new Set()};
 
 function dataRegistroAoVivo(row){
  const bruto=valorPrimeiro(row,["atualizado_em","data_hora","data_hora_entrada","criado_em"],"");
@@ -885,11 +886,38 @@ function dataRegistroAoVivo(row){
  return d?d.getTime():Date.now();
 }
 
+function identidadeEntradaAoVivo(tipo,item){
+ const row=item?.row||{};
+ const id=valorPrimeiro(row,["id","uuid","sinal_id","sinalId"],"");
+ if(id!==""&&id!==null&&id!==undefined)return `${tipo}:ID:${id}`;
+ const bruto=valorPrimeiro(row,["data_hora_entrada","criado_em","data_hora","atualizado_em"],"");
+ return `${tipo}:TXT:${String(item?.linha||"").trim()}|${String(bruto||"").trim()}`;
+}
+
 function atualizarEntradaAoVivo(tipo,item){
  if(!item||!item.linha)return;
- const ts=dataRegistroAoVivo(item.row||{});
+ const chave=identidadeEntradaAoVivo(tipo,item);
+
+ // Uma entrada já oficialmente encerrada não pode voltar a ser presa
+ // apenas porque o registro antigo ainda permaneceu ativo no Supabase.
+ if(ENTRADAS_ENCERRADAS[tipo].has(chave))return;
+
  const atual=ENTRADAS_AO_VIVO[tipo];
- if(!atual||ts>=atual.ts)ENTRADAS_AO_VIVO[tipo]={linha:item.linha,ts};
+
+ // REGRA PRINCIPAL:
+ // se chegou OUTRO registro de entrada da mesma modalidade,
+ // ele assume imediatamente a linha. Não depende de timestamp.
+ if(!atual||atual.chave!==chave){
+  ENTRADAS_AO_VIVO[tipo]={
+   linha:item.linha,
+   ts:dataRegistroAoVivo(item.row||{}),
+   chave
+  };
+  return;
+ }
+
+ // Mesmo registro: apenas atualiza o texto apresentado.
+ atual.linha=item.linha;
 }
 
 function resultadoPosteriorEntrada(tipo){
@@ -904,7 +932,16 @@ function resultadoPosteriorEntrada(tipo){
 
 function limparEntradasJulgadas(){
  for(const tipo of["ROXA","ROSA"]){
-  if(resultadoPosteriorEntrada(tipo))ENTRADAS_AO_VIVO[tipo]=null;
+  const entrada=ENTRADAS_AO_VIVO[tipo];
+  if(entrada&&resultadoPosteriorEntrada(tipo)){
+   ENTRADAS_ENCERRADAS[tipo].add(entrada.chave);
+   // Evita crescimento indefinido durante uma sessão longa.
+   if(ENTRADAS_ENCERRADAS[tipo].size>50){
+    const primeira=ENTRADAS_ENCERRADAS[tipo].values().next().value;
+    ENTRADAS_ENCERRADAS[tipo].delete(primeira);
+   }
+   ENTRADAS_AO_VIVO[tipo]=null;
+  }
  }
 }
 
