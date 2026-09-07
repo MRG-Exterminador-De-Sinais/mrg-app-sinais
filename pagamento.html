@@ -12,7 +12,7 @@
 .qr{width:min(78vw,300px);height:min(78vw,300px);object-fit:contain;background:#fff;border-radius:12px;margin:16px auto;display:block}
 .pix{width:100%;min-height:95px;background:#050505;color:#fff;border:1px solid #444;border-radius:10px;padding:10px;word-break:break-all}
 .campo{width:100%;padding:14px;border-radius:10px;border:1px solid #555;background:#050505;color:#fff;font-size:17px;margin-top:14px}
-.btn{width:100%;border:0;border-radius:10px;padding:14px;margin-top:10px;font-weight:900;font-size:16px;background:#00ff88;color:#000}.btn-sec{background:#333;color:#fff;border:1px solid #666}
+.btn{width:100%;border:0;border-radius:10px;padding:14px;margin-top:10px;font-weight:900;font-size:16px;background:#00ff88;color:#000}
 .btn:disabled{opacity:.55}.orientacao{font-size:14px;color:#ddd;line-height:1.45;margin-top:16px}.erro{color:#ff6666;font-weight:700;margin-top:10px;line-height:1.35}
 .info{font-size:12px;color:#aaa;margin-top:12px;line-height:1.45}.planos{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
 .plano{display:block;cursor:pointer}.plano input{position:absolute;opacity:0}.plano-corpo{display:flex;min-height:118px;flex-direction:column;justify-content:center;border:1px solid #444;background:#181818;border-radius:12px;padding:10px}
@@ -56,7 +56,7 @@ function render(j){
   if(e.pode_escolher_plano){
     h+='<div class="orientacao"><b>Escolha o período de acesso antes de gerar o PIX:</b></div><div class="planos">';
     h+=planos.map((o,i)=>'<label class="plano"><input type="radio" name="plano" value="'+o.dias+'" '+(i===0?"checked":"")+'><span class="plano-corpo"><span class="plano-topo"><b>'+o.dias+' DIAS</b><em>'+(o.pct>0?'-'+o.pct+'%':'SEM DESCONTO')+'</em></span><strong>'+moeda(o.total)+'</strong><small>Mensalidades: '+moeda(o.base)+(o.pct>0?' → '+moeda(o.mensalidades):'')+(o.taxas>0?'<br>Inscrição/reinscrição/taxas: '+moeda(o.taxas)+' sem desconto':'')+'</small></span></label>').join("");
-    h+='</div><div class="orientacao">Informe o CPF ou CNPJ do responsável pelo pagamento.</div><input id="documento" class="campo" inputmode="numeric" maxlength="18" placeholder="CPF ou CNPJ"><button id="btnGerar" class="btn" onclick="revisarPlano()">CONTINUAR</button><div id="erro" class="erro"></div>';
+    h+='</div><div class="orientacao">Informe o CPF ou CNPJ do responsável pelo pagamento.</div><input id="documento" class="campo" inputmode="numeric" maxlength="18" placeholder="CPF ou CNPJ"><button id="btnGerar" class="btn" onclick="gerarPix()">GERAR PIX DO PLANO ESCOLHIDO</button><div id="erro" class="erro"></div>';
   }
   if(!e.pago&&!e.expirou&&e.tem_pix){
     if(c.qr_code_url)h+='<img class="qr" src="'+esc(c.qr_code_url)+'" alt="QR Code PIX">';
@@ -66,52 +66,6 @@ function render(j){
   h+='<div class="info">Código: '+esc(c.codigo)+'<br>Expira em: '+esc(c.expira_em?new Date(c.expira_em).toLocaleString("pt-BR"):"-")+'</div>';
   el.innerHTML=h;
 }
-
-function revisarPlano(){
-  const plano=document.querySelector('input[name="plano"]:checked');
-  const documento=(document.getElementById("documento")?.value||"").replace(/\D/g,"");
-  const erro=document.getElementById("erro");
-  if(!plano){erro.textContent="Escolha um plano.";return}
-  if(documento.length!==11&&documento.length!==14){erro.textContent="Informe um CPF ou CNPJ válido.";return}
-
-  const card=plano.closest(".plano");
-  const titulo=card?.querySelector(".plano-topo b")?.textContent||plano.value+" DIAS";
-  const valor=card?.querySelector("strong")?.textContent||"";
-  const detalhe=card?.querySelector("small")?.innerHTML||"";
-
-  planoPendente=Number(plano.value);
-  documentoPendente=documento;
-
-  document.getElementById("conteudo").innerHTML=
-    '<div class="orientacao"><b>CONFIRA ANTES DE GERAR O PIX</b><br>Você ainda pode voltar e alterar o plano.</div>'+
-    '<div class="plano-corpo" style="margin-top:12px;border:2px solid #00ff88;background:#10251a">'+
-      '<div class="plano-topo"><b>'+esc(titulo)+'</b><em>PLANO ESCOLHIDO</em></div>'+
-      '<strong>'+esc(valor)+'</strong><small>'+detalhe+'</small>'+
-    '</div>'+
-    '<div class="info">CPF/CNPJ: '+esc(documento)+'</div>'+
-    '<button class="btn" onclick="gerarPixConfirmado()">CONFIRMAR E GERAR PIX</button>'+
-    '<button class="btn btn-sec" onclick="carregar()">← VOLTAR E ALTERAR PLANO</button>'+
-    '<div id="erro" class="erro"></div>';
-}
-
-async function gerarPixConfirmado(){
-  const planoDias=planoPendente;
-  const documento=documentoPendente;
-  const erro=document.getElementById("erro");
-  const botoes=document.querySelectorAll("button");
-  botoes.forEach(b=>b.disabled=true);
-  erro.textContent="";
-  try{
-    const r=await fetch(EDGE,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({acao:"FINALIZAR_DOCUMENTO",codigo,token,documento,plano_dias:Number(planoDias)})});
-    const j=await r.json();
-    if(!r.ok||!j.sucesso)throw new Error(j.erro||"Não foi possível gerar o PIX.");
-    await carregar();
-  }catch(e){
-    erro.textContent=e.message||"Não foi possível gerar o PIX.";
-    botoes.forEach(b=>b.disabled=false);
-  }
-}
-
 async function gerarPix(){
   const erro=document.getElementById("erro"),btn=document.getElementById("btnGerar");
   const plano=document.querySelector('input[name="plano"]:checked');
