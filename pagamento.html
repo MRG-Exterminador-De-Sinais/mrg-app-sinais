@@ -79,6 +79,9 @@ function revisarPlano(){
   const valor=card?.querySelector("strong")?.textContent||"";
   const detalhe=card?.querySelector("small")?.innerHTML||"";
 
+  planoPendente=Number(plano.value);
+  documentoPendente=documento;
+
   document.getElementById("conteudo").innerHTML=
     '<div class="orientacao"><b>CONFIRA ANTES DE GERAR O PIX</b><br>Você ainda pode voltar e alterar o plano.</div>'+
     '<div class="plano-corpo" style="margin-top:12px;border:2px solid #00ff88;background:#10251a">'+
@@ -86,12 +89,14 @@ function revisarPlano(){
       '<strong>'+esc(valor)+'</strong><small>'+detalhe+'</small>'+
     '</div>'+
     '<div class="info">CPF/CNPJ: '+esc(documento)+'</div>'+
-    '<button class="btn" onclick="gerarPixConfirmado('+Number(plano.value)+',\\''+documento+'\\')">CONFIRMAR E GERAR PIX</button>'+
+    '<button class="btn" onclick="gerarPixConfirmado()">CONFIRMAR E GERAR PIX</button>'+
     '<button class="btn btn-sec" onclick="carregar()">← VOLTAR E ALTERAR PLANO</button>'+
     '<div id="erro" class="erro"></div>';
 }
 
-async function gerarPixConfirmado(planoDias,documento){
+async function gerarPixConfirmado(){
+  const planoDias=planoPendente;
+  const documento=documentoPendente;
   const erro=document.getElementById("erro");
   const botoes=document.querySelectorAll("button");
   botoes.forEach(b=>b.disabled=true);
