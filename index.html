@@ -29,7 +29,7 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 .msg{margin-top:10px;color:#ffaa00;text-align:center;font-size:14px;line-height:1.4}.erro{color:#ff6666}.escondido{display:none!important}.vazio{color:#aaa;text-align:center;padding:10px}
 .pwa-hint{display:none;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.45);border-radius:12px;padding:10px;margin-bottom:10px;color:#ddd;font-size:12px;line-height:1.35;text-align:center}.ios-safari .pwa-hint{display:block}.standalone .pwa-hint{display:none!important}
 #appBox{position:relative}#appBox:before{content:"";position:absolute;inset:-8px 0 auto 0;height:360px;background-image:linear-gradient(to bottom,rgba(6,6,6,.15),rgba(6,6,6,.70),rgba(6,6,6,1)),url('16037623-50c1-4b03-b31c-35b5261d38ac.jpg');background-size:110%;background-position:center top;background-repeat:no-repeat;opacity:.17;pointer-events:none;z-index:0}#appBox>*{position:relative;z-index:1}
-.top-app-mobile{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:10px}.usuario-topo{color:#aaa;font-size:12px;line-height:1.3;min-width:0;word-break:break-word}.btn-projecoes{width:auto;margin:0;padding:8px 10px;font-size:11px;line-height:1.1;border-radius:10px;white-space:nowrap}.top-acoes{display:flex;gap:6px;align-items:center}.btn-notificacoes{width:auto;margin:0;padding:8px 10px;font-size:11px;line-height:1.1;border-radius:10px;white-space:nowrap;background:#333;color:#fff;border:1px solid #555}.btn-notificacoes.ativa{background:#00ff88;color:#000;border-color:#00ff88}.btn-notificacoes:disabled{opacity:.55;cursor:not-allowed}
+.top-app-mobile{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:10px}.usuario-topo{color:#aaa;font-size:12px;line-height:1.3;min-width:0;word-break:break-word}.btn-projecoes{width:auto;margin:0;padding:8px 10px;font-size:11px;line-height:1.1;border-radius:10px;white-space:nowrap}.top-acoes{display:flex;gap:6px;align-items:center}.push-duplo{display:grid;grid-template-columns:1fr 1fr;width:128px;gap:3px}.btn-push-modalidade{margin:0;padding:8px 4px;font-size:9px;line-height:1.1;border-radius:9px;white-space:nowrap;color:#fff;font-weight:900;border:1px solid rgba(255,255,255,.28)}.btn-push-modalidade.roxa{background:#5d1a82}.btn-push-modalidade.rosa{background:#a51667}.btn-push-modalidade.ativa.roxa{background:#8d2ed0}.btn-push-modalidade.ativa.rosa{background:#e52a92}.btn-push-modalidade:disabled{opacity:.55;cursor:not-allowed}
 .mobile-status{display:grid;grid-template-columns:1fr 72px;gap:8px;margin-bottom:10px}.mobile-live{background:rgba(8,8,8,.92);border:1px solid #00ff88;border-radius:12px;padding:8px;min-height:56px;position:relative}.rosas-mini:active{transform:scale(.985);filter:brightness(1.16)}.mobile-live .tag{position:absolute;left:8px;top:4px;color:#ff3860;font-size:8px;font-weight:900;letter-spacing:.5px}.mobile-live #leituraCompacta{white-space:pre-wrap;font-size:11px;line-height:1.35;padding-top:10px;color:#fff}.rosas-mini{background:rgba(8,8,8,.92);border:1px solid #00ff88;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#ff50be;font-size:18px;font-weight:900;min-height:56px;cursor:pointer;transition:.15s}
 .leitura{border:1px solid #555;text-align:center;background:rgba(23,23,23,.86)}#leitura{line-height:1.4;word-break:break-word}.leitura-resumos{display:grid;gap:10px}.leitura-resumo{background:#090909;border:1px solid;border-radius:12px;padding:11px;text-align:left;cursor:pointer}.leitura-resumo:active{transform:scale(.99)}.leitura-resumo.sem-resultados{padding:8px 11px}.leitura-resumo.sem-resultados .leitura-resumo-nome{margin-bottom:2px}.leitura-resumo.sem-resultados .vazio{padding:3px 0;text-align:left;font-size:12px}.leitura-resumo.roxa{border-color:#a54cff}.leitura-resumo.rosa{border-color:#ff50be}.leitura-resumo-nome{font-weight:900;margin-bottom:6px}.leitura-resumo.roxa .leitura-resumo-nome{color:#bd7cff}.leitura-resumo.rosa .leitura-resumo-nome{color:#ff70c8}.leitura-bolinhas{font-size:17px;line-height:1.45;letter-spacing:1px}.leitura-percentual{color:#ddd;font-size:13px;margin-left:5px;white-space:nowrap}.entrada-vazia{color:#aaa;padding:3px 0}
 .ativos-grid{display:grid;grid-template-columns:1fr;gap:10px}.ativos-grid.dois,.ativos-grid.tres{grid-template-columns:1fr}.ativos-grid.tres .sinal-card:nth-child(3){grid-column:auto}
@@ -141,7 +141,7 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 <div id="novaSenhaBox" class="card escondido"><div class="titulo">CRIAR NOVA SENHA</div><input id="novaSenha" type="password" placeholder="Nova senha"><button type="button" onclick="salvarNovaSenha()">SALVAR NOVA SENHA</button><div id="novaSenhaMsg" class="msg">Digite sua nova senha.</div></div>
 <div id="aguardandoBox" class="card escondido"><div class="titulo">AGUARDANDO LIBERAÇÃO</div><div class="msg">Seu cadastro foi recebido.<br><br>Chame o administrador no WhatsApp do grupo que você participa e envie o e-mail usado no cadastro:<br><br><b id="emailAguardando"></b><br><br>Após a liberação, seu acesso será ativado automaticamente.</div><button type="button" class="sair" onclick="sair()">SAIR</button></div>
 <div id="appBox" class="escondido">
-<div class="top-app-mobile"><div class="usuario-topo">Acesso liberado:<br><span id="usuarioEmail"></span></div><div class="top-acoes"><button id="btnNotificacoes" type="button" class="btn-notificacoes" onclick="alternarNotificacoes()">🔔 ATIVAR</button><button type="button" class="btn-projecoes" onclick="abrirProjecoes()">📈 Projeções</button></div></div>
+<div class="top-app-mobile"><div class="usuario-topo">Acesso liberado:<br><span id="usuarioEmail"></span></div><div class="top-acoes"><div class="push-duplo"><button id="btnPushRoxa" type="button" class="btn-push-modalidade roxa" onclick="alternarPushModalidade('ROXA')">🔔 ATIVAR</button><button id="btnPushRosa" type="button" class="btn-push-modalidade rosa" onclick="alternarPushModalidade('ROSA')">🔔 ATIVAR</button></div><button type="button" class="btn-projecoes" onclick="abrirProjecoes()">📈 Projeções</button></div></div>
 <div class="mobile-status"><div class="mobile-live"><div class="tag">ENTRADAS AGORA</div><div id="leituraCompacta">Aguardando nova oportunidade...</div></div><div id="rosasMini" class="rosas-mini" onclick="abrirRosas()">🌹 0</div></div>
 <div id="modalProjecoes" class="modal-projecoes escondido" onclick="fecharProjecoes()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">PROJEÇÕES FUTURAS DE MERCADO</div><div id="conteudoProjecoes" class="projecoes-texto">Aguardando projeções...</div><button type="button" class="sec" onclick="fecharProjecoes()">FECHAR</button></div></div>
 <div id="modalHistoricoAoVivo" class="modal-projecoes escondido" onclick="fecharHistoricoAoVivo()"><div id="caixaHistoricoAoVivo" class="modal-caixa surf" onclick="event.stopPropagation()"><div id="tituloHistoricoAoVivo" class="titulo">HISTÓRICO AO VIVO</div><div class="modal-subtitulo">Últimas entradas finalizadas</div><div id="conteudoAoVivo" class="lista-surf"><div class="vazio">Carregando resultados...</div></div><button type="button" class="sec modal-voltar" onclick="fecharHistoricoAoVivo()">FECHAR</button></div></div>
@@ -226,123 +226,25 @@ async function obterAssinaturaPush(){
   const registro=await navigator.serviceWorker.ready;
   return await registro.pushManager.getSubscription();
 }
-function atualizarBotaoNotificacoes(ativa=false,mensagem=""){
-  const btn=document.getElementById("btnNotificacoes");
-  if(!btn)return;
-  btn.disabled=false;
-  btn.classList.toggle("ativa",ativa);
-  btn.textContent=ativa?"🔕 DESATIVAR":"🔔 ATIVAR";
-  btn.title=mensagem|| (ativa?"Desativar notificações neste aparelho":"Ativar notificações neste aparelho");
-}
+const PUSH_PREF_KEY="mrg_push_modalidades_v1";
+let PUSH_PREFS={ROXA:true,ROSA:true};
+function carregarPreferenciasPush(){try{const p=JSON.parse(localStorage.getItem(PUSH_PREF_KEY)||"{}");PUSH_PREFS={ROXA:p.ROXA!==false,ROSA:p.ROSA!==false}}catch(e){PUSH_PREFS={ROXA:true,ROSA:true}}}
+function salvarPreferenciasPush(){try{localStorage.setItem(PUSH_PREF_KEY,JSON.stringify(PUSH_PREFS))}catch(e){};enviarPreferenciasAoServiceWorker()}
+async function enviarPreferenciasAoServiceWorker(){try{const reg=await navigator.serviceWorker.ready;const alvo=reg.active||navigator.serviceWorker.controller;if(alvo)alvo.postMessage({tipo:"MRG_PUSH_PREFS",roxa:PUSH_PREFS.ROXA,rosa:PUSH_PREFS.ROSA})}catch(e){}}
+function atualizarBotoesPush(){for(const tipo of["ROXA","ROSA"]){const btn=document.getElementById(tipo==="ROXA"?"btnPushRoxa":"btnPushRosa");if(!btn)continue;const ativa=!!PUSH_PREFS[tipo];btn.disabled=false;btn.classList.toggle("ativa",ativa);btn.textContent=ativa?"🔕 DESATIVAR":"🔔 ATIVAR";btn.title=(ativa?"Desativar":"Ativar")+" notificações "+tipo.toLowerCase()}}
 async function salvarAssinaturaPush(subscription,ativo=true){
   const{data:sessionData}=await db.auth.getSession();
   const user=sessionData?.session?.user;
   if(!user)throw new Error("Usuário sem sessão ativa.");
-
   const json=subscription?.toJSON?.()||null;
-
-  const{error}=await db.rpc("definir_assinatura_push_atual",{
-    p_endpoint:ativo===true?(json?.endpoint||null):null,
-    p_p256dh:ativo===true?(json?.keys?.p256dh||null):null,
-    p_auth:ativo===true?(json?.keys?.auth||null):null,
-    p_email:user.email||"",
-    p_user_agent:navigator.userAgent||""
-  });
-
+  const{error}=await db.rpc("definir_assinatura_push_atual",{p_endpoint:ativo===true?(json?.endpoint||null):null,p_p256dh:ativo===true?(json?.keys?.p256dh||null):null,p_auth:ativo===true?(json?.keys?.auth||null):null,p_email:user.email||"",p_user_agent:navigator.userAgent||""});
   if(error)throw error;
 }
-
-async function sincronizarPushNoLogin(){
-  if(!pushDisponivel())return;
-  if(Notification.permission!=="granted")return;
-
-  await registrarServiceWorker();
-
-  // No iPhone/PWA, a assinatura pode demorar alguns instantes para reaparecer.
-  // Tentamos algumas vezes, mas nunca enviamos assinatura nula ao Supabase.
-  let assinatura=null;
-  for(let tentativa=0;tentativa<5&&!assinatura;tentativa++){
-    assinatura=await obterAssinaturaPush();
-    if(!assinatura)await new Promise(resolve=>setTimeout(resolve,700));
-  }
-
-  // Só define este aparelho como o único ativo quando existe
-  // uma assinatura Push válida neste aparelho.
-  if(assinatura){
-    await salvarAssinaturaPush(assinatura,true);
-  }
-}
-async function marcarAssinaturaInativa(subscription){
-  const endpoint=subscription?.endpoint||"";
-  if(!endpoint)return;
-  const{error}=await db.from(PUSH_TABLE).update({ativo:false,atualizado_em:new Date().toISOString()}).eq("endpoint",endpoint);
-  if(error)throw error;
-}
-async function consultarEstadoNotificacoes(){
-  const btn=document.getElementById("btnNotificacoes");
-  if(!btn)return;
-  if(!pushDisponivel()){
-    btn.disabled=true;
-    btn.textContent="🔕 INDISPONÍVEL";
-    btn.title="Este aparelho ou navegador não oferece suporte a notificações Push.";
-    return;
-  }
-  try{
-    await registrarServiceWorker();
-    const assinatura=await obterAssinaturaPush();
-    atualizarBotaoNotificacoes(Boolean(assinatura&&Notification.permission==="granted"));
-  }catch(e){
-    console.error(e);
-    atualizarBotaoNotificacoes(false,"Não foi possível consultar as notificações.");
-  }
-}
-async function ativarNotificacoes(){
-  const btn=document.getElementById("btnNotificacoes");
-  if(btn){btn.disabled=true;btn.textContent="ATIVANDO..."}
-  try{
-    if(!pushDisponivel())throw new Error("Notificações Push não são compatíveis com este aparelho ou navegador.");
-    if(!VAPID_PUBLIC_KEY)throw new Error("A chave pública de notificações ainda não foi configurada.");
-    const permissao=await Notification.requestPermission();
-    if(permissao!=="granted")throw new Error("A permissão de notificações não foi autorizada.");
-    const registro=await registrarServiceWorker();
-    if(!registro)throw new Error("Não foi possível registrar o serviço de notificações.");
-    let assinatura=await registro.pushManager.getSubscription();
-    if(!assinatura){
-      assinatura=await registro.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:base64UrlParaUint8Array(VAPID_PUBLIC_KEY)});
-    }
-    await salvarAssinaturaPush(assinatura,true);
-    atualizarBotaoNotificacoes(true);
-    alert("Notificações ativadas neste aparelho.");
-  }catch(e){
-    console.error(e);
-    atualizarBotaoNotificacoes(false);
-    alert(e?.message||"Não foi possível ativar as notificações.");
-  }
-}
-async function desativarNotificacoes(){
-  const btn=document.getElementById("btnNotificacoes");
-  if(btn){btn.disabled=true;btn.textContent="DESATIVANDO..."}
-  try{
-    const assinatura=await obterAssinaturaPush();
-    if(assinatura){
-      await marcarAssinaturaInativa(assinatura);
-      await assinatura.unsubscribe();
-    }
-    atualizarBotaoNotificacoes(false);
-    alert("Notificações desativadas neste aparelho.");
-  }catch(e){
-    console.error(e);
-    atualizarBotaoNotificacoes(Boolean(await obterAssinaturaPush()));
-    alert(e?.message||"Não foi possível desativar as notificações.");
-  }
-}
-async function alternarNotificacoes(){
-  try{
-    const assinatura=await obterAssinaturaPush();
-    if(assinatura&&Notification.permission==="granted")await desativarNotificacoes();
-    else await ativarNotificacoes();
-  }catch(e){await ativarNotificacoes()}
-}
+async function sincronizarPushNoLogin(){if(!pushDisponivel())return;if(Notification.permission!=="granted")return;await registrarServiceWorker();let assinatura=null;for(let tentativa=0;tentativa<5&&!assinatura;tentativa++){assinatura=await obterAssinaturaPush();if(!assinatura)await new Promise(resolve=>setTimeout(resolve,700))}if(assinatura){await salvarAssinaturaPush(assinatura,true);await enviarPreferenciasAoServiceWorker()}}
+async function marcarAssinaturaInativa(subscription){const endpoint=subscription?.endpoint||"";if(!endpoint)return;const{error}=await db.from(PUSH_TABLE).update({ativo:false,atualizado_em:new Date().toISOString()}).eq("endpoint",endpoint);if(error)throw error}
+async function consultarEstadoNotificacoes(){carregarPreferenciasPush();const botoes=[document.getElementById("btnPushRoxa"),document.getElementById("btnPushRosa")].filter(Boolean);if(!pushDisponivel()){botoes.forEach(b=>{b.disabled=true;b.textContent="🔕 INDISP."});return}try{await registrarServiceWorker();const assinatura=await obterAssinaturaPush();if(!(assinatura&&Notification.permission==="granted")){PUSH_PREFS={ROXA:false,ROSA:false}}atualizarBotoesPush();await enviarPreferenciasAoServiceWorker()}catch(e){console.error(e);atualizarBotoesPush()}}
+async function garantirAssinaturaPush(){if(!pushDisponivel())throw new Error("Notificações Push não são compatíveis com este aparelho ou navegador.");if(!VAPID_PUBLIC_KEY)throw new Error("A chave pública de notificações ainda não foi configurada.");const permissao=await Notification.requestPermission();if(permissao!=="granted")throw new Error("A permissão de notificações não foi autorizada.");const registro=await registrarServiceWorker();let assinatura=await registro.pushManager.getSubscription();if(!assinatura)assinatura=await registro.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:base64UrlParaUint8Array(VAPID_PUBLIC_KEY)});await salvarAssinaturaPush(assinatura,true);return assinatura}
+async function alternarPushModalidade(tipo){tipo=String(tipo||"").toUpperCase();if(!["ROXA","ROSA"].includes(tipo))return;const btn=document.getElementById(tipo==="ROXA"?"btnPushRoxa":"btnPushRosa");if(btn)btn.disabled=true;try{const ligar=!PUSH_PREFS[tipo];if(ligar){await garantirAssinaturaPush();PUSH_PREFS[tipo]=true}else{PUSH_PREFS[tipo]=false}salvarPreferenciasPush();if(!PUSH_PREFS.ROXA&&!PUSH_PREFS.ROSA){const assinatura=await obterAssinaturaPush();if(assinatura){await marcarAssinaturaInativa(assinatura);await assinatura.unsubscribe()}}atualizarBotoesPush()}catch(e){console.error(e);alert(e?.message||"Não foi possível alterar as notificações.");atualizarBotoesPush()}}
 
 
 function boolFinanceiro(valor,padrao=false){
@@ -787,13 +689,11 @@ function linhasUnicas(valores){return[...new Set(valores.map(v=>String(v||"").tr
 function linhaEntradaAoVivo(linha){const t=String(linha||"").toUpperCase();return t.includes("APÓS")&&t.includes("SAIR")&&(t.includes("2C")||t.includes("4C"))}
 function modalidadeEntradaAoVivo(linha){const t=String(linha||"").toUpperCase();if(t.includes("🩷")||t.includes("ROSA")||t.includes("4C"))return"ROSA";if(t.includes("🟣")||t.includes("ROXA")||t.includes("2C"))return"ROXA";return""}
 function registroAoVivoRecente(row){const bruto=valorPrimeiro(row,["atualizado_em","data_hora","data_hora_entrada","criado_em"],"");if(!bruto)return true;const d=dataValida(bruto);if(!d)return true;const idade=Date.now()-d.getTime();return idade>=-300000&&idade<=1200000}
-function selecionarEntradasAtuais(rows){const atuais={ROXA:null,ROSA:null};for(const row of rows||[]){if(!registroAoVivoRecente(row))continue;const linhas=rosaVisual(row.mensagem||"").split(/\n+/).map(x=>x.trim()).filter(linhaEntradaAoVivo);for(const linha of linhas){const tipo=modalidadeEntradaAoVivo(linha);if(tipo&&!atuais[tipo])atuais[tipo]={linha,row}}if(atuais.ROXA&&atuais.ROSA)break}return atuais}
-const ENTRADAS_AO_VIVO={ROXA:null,ROSA:null};
-function dataRegistroAoVivo(row){const bruto=valorPrimeiro(row,["atualizado_em","data_hora","data_hora_entrada","criado_em"],"");const d=dataValida(bruto);return d?d.getTime():Date.now()}
-function atualizarEntradaAoVivo(tipo,item){if(!item)return;const ts=dataRegistroAoVivo(item.row||{});const atual=ENTRADAS_AO_VIVO[tipo];if(!atual||ts>=atual.ts)ENTRADAS_AO_VIVO[tipo]={linha:item.linha,ts}}
-function resultadoPosteriorEntrada(tipo){const entrada=ENTRADAS_AO_VIVO[tipo];if(!entrada)return false;const lista=tipo==="ROXA"?RESULTADOS_RESUMO_ROWS.ROXA:RESULTADOS_RESUMO_ROWS.ROSA;return(lista||[]).some(row=>{const d=dataValida(dataResultado(row));return d&&d.getTime()>=entrada.ts-3000&&resultadoFinalAoVivo(row)})}
-function limparEntradasJulgadas(){for(const tipo of["ROXA","ROSA"]){if(resultadoPosteriorEntrada(tipo))ENTRADAS_AO_VIVO[tipo]=null}}
-function renderizarEntradasAoVivo(){const linhas=[ENTRADAS_AO_VIVO.ROXA?.linha,ENTRADAS_AO_VIVO.ROSA?.linha].filter(Boolean);document.getElementById("leituraCompacta").innerHTML=linhas.length?linhas.map(escaparHtml).join("<br>"):"<span class='entrada-vazia'>AGUARDANDO NOVA OPORTUNIDADE</span>"}
+function normalizarStatusRoxa(texto){const t=String(texto||"").replace(/\n+/g," ").replace(/\s+/g," ").trim();if(!t)return"🟣 AGUARDANDO NOVA OPORTUNIDADE";const u=t.toUpperCase();if(u.includes("RECALIBRANDO")){const m=t.match(/ATÉ\s+\d{1,2}:\d{2}/i);return`🟣 🔄 RECALIBRANDO${m?" "+m[0].toUpperCase():""}`}if(u.includes("MERCADO BOM"))return"🟣 MERCADO BOM PARA SURF ROXO";if(u.includes("MERCADO ENTRANDO")||u.includes("COLETA"))return"🟣 MERCADO ENTRANDO EM COLETA";if(u.includes("AGUARDAR E OBSERVAR"))return"🟣 AGUARDAR E OBSERVAR";return"🟣 AGUARDANDO NOVA OPORTUNIDADE"}
+function selecionarEstadoAtualAoVivo(rows){const estado={ROXA:null,ROSA:null,statusRoxa:null};for(const row of rows||[]){if(!registroAoVivoRecente(row))continue;const origem=String(row.origem||"").toUpperCase();const mensagem=rosaVisual(row.mensagem||"");const linhas=mensagem.split(/\n+/).map(x=>x.trim()).filter(Boolean);for(const linha of linhas){if(!linhaEntradaAoVivo(linha))continue;const tipo=modalidadeEntradaAoVivo(linha);if(tipo&&!estado[tipo])estado[tipo]={linha,row}}
+if(!estado.statusRoxa&&(origem.includes("SURF")||mensagem.includes("🟣"))&&!linhas.some(linhaEntradaAoVivo)){estado.statusRoxa={linha:normalizarStatusRoxa(mensagem),row}}
+}return estado}
+function renderizarEntradasAoVivo(estado){const linhaRoxa=estado?.ROXA?.linha||estado?.statusRoxa?.linha||"🟣 AGUARDANDO NOVA OPORTUNIDADE";const linhaRosa=estado?.ROSA?.linha||"🩷 AGUARDANDO NOVA OPORTUNIDADE";document.getElementById("leituraCompacta").innerHTML=`${escaparHtml(linhaRoxa)}<br>${escaparHtml(linhaRosa)}`}
 let ULTIMA_ATUALIZACAO_RESUMOS=0;
 let RESULTADOS_RESUMO={ROXA:[],ROSA:[]};
 let RESULTADOS_RESUMO_ROWS={ROXA:[],ROSA:[]};
@@ -801,7 +701,7 @@ function tendenciaResultados(resultados){if(resultados.length<4)return"↔";cons
 function htmlResumoModalidade(tipo,resultados){const rosa=tipo==="ROSA",positivo=rosa?"🩷":"🟣",nome=rosa?"ROSA":"ROXA";if(!resultados.length)return`<div class="leitura-resumo ${rosa?"rosa":"roxa"} sem-resultados" onclick="abrirHistorico('${tipo}')"><div class="leitura-resumo-nome">${positivo} ${nome}</div><div class="vazio">Aguardando primeiros resultados...</div></div>`;const ultimos=resultados.slice(0,10),bolinhas=ultimos.map(r=>r==="WIN"?positivo:"🔵").join(""),percentual=Math.round(ultimos.filter(r=>r==="WIN").length/ultimos.length*100);return`<div class="leitura-resumo ${rosa?"rosa":"roxa"}" onclick="abrirHistorico('${tipo}')"><div class="leitura-resumo-nome">${positivo} ${nome}</div><div class="leitura-bolinhas">${bolinhas}<span class="leitura-percentual">${percentual}% ${tendenciaResultados(ultimos)}</span></div></div>`}
 function renderizarResumosAoVivo(){document.getElementById("leitura").innerHTML=`<div class="leitura-resumos">${htmlResumoModalidade("ROXA",RESULTADOS_RESUMO.ROXA)}${htmlResumoModalidade("ROSA",RESULTADOS_RESUMO.ROSA)}</div>`}
 async function carregarResumosAoVivo(){const agora=Date.now();if(agora-ULTIMA_ATUALIZACAO_RESUMOS<5000)return;ULTIMA_ATUALIZACAO_RESUMOS=agora;const[roxos,rosa]=await Promise.all([buscarResultadosRoxos(20),db.from("executor_rosa_resultados_app").select("*").order("data_hora_resultado",{ascending:false}).limit(10)]);RESULTADOS_RESUMO_ROWS.ROXA=roxos.slice(0,20);RESULTADOS_RESUMO_ROWS.ROSA=!rosa.error&&rosa.data?rosa.data:[];RESULTADOS_RESUMO.ROXA=roxos.slice(0,10).map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");if(!rosa.error&&rosa.data)RESULTADOS_RESUMO.ROSA=rosa.data.map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");limparEntradasJulgadas();renderizarEntradasAoVivo();renderizarResumosAoVivo()}
-async function carregarLeitura(){if(!painelAtivo)return;const{data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(50);if(!error&&data){const atuais=selecionarEntradasAtuais(data);atualizarEntradaAoVivo("ROXA",atuais.ROXA);atualizarEntradaAoVivo("ROSA",atuais.ROSA)}await carregarResumosAoVivo();limparEntradasJulgadas();renderizarEntradasAoVivo()}
+async function carregarLeitura(){if(!painelAtivo)return;const{data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(50);const estado=!error&&data?selecionarEstadoAtualAoVivo(data):{ROXA:null,ROSA:null,statusRoxa:null};renderizarEntradasAoVivo(estado);await carregarResumosAoVivo()}
 async function carregarProjecoes(){const alvo=document.getElementById("conteudoProjecoes");if(!alvo)return;const{data,error}=await db.from("projecoes_mercado").select("*").eq("ativo",true).order("id",{ascending:false}).limit(1);alvo.innerText=(error||!data||!data.length)?"Aguardando projeções...":(data[0].mensagem||"Aguardando projeções...")}
 function valorPrimeiro(obj,campos,padrao="-"){for(const campo of campos){const v=obj?.[campo];if(v!==undefined&&v!==null&&String(v).trim()!=="")return v}return padrao}
 function escaparHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
