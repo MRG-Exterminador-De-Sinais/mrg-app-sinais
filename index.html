@@ -357,22 +357,15 @@ async function salvarAssinaturaPush(subscription,ativo=true){
 
 async function sincronizarPushNoLogin(){
   if(!pushDisponivel())return;
+  carregarPreferenciasPushModalidade();
   if(Notification.permission!=="granted")return;
-
-  await registrarServiceWorker();carregarPreferenciasPushModalidade();
-
-  // No iPhone/PWA, a assinatura pode demorar alguns instantes para reaparecer.
-  // Tentamos algumas vezes, mas nunca enviamos assinatura nula ao Supabase.
-  let assinatura=null;
-  for(let tentativa=0;tentativa<5&&!assinatura;tentativa++){
-    assinatura=await obterAssinaturaPush();
-    if(!assinatura)await new Promise(resolve=>setTimeout(resolve,700));
-  }
-
-  // Só define este aparelho como o único ativo quando existe
-  // uma assinatura Push válida neste aparelho.
-  if(assinatura){
-    await salvarAssinaturaPush(assinatura,true);
+  try{
+    if(MRG_PUSH_PREFS.ROXA||MRG_PUSH_PREFS.ROSA){
+      await garantirAssinaturaPushMRG();
+      await sincronizarPreferenciasServiceWorker();
+    }
+  }catch(e){
+    console.error("Falha ao restaurar assinatura Push no login",e);
   }
 }
 async function marcarAssinaturaInativa(subscription){
@@ -1007,14 +1000,39 @@ async function sincronizarPreferenciasServiceWorker(){
   if(alvo)alvo.postMessage({tipo:"MRG_PUSH_PREFS",roxa:MRG_PUSH_PREFS.ROXA,rosa:MRG_PUSH_PREFS.ROSA});
  }catch(e){}
 }
+async function garantirAssinaturaPushMRG(){
+ if(!pushDisponivel())throw new Error("Push indisponível neste aparelho.");
+ if(!VAPID_PUBLIC_KEY)throw new Error("Chave Push não configurada.");
+ let permissao=Notification.permission;
+ if(permissao!=="granted")permissao=await Notification.requestPermission();
+ if(permissao!=="granted")throw new Error("Permissão de notificações não autorizada.");
+ const registro=await registrarServiceWorker();
+ if(!registro)throw new Error("Service Worker não registrado.");
+ await navigator.serviceWorker.ready;
+ let assinatura=await registro.pushManager.getSubscription();
+ if(!assinatura){
+  assinatura=await registro.pushManager.subscribe({
+   userVisibleOnly:true,
+   applicationServerKey:base64UrlParaUint8Array(VAPID_PUBLIC_KEY)
+  });
+ }
+ await salvarAssinaturaPush(assinatura,true);
+ return assinatura;
+}
 async function alternarPushModalidade(tipo){
  tipo=String(tipo||"").toUpperCase();if(!["ROXA","ROSA"].includes(tipo))return;
- if(Notification.permission!=="granted"){
-  try{const p=await Notification.requestPermission();if(p!=="granted"){atualizarBotoesPushModalidade();return}}catch(e){return}
+ const novoEstado=!MRG_PUSH_PREFS[tipo];
+ try{
+  if(novoEstado)await garantirAssinaturaPushMRG();
+  MRG_PUSH_PREFS[tipo]=novoEstado;
+  localStorage.setItem(MRG_PUSH_PREF_KEY,JSON.stringify(MRG_PUSH_PREFS));
+  atualizarBotoesPushModalidade();
+  await sincronizarPreferenciasServiceWorker();
+ }catch(e){
+  console.error("Falha ao alterar Push "+tipo,e);
+  atualizarBotoesPushModalidade();
+  alert(e?.message||"Não foi possível ativar as notificações.");
  }
- MRG_PUSH_PREFS[tipo]=!MRG_PUSH_PREFS[tipo];
- localStorage.setItem(MRG_PUSH_PREF_KEY,JSON.stringify(MRG_PUSH_PREFS));
- atualizarBotoesPushModalidade();sincronizarPreferenciasServiceWorker();
 }
 
 let ULTIMA_ATUALIZACAO_RESUMOS=0;
