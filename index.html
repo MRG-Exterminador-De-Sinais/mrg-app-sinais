@@ -185,6 +185,26 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
   font-size:11px!important;
 }
 
+
+.mrg-responsible-warning{
+  width:100%;
+  box-sizing:border-box;
+  margin:8px 0 8px;
+  padding:3px 4px;
+  text-align:center;
+  color:#f4b321;
+  font-size:11px;
+  line-height:1.25;
+  font-weight:800;
+  letter-spacing:.1px;
+}
+@media (max-width:520px){
+  .mrg-responsible-warning{
+    font-size:10px;
+    margin:7px 0;
+    padding:3px 1px;
+  }
+}
 </style>
 </head>
 <body>
@@ -199,6 +219,7 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 <div id="appBox" class="escondido">
 <div class="top-app-mobile">
   <div class="usuario-topo">Acesso liberado:<br><span id="usuarioEmail"></span></div>
+  <div class="mrg-responsible-warning">⚠️ MINISTÉRIO DA FAZENDA ADVERTE: APOSTA NÃO É INVESTIMENTO<br>+18 · JOGUE COM RESPONSABILIDADE</div>
   <div class="top-acoes">
     <div class="push-duplo">
 <button type="button" id="btnPushRoxa" class="btn-push-modalidade btn-push-roxa" onclick="alternarPushModalidade('ROXA')">🔕 ATIVAR</button>
