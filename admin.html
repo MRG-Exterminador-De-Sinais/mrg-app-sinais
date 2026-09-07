@@ -377,7 +377,7 @@ function selecionarCategoriaUsuario(cat){
   ["Aguardando","Ativos","Free","Inativos","Bloqueados"].forEach(n=>$("cat"+n)?.classList.toggle("ativo",n.toUpperCase()===cat));
   filtrarUsuarios();
 }
-const FUNCAO_COBRANCA="pagbank-criar-cobranca";
+const FUNCAO_COBRANCA="rapid-task";
 async function invocarFinanceiro(body){
   const{data,error}=await db.functions.invoke(FUNCAO_COBRANCA,{body});
   if(error)throw new Error(error.message||"Erro financeiro.");
