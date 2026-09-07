@@ -138,6 +138,53 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 .btn-push-rosa{background:#e92c91}
 .btn-projecoes{padding-left:7px!important;padding-right:7px!important}
 
+
+/* MRG - cabeçalho móvel em duas linhas: email acima, três botões abaixo */
+.top-app-mobile{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:7px!important;
+  margin-bottom:10px!important;
+}
+.top-app-mobile .usuario-topo{
+  width:100%!important;
+  min-width:0!important;
+  padding:0!important;
+  margin:0!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.top-app-mobile .top-acoes{
+  width:100%!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.92fr)!important;
+  gap:6px!important;
+  margin-left:0!important;
+  align-items:stretch!important;
+}
+.top-app-mobile .push-duplo{
+  display:contents!important;
+}
+.top-app-mobile .btn-push-modalidade,
+.top-app-mobile .btn-projecoes{
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+  height:40px!important;
+  padding:7px 4px!important;
+  border-radius:10px!important;
+  white-space:nowrap!important;
+}
+.top-app-mobile .btn-push-modalidade{
+  font-size:10px!important;
+}
+.top-app-mobile .btn-projecoes{
+  font-size:11px!important;
+}
+
 </style>
 </head>
 <body>
@@ -150,10 +197,16 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 <div id="novaSenhaBox" class="card escondido"><div class="titulo">CRIAR NOVA SENHA</div><input id="novaSenha" type="password" placeholder="Nova senha"><button type="button" onclick="salvarNovaSenha()">SALVAR NOVA SENHA</button><div id="novaSenhaMsg" class="msg">Digite sua nova senha.</div></div>
 <div id="aguardandoBox" class="card escondido"><div class="titulo">AGUARDANDO LIBERAÇÃO</div><div class="msg">Seu cadastro foi recebido.<br><br>Chame o administrador no WhatsApp do grupo que você participa e envie o e-mail usado no cadastro:<br><br><b id="emailAguardando"></b><br><br>Após a liberação, seu acesso será ativado automaticamente.</div><button type="button" class="sair" onclick="sair()">SAIR</button></div>
 <div id="appBox" class="escondido">
-<div class="top-app-mobile"><div class="usuario-topo">Acesso liberado:<br><span id="usuarioEmail"></span></div><div class="top-acoes"><div class="push-duplo">
+<div class="top-app-mobile">
+  <div class="usuario-topo">Acesso liberado:<br><span id="usuarioEmail"></span></div>
+  <div class="top-acoes">
+    <div class="push-duplo">
 <button type="button" id="btnPushRoxa" class="btn-push-modalidade btn-push-roxa" onclick="alternarPushModalidade('ROXA')">🔕 ATIVAR</button>
 <button type="button" id="btnPushRosa" class="btn-push-modalidade btn-push-rosa" onclick="alternarPushModalidade('ROSA')">🔕 ATIVAR</button>
-</div><button type="button" class="btn-projecoes" onclick="abrirProjecoes()">Projeções</button></div></div>
+</div>
+    <button type="button" class="btn-projecoes" onclick="abrirProjecoes()">Projeções</button>
+  </div>
+</div>
 <div class="mobile-status"><div class="mobile-live"><div class="tag">ENTRADAS AGORA</div><div id="leituraCompacta">Aguardando nova oportunidade...</div></div><div id="rosasMini" class="rosas-mini" onclick="abrirRosas()">🌹 0</div></div>
 <div id="modalProjecoes" class="modal-projecoes escondido" onclick="fecharProjecoes()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">PROJEÇÕES FUTURAS DE MERCADO</div><div id="conteudoProjecoes" class="projecoes-texto">Aguardando projeções...</div><button type="button" class="sec" onclick="fecharProjecoes()">FECHAR</button></div></div>
 <div id="modalHistoricoAoVivo" class="modal-projecoes escondido" onclick="fecharHistoricoAoVivo()"><div id="caixaHistoricoAoVivo" class="modal-caixa surf" onclick="event.stopPropagation()"><div id="tituloHistoricoAoVivo" class="titulo">HISTÓRICO AO VIVO</div><div class="modal-subtitulo">Últimas entradas finalizadas</div><div id="conteudoAoVivo" class="lista-surf"><div class="vazio">Carregando resultados...</div></div><button type="button" class="sec modal-voltar" onclick="fecharHistoricoAoVivo()">FECHAR</button></div></div>
