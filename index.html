@@ -863,23 +863,57 @@ function selecionarEstadoAoVivo(rows){
   const entrada=linhas.find(linhaEntradaAoVivo);
   if(entrada){
    const tipo=modalidadeEntradaAoVivo(entrada);
-   if(tipo&&!estado[tipo])estado[tipo]={texto:entrada,entrada:true};
+   if(tipo&&!estado[tipo])estado[tipo]={linha:entrada,row};
    continue;
   }
-  if(origem.includes("SURF")&&!estado.ROXA){
+  // Status informativo pertence somente à linha Roxa.
+  // Nunca reutiliza resumo/bolinhas/percentual como se fosse status.
+  const pareceResumo=/[%]/.test(msg)||((msg.match(/[🟣🔵🩷]/g)||[]).length>=4);
+  if(origem.includes("SURF")&&!pareceResumo&&!estado.ROXA){
    const limpas=linhas.filter(x=>!/^🟣\s*SISTEMA$/i.test(x));
-   if(limpas.length)estado.ROXA={texto:limpas.join(" "),entrada:false};
+   if(limpas.length)estado.ROXA={status:limpas.join(" ")};
   }
  }
  return estado;
 }
+
+const ENTRADAS_AO_VIVO={ROXA:null,ROSA:null};
+
+function dataRegistroAoVivo(row){
+ const bruto=valorPrimeiro(row,["atualizado_em","data_hora","data_hora_entrada","criado_em"],"");
+ const d=dataValida(bruto);
+ return d?d.getTime():Date.now();
+}
+
+function atualizarEntradaAoVivo(tipo,item){
+ if(!item||!item.linha)return;
+ const ts=dataRegistroAoVivo(item.row||{});
+ const atual=ENTRADAS_AO_VIVO[tipo];
+ if(!atual||ts>=atual.ts)ENTRADAS_AO_VIVO[tipo]={linha:item.linha,ts};
+}
+
+function resultadoPosteriorEntrada(tipo){
+ const entrada=ENTRADAS_AO_VIVO[tipo];
+ if(!entrada)return false;
+ const lista=tipo==="ROXA"?RESULTADOS_RESUMO_ROWS.ROXA:RESULTADOS_RESUMO_ROWS.ROSA;
+ return(lista||[]).some(row=>{
+  const d=dataValida(dataResultado(row));
+  return d&&d.getTime()>=entrada.ts-3000&&resultadoFinalAoVivo(row);
+ });
+}
+
+function limparEntradasJulgadas(){
+ for(const tipo of["ROXA","ROSA"]){
+  if(resultadoPosteriorEntrada(tipo))ENTRADAS_AO_VIVO[tipo]=null;
+ }
+}
+
 function renderizarEstadoAoVivo(estado){
- const roxa=estado.ROXA?.texto||"AGUARDANDO NOVA OPORTUNIDADE";
- const rosa=estado.ROSA?.texto||"AGUARDANDO NOVA OPORTUNIDADE";
+ const roxa=ENTRADAS_AO_VIVO.ROXA?.linha || estado.ROXA?.status || "AGUARDANDO NOVA OPORTUNIDADE";
+ const rosa=ENTRADAS_AO_VIVO.ROSA?.linha || "AGUARDANDO NOVA OPORTUNIDADE";
  document.getElementById("leituraCompacta").innerHTML=
   `🟣 ${escaparHtml(roxa).replace(/^🟣\s*/,"")}<br>🩷 ${escaparHtml(rosa).replace(/^🩷\s*/,"")}`;
 }
-
 const MRG_PUSH_PREF_KEY="mrg_push_modalidades_v1";
 let MRG_PUSH_PREFS={ROXA:true,ROSA:true};
 function carregarPreferenciasPushModalidade(){
@@ -910,11 +944,12 @@ async function alternarPushModalidade(tipo){
 
 let ULTIMA_ATUALIZACAO_RESUMOS=0;
 let RESULTADOS_RESUMO={ROXA:[],ROSA:[]};
+let RESULTADOS_RESUMO_ROWS={ROXA:[],ROSA:[]};
 function tendenciaResultados(resultados){if(resultados.length<4)return"↔";const meio=Math.ceil(resultados.length/2),novos=resultados.slice(0,meio),antigos=resultados.slice(meio),taxa=lista=>lista.filter(x=>x==="WIN").length/Math.max(1,lista.length);return taxa(novos)>=taxa(antigos)?"↑":"↓"}
 function htmlResumoModalidade(tipo,resultados){const rosa=tipo==="ROSA",positivo=rosa?"🩷":"🟣",nome=rosa?"ROSA":"ROXA";if(!resultados.length)return`<div class="leitura-resumo ${rosa?"rosa":"roxa"} sem-resultados" onclick="abrirHistorico('${tipo}')"><div class="leitura-resumo-nome">${positivo} ${nome}</div><div class="vazio">Aguardando primeiros resultados...</div></div>`;const ultimos=resultados.slice(0,10),bolinhas=ultimos.map(r=>r==="WIN"?positivo:"🔵").join(""),percentual=Math.round(ultimos.filter(r=>r==="WIN").length/ultimos.length*100);return`<div class="leitura-resumo ${rosa?"rosa":"roxa"}" onclick="abrirHistorico('${tipo}')"><div class="leitura-resumo-nome">${positivo} ${nome}</div><div class="leitura-bolinhas">${bolinhas}<span class="leitura-percentual">${percentual}% ${tendenciaResultados(ultimos)}</span></div></div>`}
 function renderizarResumosAoVivo(){document.getElementById("leitura").innerHTML=`<div class="leitura-resumos">${htmlResumoModalidade("ROXA",RESULTADOS_RESUMO.ROXA)}${htmlResumoModalidade("ROSA",RESULTADOS_RESUMO.ROSA)}</div>`}
-async function carregarResumosAoVivo(){const agora=Date.now();if(agora-ULTIMA_ATUALIZACAO_RESUMOS<5000)return;ULTIMA_ATUALIZACAO_RESUMOS=agora;const[roxos,rosa]=await Promise.all([buscarResultadosRoxos(20),db.from("executor_rosa_resultados_app").select("*").order("data_hora_resultado",{ascending:false}).limit(10)]);RESULTADOS_RESUMO.ROXA=roxos.slice(0,10).map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");if(!rosa.error&&rosa.data)RESULTADOS_RESUMO.ROSA=rosa.data.map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");renderizarResumosAoVivo()}
-async function carregarLeitura(){if(!painelAtivo)return;const{data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(50);renderizarEstadoAoVivo(!error&&data?selecionarEstadoAoVivo(data):{ROXA:null,ROSA:null});await carregarResumosAoVivo()}
+async function carregarResumosAoVivo(){const agora=Date.now();if(agora-ULTIMA_ATUALIZACAO_RESUMOS<5000)return;ULTIMA_ATUALIZACAO_RESUMOS=agora;const[roxos,rosa]=await Promise.all([buscarResultadosRoxos(20),db.from("executor_rosa_resultados_app").select("*").order("data_hora_resultado",{ascending:false}).limit(10)]);RESULTADOS_RESUMO_ROWS.ROXA=roxos.slice(0,20);RESULTADOS_RESUMO_ROWS.ROSA=!rosa.error&&rosa.data?rosa.data:[];RESULTADOS_RESUMO.ROXA=roxos.slice(0,10).map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");if(!rosa.error&&rosa.data)RESULTADOS_RESUMO.ROSA=rosa.data.map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");limparEntradasJulgadas();renderizarResumosAoVivo()}
+async function carregarLeitura(){if(!painelAtivo)return;const{data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(50);const estado=!error&&data?selecionarEstadoAoVivo(data):{ROXA:null,ROSA:null};atualizarEntradaAoVivo("ROXA",estado.ROXA);atualizarEntradaAoVivo("ROSA",estado.ROSA);await carregarResumosAoVivo();limparEntradasJulgadas();renderizarEstadoAoVivo(estado)}
 async function carregarProjecoes(){const alvo=document.getElementById("conteudoProjecoes");if(!alvo)return;const{data,error}=await db.from("projecoes_mercado").select("*").eq("ativo",true).order("id",{ascending:false}).limit(1);alvo.innerText=(error||!data||!data.length)?"Aguardando projeções...":(data[0].mensagem||"Aguardando projeções...")}
 function valorPrimeiro(obj,campos,padrao="-"){for(const campo of campos){const v=obj?.[campo];if(v!==undefined&&v!==null&&String(v).trim()!=="")return v}return padrao}
 function escaparHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
