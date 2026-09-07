@@ -211,6 +211,16 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
   letter-spacing:.7px;
   font-weight:800;
 }
+
+/* ===== FEED AO VIVO - ULTIMAS 50 VELAS (VERCEL) ===== */
+.feed50-card{padding:16px 14px 18px}
+.feed50-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:12px}
+.feed50-vela{min-width:0;background:#0b0b0d;border:1px solid #333;border-top-width:3px;border-radius:10px;padding:8px 3px 6px;text-align:center;box-shadow:inset 0 0 12px rgba(255,255,255,.025)}
+.feed50-vela.azul{border-top-color:#16c8ef}.feed50-vela.roxo{border-top-color:#a93cff}.feed50-vela.rosa{border-top-color:#ff3da7}
+.feed50-mult{font-size:15px;font-weight:800;line-height:1.1;white-space:nowrap}.feed50-vela.azul .feed50-mult{color:#22d3ee}.feed50-vela.roxo .feed50-mult{color:#b95cff}.feed50-vela.rosa .feed50-mult{color:#ff55b4}
+.feed50-hora{margin-top:4px;color:#d6d6d6;font-size:10px;font-weight:600;white-space:nowrap}
+@media(max-width:420px){.feed50-grid{gap:5px}.feed50-vela{padding:7px 2px 5px;border-radius:8px}.feed50-mult{font-size:13px}.feed50-hora{font-size:9px}}
+
 </style>
 </head>
 <body>
@@ -242,6 +252,7 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 <div id="leituraCard" class="card leitura"><div class="titulo">ÚLTIMOS RESULTADOS AO VIVO</div><div id="leitura"><div class="vazio">Aguardando resultados...</div></div></div>
 <div class="card"><div class="titulo">SINAIS ATIVOS</div><div id="ativos">Carregando sinais...</div></div>
 <div class="card resumo-fechados"><div class="titulo">RESUMO DOS ÚLTIMOS 5 FECHADOS</div><div id="resumoFechados" class="vazio">Aguardando histórico...</div></div>
+<div class="card feed50-card"><div class="titulo">FEED AO VIVO · ÚLTIMAS 50 VELAS</div><div id="feed50Velas" class="feed50-grid"><div class="vazio" style="grid-column:1/-1">Carregando últimas velas...</div></div></div>
 <div class="card"><div class="titulo">HISTÓRICO RECENTE</div><div id="historico">Carregando histórico...</div></div>
 
 <div id="modalCentralAvisos" class="central-aviso-modal escondido">
@@ -799,7 +810,7 @@ function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";esconderTudo()
 function mostrarRecuperar(){painelAtivo=false;telaAtual="recuperar";esconderTudo();document.getElementById("recuperarBox").classList.remove("escondido")}
 function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";esconderTudo();document.getElementById("novaSenhaBox").classList.remove("escondido")}
 function mostrarAguardando(email){painelAtivo=false;telaAtual="aguardando";esconderTudo();document.getElementById("aguardandoBox").classList.remove("escondido");document.getElementById("emailAguardando").innerText=email||""}
-function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;carregarControleEnvio();carregar();carregarLeitura();carregarProjecoes();carregarRosas();consultarEstadoNotificacoes();carregarAvisos()}
+function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;carregarControleEnvio();carregar();carregarLeitura();carregarProjecoes();carregarRosas();carregarFeed50Velas();consultarEstadoNotificacoes();carregarAvisos()}
 async function criarConta(){
   const nome=document.getElementById("cadNome").value.trim(),email=document.getElementById("cadEmail").value.trim(),telefone=document.getElementById("cadTelefone").value.trim(),senha=document.getElementById("cadSenha").value.trim();
   if(!nome||!email||!telefone||!senha){document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";return}
@@ -1051,6 +1062,28 @@ function fecharRosas(){document.getElementById("modalRosas").classList.add("esco
 function fecharDetalhesRosas(){document.getElementById("modalRosasDetalhes").classList.add("escondido")}
 function abrirProjecoes(){carregarProjecoes();document.getElementById("modalProjecoes").classList.remove("escondido")}
 function fecharProjecoes(){document.getElementById("modalProjecoes").classList.add("escondido")}
+
+function classeCorFeed50(vela){
+  const c=String((vela&&vela.cor)||"").toUpperCase();
+  if(c.includes("ROSA")||c==="K")return "rosa";
+  if(c.includes("ROXO"))return "roxo";
+  if(c.includes("AZUL"))return "azul";
+  const n=Number(String((vela&&(vela.multiplicador_num??vela.multiplicador))||0).replace(/x/ig,"").replace(",","."));
+  return n>=10?"rosa":n>=2?"roxo":"azul";
+}
+async function carregarFeed50Velas(){
+  if(!painelAtivo)return;
+  const alvo=document.getElementById("feed50Velas");if(!alvo)return;
+  try{
+    const{data,error}=await db.from("ultimas_velas_app").select("velas_json,status,total,atualizado_em").eq("id",1).single();
+    if(error||!data||!data.velas_json){alvo.innerHTML="<div class='vazio' style='grid-column:1/-1'>Aguardando últimas 50 velas...</div>";return}
+    let pacote=data.velas_json;if(typeof pacote==="string")pacote=JSON.parse(pacote);
+    const velas=Array.isArray(pacote?.velas)?pacote.velas.slice(-50).reverse():[];
+    if(!velas.length){alvo.innerHTML="<div class='vazio' style='grid-column:1/-1'>Aguardando últimas 50 velas...</div>";return}
+    alvo.innerHTML=velas.map(v=>{const mult=String(v.multiplicador||v.mult||v.multiplicador_num||"-");const multTxt=/x$/i.test(mult)?mult:`${mult}x`;const hora=String(v.hora||v.horario||"--:--:--").slice(-8);return `<div class="feed50-vela ${classeCorFeed50(v)}"><div class="feed50-mult">${escaparHtml(multTxt)}</div><div class="feed50-hora">${escaparHtml(hora)}</div></div>`}).join("");
+  }catch(e){console.error("Falha ao carregar últimas 50 velas:",e);alvo.innerHTML="<div class='vazio' style='grid-column:1/-1'>Erro ao carregar últimas velas.</div>"}
+}
+
 async function carregar(){if(!painelAtivo)return;await carregarControleEnvio();
 
 if(FINANCEIRO.bloquearSinais){
@@ -1071,7 +1104,7 @@ if(FINANCEIRO.bloquearSinais){
 const{data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Verificar Supabase</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";return}let ativos=(data||[]).filter(ehAtivo),historico=(data||[]).filter(item=>!ehAtivo(item));ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo)});ativos=ativos.slice(0,3);historico=historico.slice(0,20);atualizarResumoFechados(historico);let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";const aviso=avisoOperacionalHTML();document.getElementById("ativos").innerHTML=ativos.length?`${aviso}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:(aviso?aviso:"<div class='vazio'>Nenhum sinal ativo no momento</div>");document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`<div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>"}
 registrarServiceWorker();
 db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY")mostrarNovaSenha()});if(window.location.hash.includes("type=recovery"))mostrarNovaSenha();else mostrarLogin();
-setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},10000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);setInterval(carregarAvisos,30000);setInterval(verificarFinanceiroPeriodico,FINANCEIRO_INTERVALO_MS);
+setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},10000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarFeed50Velas,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);setInterval(carregarAvisos,30000);setInterval(verificarFinanceiroPeriodico,FINANCEIRO_INTERVALO_MS);
 </script>
 </body>
 </html>
