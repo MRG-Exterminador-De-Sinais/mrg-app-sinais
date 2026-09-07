@@ -345,7 +345,7 @@ function somarDias(v,n){const d=parseData(v);if(!d)return null;d.setDate(d.getDa
 function menorIgual(a,b){const x=parseData(a),y=parseData(b);return !!(x&&y&&x<=y)}
 function moeda(v){return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
 function usuario(id){return window.USUARIOS_CACHE.find(u=>String(u.id)===String(id))}
-function statusFinanceiroReal(u){const st=String(u.status_pagamento||"PENDENTE").toUpperCase(),h=hojeISO();if(u.liberado!==true)return"BLOQUEADO";if(st==="FREE")return u.validade_free&&menorIgual(h,u.validade_free)?"FREE":"VENCIDO";if(st==="PAGO"){if(u.validade_fim&&menorIgual(h,u.validade_fim))return"PAGO";if(u.carencia_ate&&menorIgual(h,u.carencia_ate))return"ATRASADO";return"VENCIDO"}return"PENDENTE"}
+function statusFinanceiroReal(u){const st=String(u.status_pagamento||"PENDENTE").toUpperCase(),h=hojeISO();if(st==="BLOQUEADO")return"BLOQUEADO";if(u.liberado!==true)return"BLOQUEADO";if(st==="FREE")return u.validade_free&&menorIgual(h,u.validade_free)?"FREE":"VENCIDO";if(st==="PAGO"){if(u.validade_fim&&menorIgual(h,u.validade_fim))return"PAGO";if(u.carencia_ate&&menorIgual(h,u.carencia_ate))return"ATRASADO";return"VENCIDO"}return"PENDENTE"}
 function vencidoForaCarencia(u){if(u.liberado!==true)return false;const st=String(u.status_pagamento||"").toUpperCase(),h=hojeISO();if(st==="FREE")return u.validade_free&&!menorIgual(h,u.validade_free);if(st==="PAGO")return u.carencia_ate&&!menorIgual(h,u.carencia_ate);return false}
 function badgeLiberado(v){return v?"<span class='badge liberado'>LIBERADO</span>":"<span class='badge bloqueado'>BLOQUEADO / AGUARDANDO</span>"}
 function badgeFinanceiro(st){if(st==="PAGO")return"<span class='badge financeiro-pago'>PAGO</span>";if(st==="FREE")return"<span class='badge financeiro-free'>FREE</span>";if(st==="ATRASADO")return"<span class='badge financeiro-atrasado'>ATRASADO / CARÊNCIA</span>";if(st==="VENCIDO")return"<span class='badge financeiro-atrasado'>VENCIDO</span>";if(st==="BLOQUEADO")return"<span class='badge bloqueado'>BLOQUEADO</span>";return"<span class='badge financeiro-pendente'>PENDENTE</span>"}
@@ -359,12 +359,22 @@ function mostrarSecaoAdm(nome){
 }
 function categoriaUsuario(u){
   const st=statusFinanceiroReal(u);
-  if(u.liberado!==true){
-    if(st==="PENDENTE"||String(u.status_pagamento||"PENDENTE").toUpperCase()==="PENDENTE")return"AGUARDANDO";
-    return"BLOQUEADOS";
-  }
+  const bruto=String(u.status_pagamento||"PENDENTE").toUpperCase();
+  const jaTeveAcesso=!!(u.data_ultimo_pagamento||u.validade_inicio||u.validade_fim||u.carencia_ate||u.data_free||u.validade_free||Number(u.valor_ultimo_pagamento||0)>0);
+
+  // BLOQUEADOS = bloqueio explícito do administrador.
+  // Compatibilidade: usuários já bloqueados pela versão anterior ficaram PENDENTE,
+  // mas possuem histórico de acesso nas próprias datas do perfil.
+  if(bruto==="BLOQUEADO"||(u.liberado!==true&&jaTeveAcesso))return"BLOQUEADOS";
+
+  // AGUARDANDO = cadastro novo que nunca foi ativado, nem pago nem FREE.
+  if(u.liberado!==true&&!jaTeveAcesso)return"AGUARDANDO";
+
+  // Vigentes. Carência paga continua com acesso e permanece em ATIVOS.
   if(st==="FREE")return"FREE";
   if(st==="PAGO"||st==="ATRASADO")return"ATIVOS";
+
+  // Já teve acesso e venceu, mas ainda não foi bloqueado manualmente.
   return"INATIVOS";
 }
 function atualizarCategoriasUsuarios(){
@@ -801,8 +811,8 @@ async function salvarPagamento(){const id=$("pagoPerfilId").value,u=usuario(id),
 function abrirModalFree(id){const u=usuario(id);if(!u)return;$("freePerfilId").value=id;$("freeUsuario").innerText=`${u.nome} — ${u.email}`;$("freeInicio").value=hojeISO();$("freeValidade").value=fimMesAtual();$("freeObservacao").value="";$("modalFree").classList.remove("escondido")}
 function fecharModalFree(){$("modalFree").classList.add("escondido")}
 async function salvarFree(){const id=$("freePerfilId").value,u=usuario(id),inicio=$("freeInicio").value,fim=$("freeValidade").value,obs=$("freeObservacao").value.trim();if(!u||!inicio||!fim){alert("Informe início e validade.");return}const{error}=await db.from("perfis").update({liberado:true,status_pagamento:"FREE",data_free:inicio,validade_free:fim,validade_inicio:inicio,validade_fim:null,carencia_ate:null,observacao_financeira:obs}).eq("id",id);if(error){alert(error.message);return}try{await registrarHistorico({perfil_id:id,nome:u.nome,email:u.email,acao:"FREE",total:0,data:inicio,inicio,fim,obs})}catch(e){}fecharModalFree();recarregarMantendoBusca()}
-async function bloquearUsuario(id){const u=usuario(id);if(!u||!confirm("Confirmar bloqueio deste usuário?"))return;const{error}=await db.from("perfis").update({liberado:false,status_pagamento:"PENDENTE"}).eq("id",id);if(error){alert(error.message);return}try{await registrarHistorico({perfil_id:id,nome:u.nome,email:u.email,acao:"BLOQUEADO",total:0,obs:"Bloqueio manual"})}catch(e){}recarregarMantendoBusca()}
-async function bloquearAtrasados(){const lista=window.USUARIOS_CACHE.filter(vencidoForaCarencia);if(!lista.length){alert("Nenhum usuário fora da carência.");return}if(!confirm(`Bloquear ${lista.length} usuário(s)?`))return;for(const u of lista){await db.from("perfis").update({liberado:false,status_pagamento:"PENDENTE"}).eq("id",u.id);try{await registrarHistorico({perfil_id:u.id,nome:u.nome,email:u.email,acao:"BLOQUEADO_ATRASADO",total:0,obs:"Carência encerrada"})}catch(e){}}carregarUsuarios()}
+async function bloquearUsuario(id){const u=usuario(id);if(!u||!confirm("Confirmar bloqueio deste usuário?"))return;const{error}=await db.from("perfis").update({liberado:false,status_pagamento:"BLOQUEADO"}).eq("id",id);if(error){alert(error.message);return}try{await registrarHistorico({perfil_id:id,nome:u.nome,email:u.email,acao:"BLOQUEADO",total:0,obs:"Bloqueio manual"})}catch(e){}recarregarMantendoBusca()}
+async function bloquearAtrasados(){const lista=window.USUARIOS_CACHE.filter(vencidoForaCarencia);if(!lista.length){alert("Nenhum usuário fora da carência.");return}if(!confirm(`Bloquear ${lista.length} usuário(s)?`))return;for(const u of lista){await db.from("perfis").update({liberado:false,status_pagamento:"BLOQUEADO"}).eq("id",u.id);try{await registrarHistorico({perfil_id:u.id,nome:u.nome,email:u.email,acao:"BLOQUEADO_ATRASADO",total:0,obs:"Carência encerrada"})}catch(e){}}carregarUsuarios()}
 async function abrirHistorico(id,nome){$("modalHistorico").classList.remove("escondido");const{data,error}=await db.from("historico_financeiro").select("*").eq("perfil_id",id).order("criado_em",{ascending:false}).limit(100);if(error){$("conteudoHistorico").innerHTML="<div class='erro'>"+error.message+"</div>";return}if(!data.length){$("conteudoHistorico").innerHTML=`<div class='vazio'>Nenhum histórico para ${nome}.</div>`;return}$("conteudoHistorico").innerHTML=data.map(h=>`<div class="historico-item"><div class="historico-data">${formatarDataHoraBR(h.criado_em)}</div><div><b>Ação:</b> ${texto(h.acao)}</div><div><b>Total:</b> ${moeda(h.valor_total??h.valor)}</div><div><b>Mensalidade:</b> ${moeda(h.valor_mensalidade)}</div><div><b>Inscrição/reinscrição:</b> ${moeda(h.valor_inscricao)}</div><div><b>Pagamento:</b> ${formatarDataBR(h.data_pagamento)}</div><div><b>Validade:</b> ${formatarDataBR(h.validade_inicio)} até ${formatarDataBR(h.validade_fim)}</div><div><b>Observação:</b> ${texto(h.observacao)}</div></div>`).join("")}
 function fecharHistorico(){$("modalHistorico").classList.add("escondido")}
 async function recarregarMantendoBusca(){const c=$("campoBusca"),q=c.value,aberto=c.style.display!=="none";await carregarUsuarios();if(aberto&&q){c.value=q;filtrarUsuarios()}}
