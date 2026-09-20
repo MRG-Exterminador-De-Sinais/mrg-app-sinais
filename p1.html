@@ -196,11 +196,11 @@ function aplicarPermissoes(){
   const p3=valorBool(contrato,["pagina_3"]);
   el("btnP2").classList.toggle("lock",!p2);
   el("btnP3").classList.toggle("lock",!p3);
-  el("statusAcesso").textContent=`Permissões recebidas do ADM/Supabase · P2 ${p2?"LIBERADA":"INDISPONÍVEL"} · P3 ${p3?"LIBERADA":"INDISPONÍVEL"}`;
+  el("statusAcesso").textContent=`Acesso atualizado · P2 ${p2?"LIBERADA":"INDISPONÍVEL"} · P3 ${p3?"LIBERADA":"INDISPONÍVEL"}`;
 }
 
 async function irPagina(n){
-  try{await obterContrato();aplicarPermissoes()}catch(e){alert("Não foi possível revalidar o acesso no ADM/Supabase.");return}
+  try{await obterContrato();aplicarPermissoes()}catch(e){alert("Não foi possível validar seu acesso agora.");return}
   const ok=n===2
     ?valorBool(contrato,["pagina_2"])
     :valorBool(contrato,["pagina_3"]);
