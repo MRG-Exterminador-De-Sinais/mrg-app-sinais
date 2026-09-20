@@ -247,7 +247,7 @@ async function irPagina(n){
   try{await obterContrato();aplicarPermissoes()}catch(e){alert("Não foi possível validar seu acesso agora.");return}
   const campo=n===1?"pagina_1":"pagina_3";
   if(!boolContrato(campo)){alert(`Página ${n} indisponível para o estado atual da conta.`);return}
-  window.location.href=n===1?"https://mrg-app-sinais.vercel.app/p1.html":"https://mrg-app-sinais.vercel.app/";
+  window.location.href=n===1?"/p1.html":"/";
 }
 function mostrarLogin(msg=""){painelAtivo=false;el("appBox").classList.add("escondido");el("loginBox").classList.remove("escondido");if(msg)el("loginMsg").textContent=msg}
 async function sair(){painelAtivo=false;await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
