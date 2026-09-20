@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#050706">
+<title>MRG Exterminador de Sinais — Página 1 Estudos</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:#050706;color:#fff;font-family:Arial,sans-serif}
+body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.container{width:100%;max-width:760px;margin:auto;padding:12px}
+.escondido{display:none!important}
+.card{background:linear-gradient(145deg,rgba(17,20,19,.98),rgba(6,8,7,.98));border:1px solid #313633;border-radius:16px;padding:14px;margin-bottom:12px}
+.header{position:relative;overflow:hidden;border-bottom:1px solid #323832;padding:14px 4px 16px;text-align:center}
+.header:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 15% 30%,rgba(0,255,136,.10),transparent 34%);pointer-events:none}
+.brand{position:relative}
+.brand h1{margin:0;font-size:24px;line-height:1.02;color:#00ee7e;text-shadow:0 0 12px rgba(0,255,136,.18)}
+.brand .linha{font-size:14px;font-weight:800;color:#eee;margin-top:7px}
+.brand .tag{font-size:10px;letter-spacing:4px;color:#bbb;margin-top:8px}
+.userbox{margin-top:12px;border:1px solid #4a504d;border-radius:12px;padding:9px 12px;text-align:left;font-size:12px;color:#bbb}
+.userbox b{color:#00ee7e}
+.warning{text-align:center;color:#ffc400;font-size:11px;font-weight:900;line-height:1.35;padding:12px 2px 2px}
+.page-title{padding:16px 2px 12px}
+.page-title h2{margin:0;font-size:25px}.page-title h2 span{color:#00ee7e}
+.page-title p{margin:5px 0 0;color:#ccc;font-size:14px}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{min-height:118px;border:1px solid #3a3f3c;border-radius:15px;padding:14px;background:#0a0d0b;position:relative;overflow:hidden;cursor:pointer}
+.tile:after{content:"›";position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:30px;color:currentColor}
+.tile .ico{font-size:29px;margin-bottom:8px}.tile b{display:block;font-size:16px;padding-right:20px}.tile small{display:block;color:#d0d0d0;line-height:1.35;margin-top:6px;padding-right:16px}
+.verde{color:#00ee7e;border-color:#00a95b;background:linear-gradient(145deg,rgba(0,238,126,.10),#080b09 60%)}
+.roxo{color:#b54dff;border-color:#7c2caf;background:linear-gradient(145deg,rgba(181,77,255,.12),#09080b 60%)}
+.azul{color:#20bfff;border-color:#147ba4;background:linear-gradient(145deg,rgba(32,191,255,.11),#070a0c 60%)}
+.amarelo{color:#ffd21a;border-color:#a88b00;background:linear-gradient(145deg,rgba(255,210,26,.10),#0b0a06 60%)}
+.rosa{color:#ff3f91;border-color:#ad245f;background:linear-gradient(145deg,rgba(255,63,145,.11),#0c0709 60%)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:1000;display:flex;align-items:center;justify-content:center;padding:14px}
+.modal-box{width:100%;max-width:620px;max-height:86vh;overflow:auto;background:#101210;border:2px solid #00ee7e;border-radius:18px;padding:17px}
+.modal-box h3{margin:0 0 10px;color:#00ee7e}.modal-box p{color:#ddd;line-height:1.5}
+button{width:100%;border:0;border-radius:11px;padding:13px;font-weight:900;font-size:14px;margin-top:9px;background:#00ee7e;color:#00150b}
+button.sec{background:#242724;color:#fff;border:1px solid #444}
+.history-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}
+.history-head b{font-size:15px;color:#c45cff}.history-head span{font-size:11px;color:#ddd}
+.feed{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.vela{background:#080a09;border:1px solid #333;border-top-width:3px;border-radius:9px;padding:8px 2px 6px;text-align:center}
+.vela.azul{border-top-color:#16c8ef}.vela.roxo{border-top-color:#a93cff}.vela.rosa{border-top-color:#ff3da7}
+.mult{font-size:13px;font-weight:900}.azul .mult{color:#22d3ee}.roxo .mult{color:#b95cff}.rosa .mult{color:#ff55b4}
+.hora{font-size:9px;color:#ccc;margin-top:4px}
+.nav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 10px}
+.nav button{min-height:76px;background:#0d100e;color:#fff;border:1px solid #4b504d;margin:0;font-size:14px}
+.nav button span{display:block;color:#aaa;font-size:10px;margin-top:4px}
+.lock{opacity:.48}
+.statusbox{font-size:11px;color:#aaa;text-align:center;margin:8px 0}
+.login input{width:100%;padding:13px;margin:6px 0;background:#080a09;border:1px solid #444;border-radius:10px;color:#fff;font-size:15px}
+.msg{text-align:center;color:#ffc400;font-size:12px;margin-top:8px}
+.footer{text-align:center;color:#777;font-size:10px;letter-spacing:3px;padding:12px}
+@media(max-width:430px){
+ .container{padding:10px}.brand h1{font-size:22px}.menu{gap:8px}.tile{min-height:108px;padding:12px}.tile b{font-size:14px}.tile small{font-size:11px}
+ .feed{gap:5px}.mult{font-size:12px}.nav button{font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="header">
+    <div class="brand">
+      <h1>MRG EXTERMINADOR<br>DE SINAIS</h1>
+      <div class="linha">Aviator · Spribe · 7K Bet</div>
+      <div class="tag">CONHECIMENTO · ESTUDO · EVOLUÇÃO</div>
+    </div>
+    <div id="userBox" class="userbox escondido"><span id="userEmail"></span><br><b id="estadoConta">Consultando acesso...</b></div>
+    <div class="warning">⚠️ MINISTÉRIO DA FAZENDA ADVERTE: APOSTA NÃO É INVESTIMENTO<br>+18 · JOGUE COM RESPONSABILIDADE</div>
+  </header>
+
+  <section id="loginBox" class="card login">
+    <b>ACESSO MRG</b>
+    <input id="email" type="email" placeholder="E-mail">
+    <input id="senha" type="password" placeholder="Senha">
+    <button onclick="entrar()">ENTRAR</button>
+    <div id="loginMsg" class="msg">Use o mesmo acesso do sistema MRG.</div>
+  </section>
+
+  <main id="appBox" class="escondido">
+    <section class="page-title">
+      <h2>PÁGINA 1 — <span>ESTUDOS</span></h2>
+      <p>Conteúdo, aprendizado e evolução no Aviator.</p>
+    </section>
+
+    <section class="menu">
+      <div class="tile verde" onclick="abrirConteudo('Termos e Contrato','Área destinada aos termos, contrato, regras de uso e responsabilidade do sistema MRG.')"><div class="ico">📄</div><b>TERMOS</b><small>Termos, contrato e regras de uso.</small></div>
+      <div class="tile roxo" onclick="abrirConteudo('Curso','Área destinada ao curso e materiais de aprendizado MRG.')"><div class="ico">🎓</div><b>CURSO</b><small>Conteúdo do básico ao avançado.</small></div>
+      <div class="tile azul" onclick="abrirConteudo('Tutoriais','Área destinada aos vídeos, tutoriais e orientações práticas.')"><div class="ico">▶️</div><b>TUTORIAIS</b><small>Vídeos e orientações práticas.</small></div>
+      <div class="tile verde" onclick="abrirConteudo('Suporte','Área destinada aos canais oficiais de suporte MRG.')"><div class="ico">🎧</div><b>SUPORTE</b><small>Canais de atendimento e auxílio.</small></div>
+      <div class="tile roxo" onclick="abrirConteudo('Projeções','Ponto preparado para integrar as Projeções Futuras já existentes, sem criar cálculo novo no cliente.')"><div class="ico">📊</div><b>PROJEÇÕES</b><small>Projeções e tendências futuras.</small></div>
+      <div class="tile azul" onclick="abrirConteudo('Mercado','Ponto preparado para integrar o Estado de Mercado já existente, sem cálculo local de acesso.')"><div class="ico">◕</div><b>MERCADO</b><small>Estado e cenários do mercado.</small></div>
+      <div class="tile amarelo" onclick="abrirConteudo('Banca','Área de conteúdo para gestão de banca e disciplina.')"><div class="ico">🪙</div><b>BANCA</b><small>Gestão e disciplina.</small></div>
+      <div class="tile rosa" onclick="abrirConteudo('Avisos','Área destinada aos avisos importantes da equipe MRG.')"><div class="ico">⚠️</div><b>AVISOS</b><small>Comunicados e atualizações.</small></div>
+      <div class="tile azul" style="grid-column:1/-1" onclick="abrirConteudo('Interpretação das análises','Como Funciona / Como interpretar as análises: espaço preparado para o conteúdo oficial de leitura e interpretação do MRG Analista.')"><div class="ico">🧠</div><b>INTERPRETAÇÃO DAS ANÁLISES</b><small>Como funciona e como interpretar as leituras apresentadas.</small></div>
+    </section>
+
+    <section class="card" style="margin-top:12px">
+      <div class="history-head"><b>◷ HISTÓRICO AO VIVO — ÚLTIMAS 20 VELAS</b><span>Aviator · Spribe · 7K Bet</span></div>
+      <div id="feed" class="feed"><div style="grid-column:1/-1;text-align:center;color:#888">Carregando histórico...</div></div>
+    </section>
+
+    <section class="nav">
+      <button id="btnP2" onclick="irPagina(2)">▥ PÁGINA 2 — ANALISTA<span>ANÁLISES EM TEMPO REAL</span></button>
+      <button id="btnP3" onclick="irPagina(3)">♛ PÁGINA 3 — PRO<span>RECURSOS PRO</span></button>
+    </section>
+    <div id="statusAcesso" class="statusbox"></div>
+    <button class="sec" onclick="sair()">SAIR</button>
+    <div class="footer">FOCO · GESTÃO · EVOLUÇÃO</div>
+  </main>
+</div>
+
+<div id="modal" class="modal escondido" onclick="fecharModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <h3 id="modalTitulo"></h3>
+    <p id="modalTexto"></p>
+    <button class="sec" onclick="fecharModal()">VOLTAR</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL="https://bflptqejltvwfjhixwpj.supabase.co";
+const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let contrato=null;
+const el=id=>document.getElementById(id);
+
+function abrirConteudo(t,x){el("modalTitulo").textContent=t;el("modalTexto").textContent=x;el("modal").classList.remove("escondido")}
+function fecharModal(){el("modal").classList.add("escondido")}
+
+async function entrar(){
+  const email=el("email").value.trim(),password=el("senha").value;
+  if(!email||!password){el("loginMsg").textContent="Informe e-mail e senha.";return}
+  el("loginMsg").textContent="Validando...";
+  const {error}=await db.auth.signInWithPassword({email,password});
+  if(error){el("loginMsg").textContent="Login ou senha inválidos.";return}
+  await iniciarApp();
+}
+async function sair(){await db.auth.signOut({scope:"local"});contrato=null;el("appBox").classList.add("escondido");el("userBox").classList.add("escondido");el("loginBox").classList.remove("escondido")}
+
+function normalizarContrato(data){
+  if(Array.isArray(data)) data=data[0]||{};
+  return data||{};
+}
+function valorBool(o, nomes){
+  for(const k of nomes) if(o && typeof o[k]==="boolean") return o[k];
+  return false;
+}
+function valor(o, nomes, padrao=""){
+  for(const k of nomes) if(o && o[k]!==undefined && o[k]!==null) return o[k];
+  return padrao;
+}
+
+async function obterContrato(){
+  const {data,error}=await db.rpc("obter_acesso_mrg");
+  if(error) throw error;
+  contrato=normalizarContrato(data);
+  return contrato;
+}
+async function iniciarApp(){
+  const {data:s}=await db.auth.getSession();
+  const user=s?.session?.user;
+  if(!user)return;
+  try{
+    await obterContrato();
+  }catch(e){
+    console.error("Contrato MRG:",e);
+    el("loginMsg").textContent="Não foi possível consultar o contrato central de acesso.";
+    return;
+  }
+
+  const estado=String(valor(contrato,["nivel_acesso"],"")).toUpperCase();
+  const p1=valorBool(contrato,["pagina_1"]);
+  if(!p1){
+    el("loginMsg").textContent=estado==="BLOQUEADO"?"Acesso bloqueado pelo administrador.":"Acesso à Página 1 ainda não liberado.";
+    el("appBox").classList.add("escondido");
+    el("loginBox").classList.remove("escondido");
+    return;
+  }
+
+  el("userEmail").textContent=user.email||"";
+  el("estadoConta").textContent=estado||"ACESSO CENTRAL ATIVO";
+  el("loginBox").classList.add("escondido");
+  el("userBox").classList.remove("escondido");
+  el("appBox").classList.remove("escondido");
+  aplicarPermissoes();
+  await carregarHistorico();
+}
+
+function aplicarPermissoes(){
+  const p2=valorBool(contrato,["pagina_2"]);
+  const p3=valorBool(contrato,["pagina_3"]);
+  el("btnP2").classList.toggle("lock",!p2);
+  el("btnP3").classList.toggle("lock",!p3);
+  el("statusAcesso").textContent=`Permissões recebidas do ADM/Supabase · P2 ${p2?"LIBERADA":"INDISPONÍVEL"} · P3 ${p3?"LIBERADA":"INDISPONÍVEL"}`;
+}
+
+async function irPagina(n){
+  try{await obterContrato();aplicarPermissoes()}catch(e){alert("Não foi possível revalidar o acesso no ADM/Supabase.");return}
+  const ok=n===2
+    ?valorBool(contrato,["pagina_2"])
+    :valorBool(contrato,["pagina_3"]);
+  if(!ok){alert(n===2?"Página 2 não disponível para o estado atual da conta.":"Página 3 PRO não disponível para o estado atual da conta.");return}
+  const destinos={2:"https://mrg-analista-probabilidades.vercel.app/",3:"https://mrg-app-sinais.vercel.app/"};
+  const novaAba=window.open(destinos[n], '_blank', 'noopener,noreferrer');
+  if(!novaAba){
+    window.top.location.href=destinos[n];
+  }
+}
+
+function classeVela(v){
+  const c=String(v?.cor||"").toUpperCase();
+  if(c==="ROSA")return"rosa"; if(c==="ROXO")return"roxo"; if(c==="AZUL")return"azul";
+  const x=Number(v?.multiplicador)||0; return x>=10?"rosa":x>=2?"roxo":"azul";
+}
+async function carregarHistorico(){
+  const {data,error}=await db.from("mrg_analista_velas_24h").select("id,data_hora,hora,multiplicador,cor").order("data_hora",{ascending:false}).limit(20);
+  if(error){el("feed").innerHTML='<div style="grid-column:1/-1;text-align:center;color:#888">Histórico indisponível.</div>';return}
+  el("feed").innerHTML=(data||[]).map(v=>{
+    let h=String(v.hora||"").slice(-8);if(!h&&v.data_hora)h=new Date(v.data_hora).toLocaleTimeString("pt-BR");
+    return `<div class="vela ${classeVela(v)}"><div class="mult">${v.multiplicador}x</div><div class="hora">${h}</div></div>`;
+  }).join("")||'<div style="grid-column:1/-1;text-align:center;color:#888">Sem velas disponíveis.</div>';
+}
+
+document.addEventListener("visibilitychange",async()=>{if(document.visibilityState==="visible"&&contrato){try{await obterContrato();aplicarPermissoes()}catch(e){}}});
+(async()=>{const {data}=await db.auth.getSession();if(data?.session)await iniciarApp()})();
+</script>
+</body>
+</html>
