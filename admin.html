@@ -129,7 +129,6 @@ select{
   <div class="card">
     <div class="titulo">RESUMO FINANCEIRO DO MÊS</div>
     <div id="resumoFinanceiro" class="vazio">Carregando resumo...</div>
-    <button class="bloquear" onclick="bloquearAtrasados()">BLOQUEAR VENCIDOS FORA DA CARÊNCIA</button>
   </div>
 </section>
 
@@ -198,7 +197,7 @@ select{
 </div>
 
 <div id="modalHistorico" class="modal-fundo escondido" onclick="fecharHistorico()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">HISTÓRICO FINANCEIRO</div><div id="conteudoHistorico" class="vazio">Carregando histórico...</div><button class="btn-fechar" onclick="fecharHistorico()">FECHAR</button></div></div>
-<div id="modalPago" class="modal-fundo escondido" onclick="fecharModalPago()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">REGISTRAR PAGAMENTO</div><div id="pagoUsuario" class="nome"></div><input id="pagoPerfilId" type="hidden"><div class="duas-colunas"><div><div class="linha"><b>Mensalidade:</b></div><input id="pagoMensalidade" type="number" min="0" step="0.01"></div><div><div class="linha"><b>Inscrição/reinscrição:</b></div><input id="pagoInscricao" type="number" min="0" step="0.01" value="0"></div></div><div class="linha"><b>Total recebido:</b></div><input id="pagoTotal" type="number" min="0" step="0.01"><div class="duas-colunas"><div><div class="linha"><b>Data:</b></div><input id="pagoData" type="date"></div><div><div class="linha"><b>Validade:</b></div><input id="pagoValidade" type="date"></div></div><div class="linha"><b>Observação:</b></div><textarea id="pagoObservacao"></textarea><div class="aviso-modal">Validade sugerida: último dia do mês seguinte. Carência automática: 5 dias.</div><button class="pago" onclick="salvarPagamento()">SALVAR PAGAMENTO</button><button class="btn-fechar" onclick="fecharModalPago()">CANCELAR</button></div></div>
+<div id="modalPago" class="modal-fundo escondido" onclick="fecharModalPago()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">REGISTRAR PAGAMENTO</div><div id="pagoUsuario" class="nome"></div><input id="pagoPerfilId" type="hidden"><div class="duas-colunas"><div><div class="linha"><b>Mensalidade:</b></div><input id="pagoMensalidade" type="number" min="0" step="0.01"></div><div><div class="linha"><b>Inscrição/reinscrição:</b></div><input id="pagoInscricao" type="number" min="0" step="0.01" value="0"></div></div><div class="linha"><b>Total recebido:</b></div><input id="pagoTotal" type="number" min="0" step="0.01"><div class="duas-colunas"><div><div class="linha"><b>Data:</b></div><input id="pagoData" type="date"></div><div><div class="linha"><b>Validade:</b></div><input id="pagoValidade" type="date"></div></div><div class="linha"><b>Observação:</b></div><textarea id="pagoObservacao"></textarea><div class="aviso-modal">Validade definida pelo ADM. Carência PRO automática: 2 dias, controlada pelo Supabase.</div><button class="pago" onclick="salvarPagamento()">SALVAR PAGAMENTO</button><button class="btn-fechar" onclick="fecharModalPago()">CANCELAR</button></div></div>
 <div id="modalFree" class="modal-fundo escondido" onclick="fecharModalFree()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">LIBERAR ACESSO FREE</div><div id="freeUsuario" class="nome"></div><input id="freePerfilId" type="hidden"><div class="duas-colunas"><div><div class="linha"><b>Início:</b></div><input id="freeInicio" type="date"></div><div><div class="linha"><b>Validade:</b></div><input id="freeValidade" type="date"></div></div><div class="linha"><b>Observação:</b></div><textarea id="freeObservacao"></textarea><div class="aviso-modal">FREE termina no último dia do mês atual e não possui carência.</div><button class="free" onclick="salvarFree()">SALVAR FREE</button><button class="btn-fechar" onclick="fecharModalFree()">CANCELAR</button></div></div>
 <div id="modalManutencao" class="modal-fundo escondido" onclick="fecharModalManutencao()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">MANUTENÇÃO PROGRAMADA</div><div class="linha"><b>Início:</b></div><input id="horaInicioManutencao" placeholder="23:40"><div class="linha"><b>Retorno:</b></div><input id="horaFimManutencao" placeholder="07:30"><div class="linha"><b>Mensagem:</b></div><textarea id="textoManutencao"></textarea><button class="cobranca" onclick="enviarManutencao()">ENVIAR AVISO</button><button class="bloquear" onclick="removerManutencao()">REMOVER AVISO</button><button class="btn-fechar" onclick="fecharModalManutencao()">FECHAR</button></div></div>
 
@@ -327,7 +326,6 @@ select{
 const SUPABASE_URL="https://bflptqejltvwfjhixwpj.supabase.co";
 const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const ADMIN_EMAIL="maiconrodrigoguth@gmail.com";
-const DIAS_CARENCIA=5;
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 window.USUARIOS_CACHE=[];window.AVISOS_CACHE=[];window.MODELOS_FINANCEIROS_CACHE=[];window.RECEITA_MES=0;window.CONTROLE_ENVIO={snarpy_ativo:true,hyper_ativo:true,mensagem:""};window.CONFIG_FINANCEIRA=null;window.CATEGORIA_USUARIO="AGUARDANDO";
 const $=id=>document.getElementById(id);
@@ -345,36 +343,18 @@ function somarDias(v,n){const d=parseData(v);if(!d)return null;d.setDate(d.getDa
 function menorIgual(a,b){const x=parseData(a),y=parseData(b);return !!(x&&y&&x<=y)}
 function moeda(v){return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
 function usuario(id){return window.USUARIOS_CACHE.find(u=>String(u.id)===String(id))}
-function statusFinanceiroReal(u){const st=String(u.status_pagamento||"PENDENTE").toUpperCase(),h=hojeISO();if(st==="BLOQUEADO")return"BLOQUEADO";if(u.liberado!==true)return"BLOQUEADO";if(st==="FREE")return u.validade_free&&menorIgual(h,u.validade_free)?"FREE":"VENCIDO";if(st==="PAGO"){if(u.validade_fim&&menorIgual(h,u.validade_fim))return"PAGO";if(u.carencia_ate&&menorIgual(h,u.carencia_ate))return"ATRASADO";return"VENCIDO"}return"PENDENTE"}
-function vencidoForaCarencia(u){if(u.liberado!==true)return false;const st=String(u.status_pagamento||"").toUpperCase(),h=hojeISO();if(st==="FREE")return u.validade_free&&!menorIgual(h,u.validade_free);if(st==="PAGO")return u.carencia_ate&&!menorIgual(h,u.carencia_ate);return false}
+function nivelAcessoReal(u){return String(u.nivel_acesso||"CADASTRADO").toUpperCase()}
+function statusFinanceiroReal(u){const n=nivelAcessoReal(u);if(n==="BLOQUEADO")return"BLOQUEADO";if(n==="PRO_ATIVO")return"PAGO";if(n==="PRO_CARENCIA")return"ATRASADO";if(n==="FREE"||n==="PRO_VENCIDO_FREE"||n==="FREE_REINSCRICAO")return"FREE";return"PENDENTE"}
+function badgeNivelAcesso(u){const n=nivelAcessoReal(u);if(n==="PRO_ATIVO")return"<span class='badge liberado'>PRO ATIVO</span>";if(n==="PRO_CARENCIA")return"<span class='badge financeiro-atrasado'>PRO CARÊNCIA</span>";if(n==="FREE")return"<span class='badge financeiro-free'>FREE</span>";if(n==="PRO_VENCIDO_FREE")return"<span class='badge financeiro-free'>EX-PRO / FREE</span>";if(n==="FREE_REINSCRICAO")return"<span class='badge financeiro-free'>FREE / REINSCRIÇÃO</span>";if(n==="BLOQUEADO")return"<span class='badge bloqueado'>BLOQUEADO ADM</span>";return"<span class='badge financeiro-pendente'>AGUARDANDO ATIVAÇÃO</span>"}
 function badgeLiberado(v){return v?"<span class='badge liberado'>LIBERADO</span>":"<span class='badge bloqueado'>BLOQUEADO / AGUARDANDO</span>"}
-function badgeFinanceiro(st){if(st==="PAGO")return"<span class='badge financeiro-pago'>PAGO</span>";if(st==="FREE")return"<span class='badge financeiro-free'>FREE</span>";if(st==="ATRASADO")return"<span class='badge financeiro-atrasado'>ATRASADO / CARÊNCIA</span>";if(st==="VENCIDO")return"<span class='badge financeiro-atrasado'>VENCIDO</span>";if(st==="BLOQUEADO")return"<span class='badge bloqueado'>BLOQUEADO</span>";return"<span class='badge financeiro-pendente'>PENDENTE</span>"}
+function badgeFinanceiro(st){if(st==="PAGO")return"<span class='badge financeiro-pago'>PAGO</span>";if(st==="FREE")return"<span class='badge financeiro-free'>FREE</span>";if(st==="ATRASADO")return"<span class='badge financeiro-atrasado'>CARÊNCIA</span>";if(st==="BLOQUEADO")return"<span class='badge bloqueado'>BLOQUEADO</span>";return"<span class='badge financeiro-pendente'>PENDENTE</span>"}
 
-function mostrarSecaoAdm(nome){
-  ["Resumo","Clientes","Financeiro","Avisos","Operacional"].forEach(n=>{
-    const sec=$("secao"+n),btn=$("menu"+n);
-    if(sec)sec.classList.toggle("escondido",n.toLowerCase()!==nome);
-    if(btn)btn.classList.toggle("ativo",n.toLowerCase()===nome);
-  });
-}
 function categoriaUsuario(u){
-  const st=statusFinanceiroReal(u);
-  const bruto=String(u.status_pagamento||"PENDENTE").toUpperCase();
-  const jaTeveAcesso=!!(u.data_ultimo_pagamento||u.validade_inicio||u.validade_fim||u.carencia_ate||u.data_free||u.validade_free||Number(u.valor_ultimo_pagamento||0)>0);
-
-  // BLOQUEADOS = bloqueio explícito do administrador.
-  // Compatibilidade: usuários já bloqueados pela versão anterior ficaram PENDENTE,
-  // mas possuem histórico de acesso nas próprias datas do perfil.
-  if(bruto==="BLOQUEADO"||(u.liberado!==true&&jaTeveAcesso))return"BLOQUEADOS";
-
-  // AGUARDANDO = cadastro novo que nunca foi ativado, nem pago nem FREE.
-  if(u.liberado!==true&&!jaTeveAcesso)return"AGUARDANDO";
-
-  // Vigentes. Carência paga continua com acesso e permanece em ATIVOS.
-  if(st==="FREE")return"FREE";
-  if(st==="PAGO"||st==="ATRASADO")return"ATIVOS";
-
-  // Já teve acesso e venceu, mas ainda não foi bloqueado manualmente.
+  const n=nivelAcessoReal(u);
+  if(n==="BLOQUEADO")return"BLOQUEADOS";
+  if(n==="CADASTRADO")return"AGUARDANDO";
+  if(n==="PRO_ATIVO"||n==="PRO_CARENCIA")return"ATIVOS";
+  if(n==="FREE"||n==="PRO_VENCIDO_FREE"||n==="FREE_REINSCRICAO")return"FREE";
   return"INATIVOS";
 }
 function atualizarCategoriasUsuarios(){
@@ -797,9 +777,9 @@ async function excluirAvisoAdmin(id){
 
 async function carregarReceitaMes(){const i=new Date();i.setDate(1);i.setHours(0,0,0,0);const f=new Date(i.getFullYear(),i.getMonth()+1,1);const{data,error}=await db.from("historico_financeiro").select("valor_total,valor,acao,criado_em").gte("criado_em",i.toISOString()).lt("criado_em",f.toISOString());window.RECEITA_MES=error?0:(data||[]).reduce((s,h)=>s+(String(h.acao).toUpperCase()==="PAGO"?Number(h.valor_total??h.valor??0):0),0)}
 async function carregarUsuarios(){$("listaUsuarios").innerHTML="<div class='vazio'>Carregando usuários...</div>";const{data,error}=await db.from("perfis").select("*").order("nome",{ascending:true});if(error){$("listaUsuarios").innerHTML="<div class='erro'>"+error.message+"</div>";return}await carregarReceitaMes();window.USUARIOS_CACHE=data||[];preencherUsuariosAviso();atualizarResumoFinanceiro(data||[]);atualizarCategoriasUsuarios();filtrarUsuarios()}
-function atualizarResumoFinanceiro(lista){let pagos=0,pend=0,atras=0,free=0,lib=0,bloq=0;lista.forEach(u=>{const st=statusFinanceiroReal(u);if(st==="PAGO")pagos++;else if(st==="FREE")free++;else if(st==="ATRASADO"||st==="VENCIDO")atras++;else pend++;u.liberado?lib++:bloq++});$("resumoFinanceiro").innerHTML=`<div class="resumo-grid"><div class="resumo-item"><div class="resumo-num">${pagos}</div><div class="resumo-label">PAGOS</div></div><div class="resumo-item"><div class="resumo-num">${pend}</div><div class="resumo-label">PENDENTES</div></div><div class="resumo-item"><div class="resumo-num">${atras}</div><div class="resumo-label">ATRASADOS</div></div><div class="resumo-item"><div class="resumo-num">${free}</div><div class="resumo-label">FREE</div></div><div class="resumo-item"><div class="resumo-num">${lib}</div><div class="resumo-label">LIBERADOS</div></div><div class="resumo-item"><div class="resumo-num">${bloq}</div><div class="resumo-label">BLOQUEADOS</div></div></div><div class="receita">Receita do mês: ${moeda(window.RECEITA_MES)}</div>`}
+function atualizarResumoFinanceiro(lista){let pagos=0,pend=0,carencia=0,free=0,lib=0,bloq=0;lista.forEach(u=>{const n=nivelAcessoReal(u);if(n==="PRO_ATIVO")pagos++;else if(n==="PRO_CARENCIA")carencia++;else if(n==="FREE"||n==="PRO_VENCIDO_FREE"||n==="FREE_REINSCRICAO")free++;else if(n==="BLOQUEADO")bloq++;else pend++;if(n!=="CADASTRADO"&&n!=="BLOQUEADO")lib++});$("resumoFinanceiro").innerHTML=`<div class="resumo-grid"><div class="resumo-item"><div class="resumo-num">${pagos}</div><div class="resumo-label">PRO ATIVOS</div></div><div class="resumo-item"><div class="resumo-num">${pend}</div><div class="resumo-label">AGUARDANDO</div></div><div class="resumo-item"><div class="resumo-num">${carencia}</div><div class="resumo-label">PRO CARÊNCIA</div></div><div class="resumo-item"><div class="resumo-num">${free}</div><div class="resumo-label">FREE / EX-PRO</div></div><div class="resumo-item"><div class="resumo-num">${lib}</div><div class="resumo-label">COM ACESSO</div></div><div class="resumo-item"><div class="resumo-num">${bloq}</div><div class="resumo-label">BLOQUEADOS ADM</div></div></div><div class="receita">Receita do mês: ${moeda(window.RECEITA_MES)}</div>`}
 function esc(v){return String(v||"").replace(/'/g,"&#39;")}
-function renderizarUsuarios(lista){if(!lista.length){$("listaUsuarios").innerHTML="<div class='vazio'>Nenhum usuário encontrado.</div>";return}$("listaUsuarios").innerHTML=lista.map(u=>{const st=statusFinanceiroReal(u),n=texto(u.nome),e=texto(u.email),t=texto(u.telefone);return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeLiberado(u.liberado===true)}</div><div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="linha"><b>Último free:</b> ${formatarDataBR(u.data_free)}</div><div class="linha"><b>Validade free:</b> ${formatarDataBR(u.validade_free)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button><button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button></div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${u.id}','${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`}).join("")}
+function renderizarUsuarios(lista){if(!lista.length){$("listaUsuarios").innerHTML="<div class='vazio'>Nenhum usuário encontrado.</div>";return}$("listaUsuarios").innerHTML=lista.map(u=>{const st=statusFinanceiroReal(u),n=texto(u.nome),e=texto(u.email),t=texto(u.telefone);return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeNivelAcesso(u)}</div><div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="linha"><b>Último free:</b> ${formatarDataBR(u.data_free)}</div><div class="linha"><b>Validade free:</b> ${formatarDataBR(u.validade_free)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button><button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button></div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${u.id}','${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`}).join("")}
 function toggleBusca(){const c=$("campoBusca");if(!c.style.display||c.style.display==="none"){c.style.display="block";c.focus()}else{c.value="";c.style.display="none";renderizarUsuarios(window.USUARIOS_CACHE)}}
 function filtrarUsuarios(){const q=$("campoBusca").value.toLowerCase().trim();let lista=window.USUARIOS_CACHE.filter(u=>categoriaUsuario(u)===window.CATEGORIA_USUARIO);if(q)lista=lista.filter(u=>[u.nome,u.email,u.telefone,statusFinanceiroReal(u)].some(v=>String(v||"").toLowerCase().includes(q)));renderizarUsuarios(lista)}
 async function registrarHistorico(x){const{error}=await db.from("historico_financeiro").insert({perfil_id:x.perfil_id,nome:x.nome,email:x.email,acao:x.acao,valor:Number(x.total||0),valor_total:Number(x.total||0),valor_mensalidade:Number(x.mensalidade||0),valor_inscricao:Number(x.inscricao||0),data_pagamento:x.data||null,validade_inicio:x.inicio||null,validade_fim:x.fim||null,observacao:x.obs||null,criado_em:agoraISO()});if(error)throw error}
@@ -807,12 +787,39 @@ function abrirModalPago(id){const u=usuario(id);if(!u)return;$("pagoPerfilId").v
 function fecharModalPago(){$("modalPago").classList.add("escondido")}
 function atualizarTotal(){const v=Number($("pagoMensalidade").value||0)+Number($("pagoInscricao").value||0);$("pagoTotal").value=v.toFixed(2)}
 $("pagoMensalidade").addEventListener("input",atualizarTotal);$("pagoInscricao").addEventListener("input",atualizarTotal);
-async function salvarPagamento(){const id=$("pagoPerfilId").value,u=usuario(id),mensalidade=Number($("pagoMensalidade").value||0),inscricao=Number($("pagoInscricao").value||0),total=Number($("pagoTotal").value||0),data=$("pagoData").value,fim=$("pagoValidade").value,obs=$("pagoObservacao").value.trim();if(!u||total<=0||!data||!fim){alert("Informe valor, data e validade.");return}const carencia=somarDias(fim,DIAS_CARENCIA);const{error}=await db.from("perfis").update({liberado:true,status_pagamento:"PAGO",data_ultimo_pagamento:data,valor_ultimo_pagamento:total,validade_inicio:data,validade_fim:fim,carencia_ate:carencia,validade_free:null,observacao_financeira:obs}).eq("id",id);if(error){alert(error.message);return}try{await registrarHistorico({perfil_id:id,nome:u.nome,email:u.email,acao:"PAGO",total,mensalidade,inscricao,data,inicio:data,fim,obs})}catch(e){alert("Pagamento salvo, mas o histórico falhou: "+e.message)}fecharModalPago();recarregarMantendoBusca()}
+async function salvarPagamento(){
+  const id=$("pagoPerfilId").value,u=usuario(id),mensalidade=Number($("pagoMensalidade").value||0),inscricao=Number($("pagoInscricao").value||0),total=Number($("pagoTotal").value||0),data=$("pagoData").value,fim=$("pagoValidade").value,obs=$("pagoObservacao").value.trim();
+  if(!u||total<=0||!data||!fim){alert("Informe valor, data e validade.");return}
+  if(!confirm("Confirmar este pagamento manual e liberar o contrato PRO conforme a validade informada?"))return;
+  const{data:resultado,error}=await db.rpc("admin_mrg_registrar_pagamento_manual",{
+    p_perfil_id:id,
+    p_valor_mensalidade:mensalidade,
+    p_valor_inscricao:inscricao,
+    p_valor_total:total,
+    p_data_pagamento:data,
+    p_validade_fim:fim,
+    p_observacao:obs||null
+  });
+  if(error){alert(error.message);return}
+  fecharModalPago();
+  await recarregarMantendoBusca();
+  const r=resultado||{};
+  alert(`Pagamento salvo. Estado de acesso: ${r.nivel_acesso||"atualizado"}.`);
+}
 function abrirModalFree(id){const u=usuario(id);if(!u)return;$("freePerfilId").value=id;$("freeUsuario").innerText=`${u.nome} — ${u.email}`;$("freeInicio").value=hojeISO();$("freeValidade").value=fimMesAtual();$("freeObservacao").value="";$("modalFree").classList.remove("escondido")}
 function fecharModalFree(){$("modalFree").classList.add("escondido")}
 async function salvarFree(){const id=$("freePerfilId").value,u=usuario(id),inicio=$("freeInicio").value,fim=$("freeValidade").value,obs=$("freeObservacao").value.trim();if(!u||!inicio||!fim){alert("Informe início e validade.");return}const{error}=await db.from("perfis").update({liberado:true,status_pagamento:"FREE",data_free:inicio,validade_free:fim,validade_inicio:inicio,validade_fim:null,carencia_ate:null,observacao_financeira:obs}).eq("id",id);if(error){alert(error.message);return}try{await registrarHistorico({perfil_id:id,nome:u.nome,email:u.email,acao:"FREE",total:0,data:inicio,inicio,fim,obs})}catch(e){}fecharModalFree();recarregarMantendoBusca()}
-async function bloquearUsuario(id){const u=usuario(id);if(!u||!confirm("Confirmar bloqueio deste usuário?"))return;const{error}=await db.from("perfis").update({liberado:false,status_pagamento:"BLOQUEADO"}).eq("id",id);if(error){alert(error.message);return}try{await registrarHistorico({perfil_id:id,nome:u.nome,email:u.email,acao:"BLOQUEADO",total:0,obs:"Bloqueio manual"})}catch(e){}recarregarMantendoBusca()}
-async function bloquearAtrasados(){const lista=window.USUARIOS_CACHE.filter(vencidoForaCarencia);if(!lista.length){alert("Nenhum usuário fora da carência.");return}if(!confirm(`Bloquear ${lista.length} usuário(s)?`))return;for(const u of lista){await db.from("perfis").update({liberado:false,status_pagamento:"BLOQUEADO"}).eq("id",u.id);try{await registrarHistorico({perfil_id:u.id,nome:u.nome,email:u.email,acao:"BLOQUEADO_ATRASADO",total:0,obs:"Carência encerrada"})}catch(e){}}carregarUsuarios()}
+async function bloquearUsuario(id){
+  const u=usuario(id);
+  if(!u)return;
+  const motivo=prompt("Motivo do bloqueio administrativo:","Bloqueio manual pelo administrador");
+  if(motivo===null)return;
+  if(!confirm("Confirmar BLOQUEIO ADMINISTRATIVO deste usuário?"))return;
+  const{error}=await db.rpc("admin_mrg_bloquear_usuario",{p_perfil_id:id,p_motivo:(motivo.trim()||"Bloqueio manual pelo administrador")});
+  if(error){alert(error.message);return}
+  try{await registrarHistorico({perfil_id:id,nome:u.nome,email:u.email,acao:"BLOQUEADO",total:0,obs:motivo.trim()||"Bloqueio manual pelo administrador"})}catch(e){}
+  await recarregarMantendoBusca();
+}
 async function abrirHistorico(id,nome){$("modalHistorico").classList.remove("escondido");const{data,error}=await db.from("historico_financeiro").select("*").eq("perfil_id",id).order("criado_em",{ascending:false}).limit(100);if(error){$("conteudoHistorico").innerHTML="<div class='erro'>"+error.message+"</div>";return}if(!data.length){$("conteudoHistorico").innerHTML=`<div class='vazio'>Nenhum histórico para ${nome}.</div>`;return}$("conteudoHistorico").innerHTML=data.map(h=>`<div class="historico-item"><div class="historico-data">${formatarDataHoraBR(h.criado_em)}</div><div><b>Ação:</b> ${texto(h.acao)}</div><div><b>Total:</b> ${moeda(h.valor_total??h.valor)}</div><div><b>Mensalidade:</b> ${moeda(h.valor_mensalidade)}</div><div><b>Inscrição/reinscrição:</b> ${moeda(h.valor_inscricao)}</div><div><b>Pagamento:</b> ${formatarDataBR(h.data_pagamento)}</div><div><b>Validade:</b> ${formatarDataBR(h.validade_inicio)} até ${formatarDataBR(h.validade_fim)}</div><div><b>Observação:</b> ${texto(h.observacao)}</div></div>`).join("")}
 function fecharHistorico(){$("modalHistorico").classList.add("escondido")}
 async function recarregarMantendoBusca(){const c=$("campoBusca"),q=c.value,aberto=c.style.display!=="none";await carregarUsuarios();if(aberto&&q){c.value=q;filtrarUsuarios()}}
