@@ -542,13 +542,13 @@ const SITE_URL="https://mrg-app-sinais.vercel.app";
 const PUSH_TABLE="push_assinaturas";
 const PUSH_FUNCTION="enviar-push-sinal";
 const APP_SESSION_KEY="mrg_app_session_id";
-// Esta chave pública será preenchida na etapa do Supabase/VAPID.
+
 const VAPID_PUBLIC_KEY="BI96HF-7c3gZQ1K3EPsco9IBQ39Yqaz3adgvyCLArpUrGXrMjAqYDTtm4wCDEWzIyxi6eSgbPOFT7D-iwccN4HM";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const MRG_URL_P2="https://mrg-app-sinais.vercel.app/p2.html";
 function normalizarContratoMRG(data){return Array.isArray(data)?(data[0]||{}):(data||{})}
 async function navegarPaginaMRG(pagina){
- const msg=document.getElementById("p3NavMsg"); if(msg)msg.textContent="Validando permissão no ADM/Supabase...";
+ const msg=document.getElementById("p3NavMsg"); if(msg)msg.textContent="Validando seu acesso...";
  try{
   const {data,error}=await db.rpc("obter_acesso_mrg"); if(error)throw error;
   const c=normalizarContratoMRG(data);
@@ -1146,7 +1146,7 @@ async function verificarAcesso(redirecionarSemSessao=false){
 
   /* REGRA CRÍTICA:
      P3 não usa mais perfis.liberado como autorização.
-     A única autorização é pagina_3 === true devolvida pelo ADM/Supabase. */
+     A única autorização é pagina_3 === true devolvida pelo contrato central. */
   if(contratoAcesso.pagina_3!==true){
     painelAtivo=false;
     const estado=String(contratoAcesso.nivel_acesso||"").toUpperCase();
@@ -1248,7 +1248,7 @@ function atualizarEntradaAoVivo(tipo,item){
  const chave=identidadeEntradaAoVivo(tipo,item);
 
  // Uma entrada já oficialmente encerrada não pode voltar a ser presa
- // apenas porque o registro antigo ainda permaneceu ativo no Supabase.
+ // não reutilizar autorização antiga como permissão atual.
  if(ENTRADAS_ENCERRADAS[tipo].has(chave))return;
 
  const atual=ENTRADAS_AO_VIVO[tipo];
@@ -1445,7 +1445,7 @@ if(FINANCEIRO.bloquearSinais){
   return;
 }
 
-const{data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Verificar Supabase</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Verificar Supabase</div>";return}let ativos=(data||[]).filter(ehAtivo),historico=(data||[]).filter(item=>!ehAtivo(item));ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo)});ativos=ativos.slice(0,3);historico=historico.slice(0,20);atualizarResumoFechados(historico);let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";const aviso=avisoOperacionalHTML();document.getElementById("ativos").innerHTML=ativos.length?`${aviso}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:(aviso?aviso:"<div class='vazio'>Nenhum sinal ativo no momento</div>");document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`<div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>"}
+const{data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Serviço temporariamente indisponível</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Serviço temporariamente indisponível</div>";return}let ativos=(data||[]).filter(ehAtivo),historico=(data||[]).filter(item=>!ehAtivo(item));ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo)});ativos=ativos.slice(0,3);historico=historico.slice(0,20);atualizarResumoFechados(historico);let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";const aviso=avisoOperacionalHTML();document.getElementById("ativos").innerHTML=ativos.length?`${aviso}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:(aviso?aviso:"<div class='vazio'>Nenhum sinal ativo no momento</div>");document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`<div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>"}
 registrarServiceWorker();
 db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY")mostrarNovaSenha()});if(window.location.hash.includes("type=recovery"))mostrarNovaSenha();else mostrarLogin();
 setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},10000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarFeed50Velas,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);setInterval(carregarAvisos,30000);setInterval(verificarFinanceiroPeriodico,FINANCEIRO_INTERVALO_MS);
