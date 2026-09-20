@@ -545,7 +545,7 @@ const APP_SESSION_KEY="mrg_app_session_id";
 // Esta chave pública será preenchida na etapa do Supabase/VAPID.
 const VAPID_PUBLIC_KEY="BI96HF-7c3gZQ1K3EPsco9IBQ39Yqaz3adgvyCLArpUrGXrMjAqYDTtm4wCDEWzIyxi6eSgbPOFT7D-iwccN4HM";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const MRG_URL_P2="https://mrg-analista-probabilidades.vercel.app/";
+const MRG_URL_P2="https://mrg-app-sinais.vercel.app/p2.html";
 function normalizarContratoMRG(data){return Array.isArray(data)?(data[0]||{}):(data||{})}
 async function navegarPaginaMRG(pagina){
  const msg=document.getElementById("p3NavMsg"); if(msg)msg.textContent="Validando permissão no ADM/Supabase...";
@@ -554,7 +554,7 @@ async function navegarPaginaMRG(pagina){
   const c=normalizarContratoMRG(data);
   const permitido=pagina===1?c.pagina_1===true:c.pagina_2===true;
   if(!permitido){if(msg)msg.textContent=`Página ${pagina} não liberada para este acesso.`;return}
-  window.location.href=pagina===1?"https://mrg-app-sinais.vercel.app/p1.html":"https://mrg-analista-probabilidades.vercel.app/";
+  window.location.href=pagina===1?"https://mrg-app-sinais.vercel.app/p1.html":"https://mrg-app-sinais.vercel.app/p2.html";
  }catch(e){if(msg)msg.textContent="Não foi possível validar o acesso agora."}
 }
 
@@ -1115,34 +1115,74 @@ async function criarConta(){
 async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}try{await registrarSessaoAppAtual()}catch(e){console.error(e);await db.auth.signOut({scope:"local"});document.getElementById("loginMsg").innerHTML="<span class='erro'>Não foi possível registrar este aparelho como sessão atual.</span>";return}try{await sincronizarPushNoLogin()}catch(e){console.error("Falha ao definir o aparelho atual para Push:",e)}await verificarAcesso(true)}
 async function recuperarSenha(){const email=document.getElementById("recEmail").value.trim();if(!email){document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";return}const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});document.getElementById("recMsg").innerHTML=error?"<span class='erro'>"+error.message+"</span>":"Link de recuperação enviado. Verifique seu e-mail."}
 async function salvarNovaSenha(){const senha=document.getElementById("novaSenha").value.trim();if(!senha){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";return}const{error}=await db.auth.updateUser({password:senha});if(error){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000)}
-async function verificarAcesso(redirecionarSemSessao=false){if(["cadastro","recuperar","novaSenha"].includes(telaAtual))return;const{data:sessionData}=await db.auth.getSession();if(!sessionData||!sessionData.session||!sessionData.session.user){painelAtivo=false;if(redirecionarSemSessao)mostrarLogin();return}const user=sessionData.session.user;if(telaAtual==="app"||telaAtual==="aguardando"){const sessaoAtual=await sessaoAppContinuaAtual();if(!sessaoAtual){await encerrarSessaoPorOutroAparelho();return}}const{data:perfil,error}=await db.from("perfis").select("*").eq("id",user.id).single();if(error||!perfil){await db.from("perfis").insert({id:user.id,nome:user.user_metadata?.nome||user.email,email:user.email,telefone:user.user_metadata?.telefone||"",liberado:false});mostrarAguardando(user.email);return}if(perfil.liberado===true){
+async function verificarAcesso(redirecionarSemSessao=false){
+  if(["cadastro","recuperar","novaSenha"].includes(telaAtual))return;
+
+  const{data:sessionData}=await db.auth.getSession();
+  const user=sessionData?.session?.user;
+  if(!user){
+    painelAtivo=false;
+    if(redirecionarSemSessao)mostrarLogin();
+    return;
+  }
+
+  if(telaAtual==="app"||telaAtual==="aguardando"){
+    const sessaoAtual=await sessaoAppContinuaAtual();
+    if(!sessaoAtual){await encerrarSessaoPorOutroAparelho();return}
+  }
+
+  let contratoAcesso;
+  try{
+    const{data,error}=await db.rpc("obter_acesso_mrg");
+    if(error)throw error;
+    contratoAcesso=normalizarContratoMRG(data);
+  }catch(e){
+    console.error("Falha contrato central P3:",e);
+    painelAtivo=false;
+    esconderTudo();
+    mostrarLogin("Não foi possível validar o acesso central.");
+    return;
+  }
+
+  /* REGRA CRÍTICA:
+     P3 não usa mais perfis.liberado como autorização.
+     A única autorização é pagina_3 === true devolvida pelo ADM/Supabase. */
+  if(contratoAcesso.pagina_3!==true){
+    painelAtivo=false;
+    const estado=String(contratoAcesso.nivel_acesso||"").toUpperCase();
+
+    if(contratoAcesso.pagina_2===true){
+      window.location.replace("https://mrg-app-sinais.vercel.app/p2.html");
+      return;
+    }
+    if(contratoAcesso.pagina_1===true){
+      window.location.replace("https://mrg-app-sinais.vercel.app/p1.html");
+      return;
+    }
+
+    esconderTudo();
+    mostrarLogin(estado==="BLOQUEADO"
+      ?"Acesso bloqueado pelo administrador."
+      :"Página 3 PRO não liberada para o estado atual da conta.");
+    return;
+  }
+
   const entrandoNoApp=telaAtual!=="app";
 
   if(entrandoNoApp){
     await sincronizarFinanceiro("ENTRADA_APP");
-
     if(FINANCEIRO.bloquearLogin){
-      const msg=[FINANCEIRO.titulo,FINANCEIRO.mensagem]
-        .filter(Boolean)
-        .join("<br><br>");
+      const msg=[FINANCEIRO.titulo,FINANCEIRO.mensagem].filter(Boolean).join("<br><br>");
       await db.auth.signOut({scope:"local"});
       mostrarLogin(msg);
       return;
     }
-  }
-
-  /* Não remonta a P3 a cada revalidação periódica.
-     mostrarApp() dispara p3CarregarFeed24h(true), que reinicia o histórico em 50.
-     Só monta a tela quando realmente estiver entrando no app. */
-  if(entrandoNoApp){
     mostrarApp(user.email);
   }else{
     document.getElementById("usuarioEmail").innerText=user.email||"";
     painelAtivo=true;
   }
-}else{
-  mostrarAguardando(user.email);
-}}
+}
 async function sair(){painelAtivo=false;limparEstadoCentralAvisos();localStorage.removeItem(APP_SESSION_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
 function alvoNumero(alvo){return Number(String(alvo||"").replace("x","").replace("X","").trim())||0}
 function horarioValor(h){if(!h)return 999999;const p=String(h).split(":").map(Number);return(p[0]||0)*3600+(p[1]||0)*60+(p[2]||0)}
