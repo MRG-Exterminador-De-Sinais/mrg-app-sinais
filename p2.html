@@ -174,7 +174,7 @@ body{background:radial-gradient(circle at 50% 0,#092016 0,#060807 28%,#030403 70
       <button id="btnP1" onclick="irPagina(1)">▣ PÁGINA 1 — ESTUDOS<small>CONTEÚDO E APRENDIZADO</small></button>
       <button id="btnP3" class="pro" onclick="irPagina(3)">▼ PÁGINA 3 — PRO<small>RECURSOS PRO</small></button>
     </div>
-    <div id="statusAcesso" class="access-status">Permissões controladas pelo ADM/Supabase</div>
+    <div id="statusAcesso" class="access-status">Acesso protegido e controlado</div>
     <button class="sair" onclick="sair()">SAIR</button>
     <div class="rodape">Análise estatística e probabilística · conteúdo informativo</div>
   </div>
@@ -231,7 +231,7 @@ function aplicarPermissoes(){
   const p1=boolContrato("pagina_1"),p3=boolContrato("pagina_3");
   el("btnP1")?.classList.toggle("lock",!p1);
   el("btnP3")?.classList.toggle("lock",!p3);
-  if(el("statusAcesso"))el("statusAcesso").textContent=`Permissões recebidas do ADM/Supabase · P1 ${p1?"LIBERADA":"INDISPONÍVEL"} · P3 ${p3?"LIBERADA":"INDISPONÍVEL"}`;
+  if(el("statusAcesso"))el("statusAcesso").textContent=`Acesso atualizado · P1 ${p1?"LIBERADA":"INDISPONÍVEL"} · P3 ${p3?"LIBERADA":"INDISPONÍVEL"}`;
 }
 async function verificarAcesso(){
   const{data:s}=await db.auth.getSession();const user=s?.session?.user;
@@ -244,7 +244,7 @@ async function verificarAcesso(){
   await Promise.all([carregarSnapshot(),carregarFeed()]);
 }
 async function irPagina(n){
-  try{await obterContrato();aplicarPermissoes()}catch(e){alert("Não foi possível revalidar o acesso no ADM/Supabase.");return}
+  try{await obterContrato();aplicarPermissoes()}catch(e){alert("Não foi possível validar seu acesso agora.");return}
   const campo=n===1?"pagina_1":"pagina_3";
   if(!boolContrato(campo)){alert(`Página ${n} indisponível para o estado atual da conta.`);return}
   window.location.href=n===1?"https://mrg-app-sinais.vercel.app/p1.html":"https://mrg-app-sinais.vercel.app/";
