@@ -205,7 +205,7 @@ async function irPagina(n){
     ?valorBool(contrato,["pagina_2"])
     :valorBool(contrato,["pagina_3"]);
   if(!ok){alert(n===2?"Página 2 não disponível para o estado atual da conta.":"Página 3 PRO não disponível para o estado atual da conta.");return}
-  const destinos={2:"https://mrg-analista-probabilidades.vercel.app/",3:"https://mrg-app-sinais.vercel.app/"};
+  const destinos={2:"https://mrg-app-sinais.vercel.app/p2.html",3:"https://mrg-app-sinais.vercel.app/"};
   const novaAba=window.open(destinos[n], '_blank', 'noopener,noreferrer');
   if(!novaAba){
     window.top.location.href=destinos[n];
