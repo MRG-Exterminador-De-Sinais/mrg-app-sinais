@@ -349,6 +349,14 @@ function badgeNivelAcesso(u){const n=nivelAcessoReal(u);if(n==="PRO_ATIVO")retur
 function badgeLiberado(v){return v?"<span class='badge liberado'>LIBERADO</span>":"<span class='badge bloqueado'>BLOQUEADO / AGUARDANDO</span>"}
 function badgeFinanceiro(st){if(st==="PAGO")return"<span class='badge financeiro-pago'>PAGO</span>";if(st==="FREE")return"<span class='badge financeiro-free'>FREE</span>";if(st==="ATRASADO")return"<span class='badge financeiro-atrasado'>CARÊNCIA</span>";if(st==="BLOQUEADO")return"<span class='badge bloqueado'>BLOQUEADO</span>";return"<span class='badge financeiro-pendente'>PENDENTE</span>"}
 
+function mostrarSecaoAdm(nome){
+  ["Resumo","Clientes","Financeiro","Avisos","Operacional"].forEach(n=>{
+    const sec=$("secao"+n),btn=$("menu"+n);
+    if(sec)sec.classList.toggle("escondido",n.toLowerCase()!==nome);
+    if(btn)btn.classList.toggle("ativo",n.toLowerCase()===nome);
+  });
+}
+
 function categoriaUsuario(u){
   const n=nivelAcessoReal(u);
   if(n==="BLOQUEADO")return"BLOQUEADOS";
