@@ -538,14 +538,14 @@ body{
 <script>
 const SUPABASE_URL="https://bflptqejltvwfjhixwpj.supabase.co";
 const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
-const SITE_URL="https://mrg-app-sinais.vercel.app";
+const SITE_URL=window.location.origin;
 const PUSH_TABLE="push_assinaturas";
 const PUSH_FUNCTION="enviar-push-sinal";
 const APP_SESSION_KEY="mrg_app_session_id";
 
 const VAPID_PUBLIC_KEY="BI96HF-7c3gZQ1K3EPsco9IBQ39Yqaz3adgvyCLArpUrGXrMjAqYDTtm4wCDEWzIyxi6eSgbPOFT7D-iwccN4HM";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const MRG_URL_P2="https://mrg-app-sinais.vercel.app/p2.html";
+const MRG_URL_P2="/p2.html";
 function normalizarContratoMRG(data){return Array.isArray(data)?(data[0]||{}):(data||{})}
 async function navegarPaginaMRG(pagina){
  const msg=document.getElementById("p3NavMsg"); if(msg)msg.textContent="Validando seu acesso...";
@@ -554,7 +554,7 @@ async function navegarPaginaMRG(pagina){
   const c=normalizarContratoMRG(data);
   const permitido=pagina===1?c.pagina_1===true:c.pagina_2===true;
   if(!permitido){if(msg)msg.textContent=`Página ${pagina} não liberada para este acesso.`;return}
-  window.location.href=pagina===1?"https://mrg-app-sinais.vercel.app/p1.html":"https://mrg-app-sinais.vercel.app/p2.html";
+  window.location.href=pagina===1?"/p1.html":"/p2.html";
  }catch(e){if(msg)msg.textContent="Não foi possível validar o acesso agora."}
 }
 
@@ -1112,7 +1112,7 @@ async function criarConta(){
     document.getElementById("cadMsg").innerHTML="<span class='erro'>Não foi possível criar o cadastro agora. Tente novamente em alguns minutos.</span>";
   }
 }
-async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}try{await registrarSessaoAppAtual()}catch(e){console.error(e);await db.auth.signOut({scope:"local"});document.getElementById("loginMsg").innerHTML="<span class='erro'>Não foi possível registrar este aparelho como sessão atual.</span>";return}try{await sincronizarPushNoLogin()}catch(e){console.error("Falha ao definir o aparelho atual para Push:",e)}await verificarAcesso(true)}
+async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}try{await registrarSessaoAppAtual()}catch(e){console.error(e);await db.auth.signOut({scope:"local"});document.getElementById("loginMsg").innerHTML="<span class='erro'>Não foi possível registrar este aparelho como sessão atual.</span>";return}try{await sincronizarPushNoLogin()}catch(e){console.error("Falha ao definir o aparelho atual para Push:",e)}window.location.replace("/p1.html")}
 async function recuperarSenha(){const email=document.getElementById("recEmail").value.trim();if(!email){document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";return}const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});document.getElementById("recMsg").innerHTML=error?"<span class='erro'>"+error.message+"</span>":"Link de recuperação enviado. Verifique seu e-mail."}
 async function salvarNovaSenha(){const senha=document.getElementById("novaSenha").value.trim();if(!senha){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";return}const{error}=await db.auth.updateUser({password:senha});if(error){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000)}
 async function verificarAcesso(redirecionarSemSessao=false){
@@ -1152,11 +1152,11 @@ async function verificarAcesso(redirecionarSemSessao=false){
     const estado=String(contratoAcesso.nivel_acesso||"").toUpperCase();
 
     if(contratoAcesso.pagina_2===true){
-      window.location.replace("https://mrg-app-sinais.vercel.app/p2.html");
+      window.location.replace("/p2.html");
       return;
     }
     if(contratoAcesso.pagina_1===true){
-      window.location.replace("https://mrg-app-sinais.vercel.app/p1.html");
+      window.location.replace("/p1.html");
       return;
     }
 
