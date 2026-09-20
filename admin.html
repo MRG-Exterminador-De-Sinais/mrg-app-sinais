@@ -102,6 +102,16 @@ select{
 .aguardando-destaque .aguardando-ajuda{font-size:12px;color:#ccc;margin-top:5px;line-height:1.4}
 .aguardando-destaque button{background:#ffaa00;color:#000}
 
+
+.portas-comerciais{margin-top:14px;border-top:1px solid #444;padding-top:12px}
+.porta-comercial{background:#202020;border:1px solid #444;border-radius:12px;padding:11px;margin-top:8px}
+.porta-comercial-topo{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.porta-comercial-nome{font-weight:900;color:#fff}
+.porta-comercial-ajuda{font-size:12px;color:#aaa;line-height:1.4;margin-top:5px}
+.porta-comercial button{width:auto;min-width:120px;margin:0;padding:8px 12px}
+.porta-comercial button.ligada{background:#00ff88;color:#000}
+.porta-comercial button.desligada{background:#7a2020;color:#fff}
+
 .cobranca-modal-grade{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cobranca-status{margin-top:10px;color:#ffaa00;text-align:center;white-space:pre-wrap}.cobranca-acoes{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cobranca-link{word-break:break-all;color:#00ff88;font-size:12px;margin-top:8px}@media(max-width:600px){.cobranca-modal-grade,.cobranca-acoes{grid-template-columns:1fr}}
 
 /* MRG ADM ORGANIZADO */
@@ -204,6 +214,37 @@ select{
     <div id="statusManutencaoGlobal" class="status-controle">Carregando estado da manutenção...</div>
     <button class="cobranca" onclick="abrirModalManutencao()">⚠️ PROGRAMAR MANUTENÇÃO</button>
     <button class="bloquear" onclick="cancelarManutencaoGlobal()">CANCELAR MANUTENÇÃO PROGRAMADA</button>
+
+    <div class="portas-comerciais">
+      <div class="titulo">PORTAS COMERCIAIS</div>
+      <div class="linha">Controles centrais de entrada e retorno ao PRO. Fechar uma porta não remove acesso de quem já está PRO.</div>
+
+      <div class="porta-comercial">
+        <div class="porta-comercial-topo">
+          <div class="porta-comercial-nome">NOVOS CADASTROS</div>
+          <button id="btnGateCadastros" onclick="alternarPortaComercial('novos_cadastros')">CARREGANDO...</button>
+        </div>
+        <div class="porta-comercial-ajuda">Ligado: novos usuários podem seguir pelo fluxo de cadastro. Desligado: clientes já existentes não são afetados.</div>
+      </div>
+
+      <div class="porta-comercial">
+        <div class="porta-comercial-topo">
+          <div class="porta-comercial-nome">ENTRADA DE NOVOS PRO</div>
+          <button id="btnGateNovoPro" onclick="alternarPortaComercial('novos_pro')">CARREGANDO...</button>
+        </div>
+        <div class="porta-comercial-ajuda">Controla a primeira entrada paga no PRO. Não derruba PRO ativo e não bloqueia renovação de ex-PRO.</div>
+      </div>
+
+      <div class="porta-comercial">
+        <div class="porta-comercial-topo">
+          <div class="porta-comercial-nome">RENOVAÇÃO DE EX-PRO</div>
+          <button id="btnGateRenovacao" onclick="alternarPortaComercial('renovacao_ex_pro')">CARREGANDO...</button>
+        </div>
+        <div class="porta-comercial-ajuda">Controla a renovação automática do ex-PRO dentro da janela financeira vigente. Exceções manuais do ADM continuam separadas.</div>
+      </div>
+
+      <div id="statusPortasComerciais" class="status-controle">Carregando portas comerciais...</div>
+    </div>
   </div>
 </section>
 </div>
@@ -408,7 +449,44 @@ async function abrirConfigFinanceira(){$("modalConfigFinanceira").classList.remo
 function fecharConfigFinanceira(){$("modalConfigFinanceira").classList.add("escondido")}
 async function salvarConfigFinanceira(){const st=$("cfgStatus"),body={acao:"SALVAR_CONFIG_FINANCEIRA",valor_inscricao:Number($("cfgInscricao").value||0),valor_mensalidade:Number($("cfgMensalidade").value||0),desconto_plano_90:Number($("cfgDesc90").value||0),desconto_plano_180:Number($("cfgDesc180").value||0),desconto_plano_365:Number($("cfgDesc365").value||0)};if(!confirm("Salvar estes valores para novas cobranças?"))return;st.innerText="Salvando...";try{const r=await invocarFinanceiro(body);window.CONFIG_FINANCEIRA=r.config;st.innerText="Valores salvos.";atualizarPreviaConfig()}catch(e){st.innerHTML=`<span class="erro">${escHtml(e.message)}</span>`}}
 async function entrar(){const email=$("loginEmail").value.trim(),password=$("loginSenha").value.trim();if(!email||!password){$("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}if(email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){$("loginMsg").innerHTML="<span class='erro'>Este e-mail não é administrador.</span>";return}const{error}=await db.auth.signInWithPassword({email,password});if(error){$("loginMsg").innerHTML="<span class='erro'>Login inválido ou e-mail não confirmado.</span>";return}verificarAdmin()}
-async function verificarAdmin(){const{data}=await db.auth.getSession();const u=data?.session?.user;if(!u){$("loginBox").classList.remove("escondido");$("adminBox").classList.add("escondido");return}if(String(u.email).toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await db.auth.signOut();return}$("loginBox").classList.add("escondido");$("adminBox").classList.remove("escondido");$("adminEmail").innerText=u.email;await carregarUsuarios();await carregarEstadoManutencao();await carregarModelosFinanceiros();await carregarAvisosAdmin()}
+async function verificarAdmin(){const{data}=await db.auth.getSession();const u=data?.session?.user;if(!u){$("loginBox").classList.remove("escondido");$("adminBox").classList.add("escondido");return}if(String(u.email).toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await db.auth.signOut();return}$("loginBox").classList.add("escondido");$("adminBox").classList.remove("escondido");$("adminEmail").innerText=u.email;await carregarUsuarios();await carregarEstadoManutencao();await carregarPortasComerciais();await carregarModelosFinanceiros();await carregarAvisosAdmin()}
+async function carregarPortasComerciais(){
+  const st=$("statusPortasComerciais");if(st)st.innerText="Carregando...";
+  const{data,error}=await db.rpc("admin_mrg_obter_portas_comerciais");
+  if(error){if(st)st.innerHTML=`<span class="erro">${escHtml(error.message)}</span>`;return}
+  window.PORTAS_COMERCIAIS=data||{};
+  atualizarBotoesPortasComerciais();
+}
+function atualizarBotoesPortasComerciais(){
+  const c=window.PORTAS_COMERCIAIS||{};
+  const defs=[
+    ["btnGateCadastros",c.novos_cadastros_abertos],
+    ["btnGateNovoPro",c.novos_pro_abertos],
+    ["btnGateRenovacao",c.renovacao_ex_pro_aberta]
+  ];
+  defs.forEach(([id,on])=>{
+    const b=$(id);if(!b)return;
+    b.innerText=on===true?"🟢 ABERTA":"🔴 FECHADA";
+    b.className=on===true?"ligada":"desligada";
+  });
+  const st=$("statusPortasComerciais");
+  if(st)st.innerText=`Janela ex-PRO: ${Number(c.dias_renovacao_sem_reinscricao||30)} dias após o vencimento pago.`;
+}
+async function alternarPortaComercial(porta){
+  const c=window.PORTAS_COMERCIAIS||{};
+  const mapa={
+    novos_cadastros:["novos_cadastros_abertos","NOVOS CADASTROS"],
+    novos_pro:["novos_pro_abertos","ENTRADA DE NOVOS PRO"],
+    renovacao_ex_pro:["renovacao_ex_pro_aberta","RENOVAÇÃO DE EX-PRO"]
+  };
+  const d=mapa[porta];if(!d)return;
+  const novo=c[d[0]]!==true;
+  if(!confirm(`${novo?"ABRIR":"FECHAR"} a porta ${d[1]}?`))return;
+  const{data,error}=await db.rpc("admin_mrg_definir_porta_comercial",{p_porta:porta,p_aberta:novo});
+  if(error){alert(error.message);return}
+  window.PORTAS_COMERCIAIS=data||{};
+  atualizarBotoesPortasComerciais();
+}
 async function carregarControleEnvio(){const{data,error}=await db.from("controle_envio").select("*").eq("id",1).single();if(error||!data){$("statusControleEnvio").innerText="Erro ao carregar controle operacional.";return}window.CONTROLE_ENVIO=data;$("mensagemControleEnvio").value=data.mensagem||"";atualizarBotoesControle()}
 function atualizarBotoesControle(){const c=window.CONTROLE_ENVIO,s=c.snarpy_ativo===true,h=c.hyper_ativo===true,t=s&&h;[["btnSnarpy",s,"SNARPY"],["btnHyper",h,"HYPER"],["btnTodos",t,"TODOS"]].forEach(([id,on,n])=>{const b=$(id);b.innerText=(on?"🟢 ":"🔴 ")+n;b.className="btn-toggle "+(on?"ativo":"pausado")});$("statusControleEnvio").innerText=t?"Envio de novos sinais liberado.":!s&&!h?"Novos sinais pausados para SNARPY e HYPER.":!s?"Novos sinais SNARPY pausados. HYPER liberado.":"Novos sinais HYPER pausados. SNARPY liberado."}
 async function salvarControleEnvio(s,h,m=null){const p={snarpy_ativo:s,hyper_ativo:h,atualizado_em:agoraISO()};if(m!==null)p.mensagem=m;const{error}=await db.from("controle_envio").update(p).eq("id",1);if(error){alert(error.message);return false}Object.assign(window.CONTROLE_ENVIO,p);atualizarBotoesControle();return true}
