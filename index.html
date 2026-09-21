@@ -264,7 +264,7 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 .header-relogio-vivo{position:absolute;z-index:3;right:2.7%;top:30%;width:26%;min-height:30%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #00f08a;border-radius:12px;background:rgba(3,19,13,.96);box-shadow:0 0 13px rgba(0,240,138,.25);font-weight:900;text-align:center;color:#00f08a}
 .header-relogio-vivo .hora{font-size:clamp(18px,4.1vw,35px);line-height:1;letter-spacing:1px}.header-relogio-vivo .data{margin-top:5px;font-size:clamp(7px,1.55vw,12px);letter-spacing:.4px}
 .header-relogio-vivo{border:0;background:transparent;box-shadow:none;border-radius:0}.header-relogio-vivo:before{content:"";position:absolute;inset:7px;background:#03130d;z-index:0}.header-relogio-vivo .hora,.header-relogio-vivo .data{position:relative;z-index:1}
-.header-acesso-vivo{position:absolute;z-index:3;right:2%;top:64%;width:31%;height:25%;display:flex;align-items:center;padding:6px 9px;border:1px solid #59615e;border-radius:10px;background:rgba(5,8,8,.96);color:#fff;text-align:left;box-sizing:border-box}.header-acesso-icone{display:none}.header-acesso-email{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(7px,1.25vw,10px);color:#eee}.header-acesso-status{margin-top:3px;font-size:clamp(8px,1.45vw,12px);font-weight:900;color:#00f08a}.header-acesso-status.free{color:#ffd166}.header-acesso-status.bloqueado{color:#ff6767}
+.header-acesso-vivo{position:absolute;z-index:3;right:2.7%;top:64%;width:26%;height:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;border:2px solid #00f08a;border-radius:12px;background:rgba(3,19,13,.96);box-shadow:0 0 13px rgba(0,240,138,.25);color:#00f08a;text-align:center;box-sizing:border-box}.header-acesso-vivo:before{content:"STATUS";font-size:clamp(7px,1.35vw,10px);font-weight:800;letter-spacing:.7px;color:#8ce0ba}.header-acesso-icone,.header-acesso-email{display:none}.header-acesso-status{margin-top:2px;font-size:clamp(9px,1.7vw,14px);font-weight:900;color:#00f08a}.header-acesso-status.free{color:#ffd166}.header-acesso-status.bloqueado{color:#ff6767}
 
 /* ===== P3 V2 · ANALISTA VISUAL + HISTÓRICO 24H ===== */
 :root{--mrg-analista-cor:#20c8ff;--mrg-analista-glow:rgba(32,200,255,.32)}
@@ -439,7 +439,7 @@ body{
 <body>
 <div class="container">
 <div class="header header-pro-oficial">
-<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHora">--:--:--</div><div class="data" id="headerRelogioData">--</div></div><div class="header-acesso-vivo" aria-live="polite"><span class="header-acesso-icone"></span><div><div class="header-acesso-email" id="headerAcessoEmailP3">Acesso protegido</div><div class="header-acesso-status" id="headerAcessoStatusP3">ACESSO PRO</div></div></div></div>
+<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHora">--:--:--</div><div class="data" id="headerRelogioData">--</div></div><div class="header-acesso-vivo" aria-live="polite"><div class="header-acesso-status" id="headerAcessoStatusP3">ACESSO PRO</div></div></div>
 <div class="header-pro-titulo"><div class="linha">AVIATOR · SPRIBE · 7K BET</div><div class="sub">MRG SINAIS ALTO PADRÃO</div><div class="linha micro">ANÁLISE · DISCIPLINA · GESTÃO</div></div>
 </div>
 <div class="pwa-hint">Para instalar no iPhone: abra no Safari, toque em <b>Compartilhar</b> e depois <b>Adicionar à Tela de Início</b>.</div>
@@ -1651,9 +1651,7 @@ function atualizarRelogioCabecalho(){
   }
 }
 function p3AtualizarCabecalhoAcesso(email,nivel){
-  const emailEl=document.getElementById("headerAcessoEmailP3");
   const statusEl=document.getElementById("headerAcessoStatusP3");
-  if(emailEl)emailEl.textContent=email||"Acesso protegido";
   if(statusEl){
     statusEl.textContent="ACESSO PRO";
     statusEl.className="header-acesso-status";
