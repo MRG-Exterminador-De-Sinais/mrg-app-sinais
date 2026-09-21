@@ -13,14 +13,15 @@ body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 .container{width:100%;max-width:760px;margin:auto;padding:12px}
 .escondido{display:none!important}
 .card{background:linear-gradient(145deg,rgba(17,20,19,.98),rgba(6,8,7,.98));border:1px solid #313633;border-radius:16px;padding:14px;margin-bottom:12px}
-.header{position:relative;overflow:hidden;border-bottom:1px solid #323832;padding:14px 4px 16px;text-align:center}
+.header{position:relative;overflow:hidden;border-bottom:1px solid #323832;padding:14px 4px 16px;text-align:center;min-height:214px}
 .header:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 15% 30%,rgba(0,255,136,.10),transparent 34%);pointer-events:none}
-.brand{position:relative}
+.brand{position:relative;z-index:1}
 .brand h1{margin:0;font-size:24px;line-height:1.02;color:#00ee7e;text-shadow:0 0 12px rgba(0,255,136,.18)}
 .brand .linha{font-size:14px;font-weight:800;color:#eee;margin-top:7px}
 .brand .tag{font-size:10px;letter-spacing:4px;color:#bbb;margin-top:8px}
-.userbox{margin-top:12px;border:1px solid #4a504d;border-radius:12px;padding:9px 12px;text-align:left;font-size:12px;color:#bbb}
-.userbox b{color:#00ee7e}
+.marca-dagua{position:absolute;z-index:0;left:0;bottom:-4px;width:49%;max-width:230px;opacity:.88;filter:drop-shadow(0 0 10px rgba(0,238,126,.22));pointer-events:none}
+.userbox{position:relative;z-index:1;width:49%;margin:20px 0 0 auto;border:2px solid #00ee7e;border-radius:12px;padding:8px 9px;text-align:center;font-size:11px;background:rgba(3,19,13,.90);box-shadow:0 0 13px rgba(0,240,138,.20)}
+.userbox b{display:block;color:#00ee7e;font-size:12px;letter-spacing:.5px}.userbox span{display:block;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e4e4e4}
 .warning{text-align:center;color:#ffc400;font-size:11px;font-weight:900;line-height:1.35;padding:12px 2px 2px}
 .page-title{padding:16px 2px 12px}
 .page-title h2{margin:0;font-size:25px}.page-title h2 span{color:#00ee7e}
@@ -55,7 +56,7 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
 .msg{text-align:center;color:#ffc400;font-size:12px;margin-top:8px}
 .footer{text-align:center;color:#777;font-size:10px;letter-spacing:3px;padding:12px}
 @media(max-width:430px){
- .container{padding:10px}.brand h1{font-size:22px}.menu{gap:8px}.tile{min-height:108px;padding:12px}.tile b{font-size:14px}.tile small{font-size:11px}
+ .container{padding:10px}.brand h1{font-size:22px}.header{min-height:202px}.marca-dagua{width:52%;opacity:.84}.userbox{width:50%;font-size:10px}.menu{gap:8px}.tile{min-height:108px;padding:12px}.tile b{font-size:14px}.tile small{font-size:11px}
  .feed{gap:5px}.mult{font-size:12px}.nav button{font-size:12px}
 }
 </style>
@@ -63,12 +64,13 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
 <body>
 <div class="container">
   <header class="header">
+    <img class="marca-dagua" src="P1_MARCA_DAGUA.png" alt="">
     <div class="brand">
       <h1>MRG EXTERMINADOR<br>DE SINAIS</h1>
       <div class="linha">Aviator · Spribe · 7K Bet</div>
       <div class="tag">CONHECIMENTO · ESTUDO · EVOLUÇÃO</div>
     </div>
-    <div id="userBox" class="userbox escondido"><span id="userEmail"></span><br><b id="estadoConta">Consultando acesso...</b></div>
+    <div id="userBox" class="userbox escondido"><b id="estadoConta">STATUS</b><span id="userEmail"></span></div>
     <div class="warning">⚠️ MINISTÉRIO DA FAZENDA ADVERTE: APOSTA NÃO É INVESTIMENTO<br>+18 · JOGUE COM RESPONSABILIDADE</div>
   </header>
 
@@ -183,12 +185,19 @@ async function iniciarApp(){
   }
 
   el("userEmail").textContent=user.email||"";
-  el("estadoConta").textContent=estado||"ACESSO CENTRAL ATIVO";
+  el("estadoConta").textContent=rotuloStatusP1(estado);
   el("loginBox").classList.add("escondido");
   el("userBox").classList.remove("escondido");
   el("appBox").classList.remove("escondido");
   aplicarPermissoes();
   await carregarHistorico();
+}
+
+function rotuloStatusP1(estado){
+  const nivel=String(estado||"").toUpperCase();
+  if(nivel==="BLOQUEADO")return"STATUS BLOQUEADO";
+  if(nivel.includes("FREE")||nivel==="CADASTRADO")return"STATUS FREE";
+  return"STATUS PRO";
 }
 
 function aplicarPermissoes(){
