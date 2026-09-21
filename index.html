@@ -264,7 +264,7 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 .header-relogio-vivo{position:absolute;z-index:3;right:2.7%;top:30%;width:26%;min-height:30%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #00f08a;border-radius:12px;background:rgba(3,19,13,.96);box-shadow:0 0 13px rgba(0,240,138,.25);font-weight:900;text-align:center;color:#00f08a}
 .header-relogio-vivo .hora{font-size:clamp(18px,4.1vw,35px);line-height:1;letter-spacing:1px}.header-relogio-vivo .data{margin-top:5px;font-size:clamp(7px,1.55vw,12px);letter-spacing:.4px}
 .header-relogio-vivo{border:0;background:transparent;box-shadow:none;border-radius:0}.header-relogio-vivo:before{content:"";position:absolute;inset:7px;background:#03130d;z-index:0}.header-relogio-vivo .hora,.header-relogio-vivo .data{position:relative;z-index:1}
-.header-acesso-vivo{position:absolute;z-index:3;right:2.7%;top:64%;width:26%;height:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;border:2px solid #00f08a;border-radius:12px;background:rgba(3,19,13,.96);box-shadow:0 0 13px rgba(0,240,138,.25);color:#00f08a;text-align:center;box-sizing:border-box}.header-acesso-vivo:before{content:"STATUS";font-size:clamp(7px,1.35vw,10px);font-weight:800;letter-spacing:.7px;color:#8ce0ba}.header-acesso-icone,.header-acesso-email{display:none}.header-acesso-status{margin-top:2px;font-size:clamp(9px,1.7vw,14px);font-weight:900;color:#00f08a}.header-acesso-status.free{color:#ffd166}.header-acesso-status.bloqueado{color:#ff6767}
+.header-acesso-vivo{position:absolute;z-index:3;right:2.7%;top:64%;width:26%;height:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;border:2px solid #00f08a;border-radius:12px;background:#03130d;box-shadow:0 0 13px rgba(0,240,138,.25);color:#00f08a;text-align:center;box-sizing:border-box}.header-acesso-vivo:before{content:"STATUS";font-size:clamp(7px,1.35vw,10px);font-weight:800;letter-spacing:.7px;color:#8ce0ba}.header-acesso-icone,.header-acesso-email{display:none}.header-acesso-status{margin-top:2px;font-size:clamp(9px,1.7vw,14px);font-weight:900;color:#00f08a}.header-acesso-status.publico{color:#dce8e0}.header-acesso-status.cadastrado{color:#78caff}.header-acesso-status.free{color:#ffd166}.header-acesso-status.bloqueado{color:#ff6767}
 
 /* ===== P3 V2 · ANALISTA VISUAL + HISTÓRICO 24H ===== */
 :root{--mrg-analista-cor:#20c8ff;--mrg-analista-glow:rgba(32,200,255,.32)}
@@ -439,7 +439,7 @@ body{
 <body>
 <div class="container">
 <div class="header header-pro-oficial">
-<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHora">--:--:--</div><div class="data" id="headerRelogioData">--</div></div><div class="header-acesso-vivo" aria-live="polite"><div class="header-acesso-status" id="headerAcessoStatusP3">ACESSO PRO</div></div></div>
+<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHora">--:--:--</div><div class="data" id="headerRelogioData">--</div></div><div class="header-acesso-vivo" aria-live="polite"><div class="header-acesso-status publico" id="headerAcessoStatusP3">FAÇA LOGIN</div></div></div>
 <div class="header-pro-titulo"><div class="linha">AVIATOR · SPRIBE · 7K BET</div><div class="sub">MRG SINAIS ALTO PADRÃO</div><div class="linha micro">ANÁLISE · DISCIPLINA · GESTÃO</div></div>
 </div>
 <div class="pwa-hint">Para instalar no iPhone: abra no Safari, toque em <b>Compartilhar</b> e depois <b>Adicionar à Tela de Início</b>.</div>
@@ -1092,10 +1092,10 @@ async function encerrarSessaoPorOutroAparelho(){
 }
 
 function esconderTudo(){["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>document.getElementById(id).classList.add("escondido"))}
-function mostrarLogin(msg=""){painelAtivo=false;STATUS_FINANCEIRO_LOGIN=null;FINANCEIRO=financeiroVazio();FINANCEIRO_RETORNO_EXTERNO=false;limparEstadoCentralAvisos();telaAtual="login";esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg}
-function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";esconderTudo();document.getElementById("cadastroBox").classList.remove("escondido")}
-function mostrarRecuperar(){painelAtivo=false;telaAtual="recuperar";esconderTudo();document.getElementById("recuperarBox").classList.remove("escondido")}
-function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";esconderTudo();document.getElementById("novaSenhaBox").classList.remove("escondido")}
+function mostrarLogin(msg=""){painelAtivo=false;STATUS_FINANCEIRO_LOGIN=null;FINANCEIRO=financeiroVazio();FINANCEIRO_RETORNO_EXTERNO=false;limparEstadoCentralAvisos();telaAtual="login";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg}
+function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("cadastroBox").classList.remove("escondido")}
+function mostrarRecuperar(){painelAtivo=false;telaAtual="recuperar";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("recuperarBox").classList.remove("escondido")}
+function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("novaSenhaBox").classList.remove("escondido")}
 function mostrarAguardando(email){painelAtivo=false;telaAtual="aguardando";esconderTudo();document.getElementById("aguardandoBox").classList.remove("escondido");document.getElementById("emailAguardando").innerText=email||""}
 function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;carregarControleEnvio();carregar();carregarLeitura();carregarProjecoes();carregarRosas();p3CarregarAnalista();p3CarregarFeed24h(true);consultarEstadoNotificacoes();carregarAvisos()}
 async function criarConta(){
@@ -1206,7 +1206,7 @@ async function verificarAcesso(redirecionarSemSessao=false){
     document.getElementById("usuarioEmail").innerText=user.email||"";
     painelAtivo=true;
   }
-  p3AtualizarCabecalhoAcesso(user.email,contratoAcesso.nivel_acesso);
+  p3AtualizarCabecalhoAcesso(contratoAcesso.nivel_acesso,true);
 }
 async function sair(){painelAtivo=false;limparEstadoCentralAvisos();localStorage.removeItem(APP_SESSION_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
 function alvoNumero(alvo){return Number(String(alvo||"").replace("x","").replace("X","").trim())||0}
@@ -1650,12 +1650,20 @@ function atualizarRelogioCabecalho(){
     data.textContent=`${valor("weekday").replace(".","").toUpperCase()}, ${valor("day")} DE ${valor("month").replace(".","").toUpperCase()} ${valor("year")}`;
   }
 }
-function p3AtualizarCabecalhoAcesso(email,nivel){
+function p3AtualizarCabecalhoAcesso(nivel="",sessaoAtiva=false){
   const statusEl=document.getElementById("headerAcessoStatusP3");
-  if(statusEl){
-    statusEl.textContent="ACESSO PRO";
-    statusEl.className="header-acesso-status";
+  if(!statusEl)return;
+  const estado=String(nivel||"").trim().toUpperCase();
+  let texto="FAÇA LOGIN",classe="publico";
+  if(sessaoAtiva){
+    if(estado==="CADASTRADO"){texto="CADASTRADO";classe="cadastrado"}
+    else if(["FREE","PRO_VENCIDO_FREE","FREE_REINSCRICAO"].includes(estado)){texto="ACESSO FREE";classe="free"}
+    else if(["PRO_ATIVO","PRO_CARENCIA"].includes(estado)){texto="ACESSO PRO";classe=""}
+    else if(estado==="BLOQUEADO"){texto="BLOQUEADO";classe="bloqueado"}
+    else {texto="STATUS EM ANÁLISE";classe="publico"}
   }
+  statusEl.textContent=texto;
+  statusEl.className=`header-acesso-status ${classe}`.trim();
 }
 atualizarRelogioCabecalho();
 setInterval(atualizarRelogioCabecalho,1000);
