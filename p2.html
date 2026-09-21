@@ -97,7 +97,7 @@ body{background:radial-gradient(circle at 50% 0,#092016 0,#060807 28%,#030403 70
 .header-relogio-vivo{position:absolute;z-index:3;right:2.7%;top:30%;width:26%;min-height:30%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #00f08a;border-radius:12px;background:rgba(3,19,13,.96);box-shadow:0 0 13px rgba(0,240,138,.25);font-weight:900;text-align:center;color:#00f08a}
 .header-relogio-vivo .hora{font-size:clamp(18px,4.1vw,35px);line-height:1;letter-spacing:1px;margin:0}.header-relogio-vivo .data{margin-top:5px;font-size:clamp(7px,1.55vw,12px);letter-spacing:.4px}
 .header-relogio-vivo{border:0;background:transparent;box-shadow:none;border-radius:0}.header-relogio-vivo:before{content:"";position:absolute;inset:7px;background:#03130d;z-index:0}.header-relogio-vivo .hora,.header-relogio-vivo .data{position:relative;z-index:1}
-.header-acesso-vivo{position:absolute;z-index:3;right:2.7%;top:64%;width:26%;height:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;border:2px solid #00f08a;border-radius:12px;background:rgba(3,19,13,.96);box-shadow:0 0 13px rgba(0,240,138,.25);color:#00f08a;text-align:center;box-sizing:border-box}.header-acesso-vivo:before{content:"STATUS";font-size:clamp(7px,1.35vw,10px);font-weight:800;letter-spacing:.7px;color:#8ce0ba}.header-acesso-icone,.header-acesso-email{display:none}.header-acesso-status{margin-top:2px;font-size:clamp(9px,1.7vw,14px);font-weight:900;color:#00f08a}.header-acesso-status.free{color:#ffd166}.header-acesso-status.bloqueado{color:#ff6767}
+.header-acesso-vivo{position:absolute;z-index:3;right:2.7%;top:64%;width:26%;height:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;border:2px solid #00f08a;border-radius:12px;background:#03130d;box-shadow:0 0 13px rgba(0,240,138,.25);color:#00f08a;text-align:center;box-sizing:border-box}.header-acesso-vivo:before{content:"STATUS";font-size:clamp(7px,1.35vw,10px);font-weight:800;letter-spacing:.7px;color:#8ce0ba}.header-acesso-icone,.header-acesso-email{display:none}.header-acesso-status{margin-top:2px;font-size:clamp(9px,1.7vw,14px);font-weight:900;color:#00f08a}.header-acesso-status.publico{color:#dce8e0}.header-acesso-status.cadastrado{color:#78caff}.header-acesso-status.free{color:#ffd166}.header-acesso-status.bloqueado{color:#ff6767}
 @media(max-width:600px){.header .header-identidade{height:auto!important;aspect-ratio:3 / 1;}}
 
 </style>
@@ -105,7 +105,7 @@ body{background:radial-gradient(circle at 50% 0,#092016 0,#060807 28%,#030403 70
 <body>
 <div class="container">
   <div class="header">
-    <div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHoraP2">--:--:--</div><div class="data" id="headerRelogioDataP2">--</div></div><div class="header-acesso-vivo" aria-live="polite"><div class="header-acesso-status" id="headerAcessoStatusP2">ACESSO FREE</div></div></div>
+    <div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHoraP2">--:--:--</div><div class="data" id="headerRelogioDataP2">--</div></div><div class="header-acesso-vivo" aria-live="polite"><div class="header-acesso-status publico" id="headerAcessoStatusP2">FAÇA LOGIN</div></div></div>
     <div class="header-titulo">
       <div class="linha">AVIATOR · SPRIBE · 7K BET</div>
       <div class="sub">MRG ANALISTA DE PROBABILIDADES</div>
@@ -249,9 +249,9 @@ async function verificarAcesso(){
   const{data:s}=await db.auth.getSession();const user=s?.session?.user;
   if(!user){mostrarLogin();return}
   try{await obterContrato()}catch(e){mostrarLogin("Não foi possível consultar o contrato central de acesso.");return}
-  if(!boolContrato("pagina_2")){mostrarLogin(String(contrato?.nivel_acesso||"").toUpperCase()==="BLOQUEADO"?"Acesso bloqueado pelo administrador.":"Página 2 indisponível para o estado atual da conta.");return}
+  if(!boolContrato("pagina_2")){mostrarLogin(String(contrato?.nivel_acesso||"").toUpperCase()==="BLOQUEADO"?"Acesso bloqueado pelo administrador.":"Página 2 indisponível para o estado atual da conta.",contrato?.nivel_acesso,true);return}
   el("usuarioEmail").textContent=user.email||"";
-  atualizarAcessoCabecalhoP2(user.email,contrato?.nivel_acesso);
+  atualizarAcessoCabecalhoP2(user.email,contrato?.nivel_acesso,true);
   el("loginBox").classList.add("escondido");el("appBox").classList.remove("escondido");painelAtivo=true;
   aplicarPermissoes();
   await Promise.all([carregarSnapshot(),carregarFeed()]);
@@ -262,7 +262,7 @@ async function irPagina(n){
   if(!boolContrato(campo)){alert(`Página ${n} indisponível para o estado atual da conta.`);return}
   window.location.href=n===1?"/p1.html":"/";
 }
-function mostrarLogin(msg=""){painelAtivo=false;el("appBox").classList.add("escondido");el("loginBox").classList.remove("escondido");if(msg)el("loginMsg").textContent=msg}
+function mostrarLogin(msg="",nivel="",sessaoAtiva=false){painelAtivo=false;atualizarAcessoCabecalhoP2("",nivel,sessaoAtiva);el("appBox").classList.add("escondido");el("loginBox").classList.remove("escondido");if(msg)el("loginMsg").textContent=msg}
 async function sair(){painelAtivo=false;await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
 async function carregarSnapshot(){
   if(!painelAtivo)return;
@@ -396,12 +396,17 @@ async function atualizarTopoFeed(){
   if(!painelAtivo||feedCarregando||feedOffset>PAGINA)return;
   await carregarFeed(true,true);
 }
-function atualizarAcessoCabecalhoP2(email,nivel){
+function atualizarAcessoCabecalhoP2(email="",nivel="",sessaoAtiva=false){
   const statusEl=document.getElementById("headerAcessoStatusP2");
   const estado=String(nivel||"").toUpperCase();
-  let texto="ACESSO PRO",classe="";
-  if(estado==="BLOQUEADO"){texto="ACESSO BLOQUEADO";classe="bloqueado"}
-  else if(estado.includes("FREE")||estado==="CADASTRADO"){texto="ACESSO FREE";classe="free"}
+  let texto="FAÇA LOGIN",classe="publico";
+  if(sessaoAtiva){
+    if(estado==="CADASTRADO"){texto="CADASTRADO";classe="cadastrado"}
+    else if(["FREE","PRO_VENCIDO_FREE","FREE_REINSCRICAO"].includes(estado)){texto="ACESSO FREE";classe="free"}
+    else if(["PRO_ATIVO","PRO_CARENCIA"].includes(estado)){texto="ACESSO PRO";classe=""}
+    else if(estado==="BLOQUEADO"){texto="BLOQUEADO";classe="bloqueado"}
+    else {texto="STATUS EM ANÁLISE";classe="publico"}
+  }
   if(statusEl){statusEl.textContent=texto;statusEl.className=`header-acesso-status ${classe}`.trim()}
 }
 function atualizarRelogioCabecalhoP2(){
@@ -415,6 +420,7 @@ function atualizarRelogioCabecalhoP2(){
     data.textContent=`${valor("weekday").replace(".","").toUpperCase()}, ${valor("day")} DE ${valor("month").replace(".","").toUpperCase()} ${valor("year")}`;
   }
 }
+atualizarAcessoCabecalhoP2();
 atualizarRelogioCabecalhoP2();
 setInterval(atualizarRelogioCabecalhoP2,1000);
 setInterval(()=>{el("relogio").textContent=new Date().toLocaleTimeString("pt-BR")},250);
