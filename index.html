@@ -243,7 +243,7 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 @media(max-width:520px){.header-pro-oficial .header-identidade{height:175px}.container{padding:8px}.header-pro-titulo .sub{font-size:14px}}
 
 /* P3 - arte oficial completa (900 x 300). */
-/* Arte incorporada ao próprio arquivo. */
+/* A barra do telefone e os cartões estáticos da captura são ocultados. */
 .header-pro-oficial .header-identidade{
   width:100%;
   height:auto;
@@ -256,6 +256,13 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 @media(max-width:520px){
   .header-pro-oficial .header-identidade{height:auto!important;aspect-ratio:3 / 1;}
 }
+.header-pro-oficial .header-identidade{position:relative;overflow:hidden;isolation:isolate}
+.header-mascara{position:absolute;z-index:2;display:block;background:#061015;pointer-events:none}
+.header-mascara-hora-telefone{left:5%;top:5%;width:11%;height:17%}
+.header-mascara-status-telefone{right:3%;top:4%;width:23%;height:18%}
+.header-mascara-acesso-estatico{right:2%;top:64%;width:31%;height:25%}
+.header-relogio-vivo{position:absolute;z-index:3;right:2.7%;top:30%;width:26%;min-height:30%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #00f08a;border-radius:12px;background:rgba(3,19,13,.96);box-shadow:0 0 13px rgba(0,240,138,.25);font-weight:900;text-align:center;color:#00f08a}
+.header-relogio-vivo .hora{font-size:clamp(18px,4.1vw,35px);line-height:1;letter-spacing:1px}.header-relogio-vivo .data{margin-top:5px;font-size:clamp(7px,1.55vw,12px);letter-spacing:.4px}
 
 /* ===== P3 V2 · ANALISTA VISUAL + HISTÓRICO 24H ===== */
 :root{--mrg-analista-cor:#20c8ff;--mrg-analista-glow:rgba(32,200,255,.32)}
@@ -430,7 +437,7 @@ body{
 <body>
 <div class="container">
 <div class="header header-pro-oficial">
-<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"></div>
+<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHora">--:--:--</div><div class="data" id="headerRelogioData">--</div></div></div>
 <div class="header-pro-titulo"><div class="linha">AVIATOR · SPRIBE · 7K BET</div><div class="sub">MRG SINAIS ALTO PADRÃO</div><div class="linha micro">ANÁLISE · DISCIPLINA · GESTÃO</div></div>
 </div>
 <div class="pwa-hint">Para instalar no iPhone: abra no Safari, toque em <b>Compartilhar</b> e depois <b>Adicionar à Tela de Início</b>.</div>
@@ -1628,6 +1635,20 @@ async function p3AtualizarTopoFeed24h(){
   await p3CarregarFeed24h(true,true);
 }
 setInterval(p3AtualizarTopoFeed24h,2000);
+
+function atualizarRelogioCabecalho(){
+  const agora=new Date();
+  const hora=document.getElementById("headerRelogioHora");
+  const data=document.getElementById("headerRelogioData");
+  if(hora)hora.textContent=agora.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  if(data){
+    const partes=new Intl.DateTimeFormat("pt-BR",{weekday:"short",day:"2-digit",month:"short",year:"numeric"}).formatToParts(agora);
+    const valor=tipo=>partes.find(p=>p.type===tipo)?.value||"";
+    data.textContent=`${valor("weekday").replace(".","").toUpperCase()}, ${valor("day")} DE ${valor("month").replace(".","").toUpperCase()} ${valor("year")}`;
+  }
+}
+atualizarRelogioCabecalho();
+setInterval(atualizarRelogioCabecalho,1000);
 
 </script>
 </body>
