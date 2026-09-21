@@ -69,7 +69,8 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
 .header-padrao-p1 .header-mascara{position:absolute;z-index:2;display:block;background:#061015;pointer-events:none}.header-padrao-p1 .header-mascara-hora-telefone{left:5%;top:5%;width:11%;height:17%}.header-padrao-p1 .header-mascara-status-telefone{right:3%;top:4%;width:23%;height:18%}.header-padrao-p1 .header-mascara-acesso-estatico{right:2%;top:64%;width:31%;height:25%}
 .header-padrao-p1 .header-relogio-vivo{position:absolute;z-index:3;right:2.7%;top:30%;width:26%;min-height:30%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:0;border-radius:0;background:transparent;box-shadow:none;font-weight:900;text-align:center;color:#00f08a}
 .header-padrao-p1 .header-relogio-vivo:before{content:"";position:absolute;inset:7px;background:#03130d;z-index:0}.header-padrao-p1 .header-relogio-vivo .hora,.header-padrao-p1 .header-relogio-vivo .data{position:relative;z-index:1}.header-padrao-p1 .header-relogio-vivo .hora{font-size:clamp(18px,4.1vw,35px);line-height:1;letter-spacing:1px}.header-padrao-p1 .header-relogio-vivo .data{margin-top:5px;font-size:clamp(7px,1.55vw,12px);letter-spacing:.4px}
-.header-padrao-p1 .header-status-p1{position:absolute;z-index:3;right:2.7%;top:64%;width:26%;height:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;border:2px solid #00f08a;border-radius:12px;background:rgba(3,19,13,.96);box-shadow:0 0 13px rgba(0,240,138,.25);text-align:center;box-sizing:border-box}.header-padrao-p1 .header-status-tipo{font-size:clamp(9px,1.7vw,14px);font-weight:900;color:#00f08a}.header-padrao-p1 .header-status-tipo.free{color:#ffd166}.header-padrao-p1 .header-status-tipo.bloqueado{color:#ff6767}.header-padrao-p1 .header-status-email{max-width:100%;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(7px,1.2vw,10px);color:#eee}
+.header-padrao-p1 .header-status-p1{position:absolute;z-index:3;right:2.7%;top:64%;width:26%;height:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;border:2px solid #00f08a;border-radius:12px;background:#03130d;box-shadow:0 0 13px rgba(0,240,138,.25);text-align:center;box-sizing:border-box}.header-padrao-p1 .header-status-p1:before{content:"STATUS";font-size:clamp(7px,1.35vw,10px);font-weight:800;letter-spacing:.7px;color:#8ce0ba}.header-padrao-p1 .header-status-tipo{margin-top:2px;font-size:clamp(9px,1.7vw,14px);font-weight:900;color:#00f08a}.header-padrao-p1 .header-status-tipo.publico{color:#dce8e0}.header-padrao-p1 .header-status-tipo.cadastrado{color:#78caff}.header-padrao-p1 .header-status-tipo.free{color:#ffd166}.header-padrao-p1 .header-status-tipo.bloqueado{color:#ff6767}
+.p1-email-linha{margin:0 0 9px;padding:9px 12px;border:1px solid #244a38;border-radius:10px;background:#07100c;color:#e2ece6;font-size:13px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.p1-email-linha:before{content:"E-MAIL LOGADO · ";color:#91aa9d;font-size:10px;font-weight:900;letter-spacing:.5px}
 @media(max-width:520px){.header-padrao-p1 .header-titulo .sub{font-size:14px}.header-padrao-p1 .header-identidade{aspect-ratio:3 / 1}}
 </style>
 </head>
@@ -81,10 +82,11 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
       <span class="header-mascara header-mascara-status-telefone"></span>
       <span class="header-mascara header-mascara-acesso-estatico"></span>
       <div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHoraP1">--:--:--</div><div class="data" id="headerRelogioDataP1">--</div></div>
-      <div id="statusP1Box" class="header-status-p1 escondido" aria-live="polite"><div id="headerStatusP1" class="header-status-tipo">STATUS</div><div id="headerEmailP1" class="header-status-email"></div></div>
+      <div id="statusP1Box" class="header-status-p1" aria-live="polite"><div id="headerStatusP1" class="header-status-tipo publico">FAÇA LOGIN</div></div>
     </div>
     <div class="header-titulo"><div class="linha">AVIATOR · SPRIBE · 7K BET</div><div class="sub">MRG EXTERMINADOR DE SINAIS</div><div class="linha micro">CONHECIMENTO · ESTUDO · EVOLUÇÃO</div></div>
   </header>
+  <div id="p1EmailLinha" class="p1-email-linha escondido"></div>
   <div class="warning">⚠️ MINISTÉRIO DA FAZENDA ADVERTE: APOSTA NÃO É INVESTIMENTO<br>+18 · JOGUE COM RESPONSABILIDADE</div>
 
   <section id="loginBox" class="card login">
@@ -155,7 +157,7 @@ async function entrar(){
   if(error){el("loginMsg").textContent="Login ou senha inválidos.";return}
   await iniciarApp();
 }
-async function sair(){await db.auth.signOut({scope:"local"});contrato=null;el("appBox").classList.add("escondido");el("statusP1Box").classList.add("escondido");el("loginBox").classList.remove("escondido")}
+async function sair(){await db.auth.signOut({scope:"local"});contrato=null;el("appBox").classList.add("escondido");atualizarStatusCabecalhoP1();el("loginBox").classList.remove("escondido")}
 
 function normalizarContrato(data){
   if(Array.isArray(data)) data=data[0]||{};
@@ -176,14 +178,19 @@ async function obterContrato(){
   contrato=normalizarContrato(data);
   return contrato;
 }
-function atualizarStatusCabecalhoP1(email,estado){
-  const statusEl=el("headerStatusP1"),emailEl=el("headerEmailP1"),box=el("statusP1Box");
+function atualizarStatusCabecalhoP1(email="",estado="",sessaoAtiva=false){
+  const statusEl=el("headerStatusP1"),emailLinha=el("p1EmailLinha"),box=el("statusP1Box");
   const nivel=String(estado||"").toUpperCase();
-  let texto="STATUS PRO",classe="";
-  if(nivel==="BLOQUEADO"){texto="STATUS BLOQUEADO";classe="bloqueado"}
-  else if(nivel.includes("FREE")||nivel==="CADASTRADO"){texto="STATUS FREE";classe="free"}
+  let texto="FAÇA LOGIN",classe="publico";
+  if(sessaoAtiva){
+    if(nivel==="CADASTRADO"){texto="CADASTRADO";classe="cadastrado"}
+    else if(["FREE","PRO_VENCIDO_FREE","FREE_REINSCRICAO"].includes(nivel)){texto="ACESSO FREE";classe="free"}
+    else if(["PRO_ATIVO","PRO_CARENCIA"].includes(nivel)){texto="ACESSO PRO";classe=""}
+    else if(nivel==="BLOQUEADO"){texto="BLOQUEADO";classe="bloqueado"}
+    else {texto="STATUS EM ANÁLISE";classe="publico"}
+  }
   if(statusEl){statusEl.textContent=texto;statusEl.className=`header-status-tipo ${classe}`.trim()}
-  if(emailEl)emailEl.textContent=email||"";
+  if(emailLinha){emailLinha.textContent=sessaoAtiva?(email||""):"";emailLinha.classList.toggle("escondido",!sessaoAtiva)}
   if(box)box.classList.remove("escondido");
 }
 function atualizarRelogioCabecalhoP1(){
@@ -209,6 +216,7 @@ async function iniciarApp(){
 
   const estado=String(valor(contrato,["nivel_acesso"],"")).toUpperCase();
   const p1=valorBool(contrato,["pagina_1"]);
+  atualizarStatusCabecalhoP1(user.email,estado,true);
   if(!p1){
     el("loginMsg").textContent=estado==="BLOQUEADO"?"Acesso bloqueado pelo administrador.":"Acesso à Página 1 ainda não liberado.";
     el("appBox").classList.add("escondido");
@@ -216,7 +224,6 @@ async function iniciarApp(){
     return;
   }
 
-  atualizarStatusCabecalhoP1(user.email,estado);
   el("loginBox").classList.add("escondido");
   el("appBox").classList.remove("escondido");
   aplicarPermissoes();
@@ -266,6 +273,7 @@ async function carregarHistorico(){
 }
 
 document.addEventListener("visibilitychange",async()=>{if(document.visibilityState==="visible"&&contrato){try{await obterContrato();aplicarPermissoes()}catch(e){}}});
+atualizarStatusCabecalhoP1();
 atualizarRelogioCabecalhoP1();
 setInterval(atualizarRelogioCabecalhoP1,1000);
 (async()=>{const {data}=await db.auth.getSession();if(data?.session)await iniciarApp()})();
