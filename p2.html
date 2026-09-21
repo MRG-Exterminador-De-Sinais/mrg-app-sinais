@@ -97,7 +97,7 @@ body{background:radial-gradient(circle at 50% 0,#092016 0,#060807 28%,#030403 70
 .header-relogio-vivo{position:absolute;z-index:3;right:2.7%;top:30%;width:26%;min-height:30%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #00f08a;border-radius:12px;background:rgba(3,19,13,.96);box-shadow:0 0 13px rgba(0,240,138,.25);font-weight:900;text-align:center;color:#00f08a}
 .header-relogio-vivo .hora{font-size:clamp(18px,4.1vw,35px);line-height:1;letter-spacing:1px;margin:0}.header-relogio-vivo .data{margin-top:5px;font-size:clamp(7px,1.55vw,12px);letter-spacing:.4px}
 .header-relogio-vivo{border:0;background:transparent;box-shadow:none;border-radius:0}.header-relogio-vivo:before{content:"";position:absolute;inset:7px;background:#03130d;z-index:0}.header-relogio-vivo .hora,.header-relogio-vivo .data{position:relative;z-index:1}
-.header-acesso-vivo{position:absolute;z-index:3;right:2%;top:64%;width:31%;height:25%;display:flex;align-items:center;padding:6px 9px;border:1px solid #59615e;border-radius:10px;background:rgba(5,8,8,.96);color:#fff;text-align:left;box-sizing:border-box}.header-acesso-icone{display:none}.header-acesso-email{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(7px,1.25vw,10px);color:#eee}.header-acesso-status{margin-top:3px;font-size:clamp(8px,1.45vw,12px);font-weight:900;color:#00f08a}.header-acesso-status.free{color:#ffd166}.header-acesso-status.bloqueado{color:#ff6767}
+.header-acesso-vivo{position:absolute;z-index:3;right:2.7%;top:64%;width:26%;height:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;border:2px solid #00f08a;border-radius:12px;background:rgba(3,19,13,.96);box-shadow:0 0 13px rgba(0,240,138,.25);color:#00f08a;text-align:center;box-sizing:border-box}.header-acesso-vivo:before{content:"STATUS";font-size:clamp(7px,1.35vw,10px);font-weight:800;letter-spacing:.7px;color:#8ce0ba}.header-acesso-icone,.header-acesso-email{display:none}.header-acesso-status{margin-top:2px;font-size:clamp(9px,1.7vw,14px);font-weight:900;color:#00f08a}.header-acesso-status.free{color:#ffd166}.header-acesso-status.bloqueado{color:#ff6767}
 @media(max-width:600px){.header .header-identidade{height:auto!important;aspect-ratio:3 / 1;}}
 
 </style>
@@ -105,7 +105,7 @@ body{background:radial-gradient(circle at 50% 0,#092016 0,#060807 28%,#030403 70
 <body>
 <div class="container">
   <div class="header">
-    <div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHoraP2">--:--:--</div><div class="data" id="headerRelogioDataP2">--</div></div><div class="header-acesso-vivo" aria-live="polite"><span class="header-acesso-icone"></span><div><div class="header-acesso-email" id="headerAcessoEmailP2">Acesso protegido</div><div class="header-acesso-status" id="headerAcessoStatusP2">ACESSO PROTEGIDO</div></div></div></div>
+    <div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHoraP2">--:--:--</div><div class="data" id="headerRelogioDataP2">--</div></div><div class="header-acesso-vivo" aria-live="polite"><div class="header-acesso-status" id="headerAcessoStatusP2">ACESSO FREE</div></div></div>
     <div class="header-titulo">
       <div class="linha">AVIATOR · SPRIBE · 7K BET</div>
       <div class="sub">MRG ANALISTA DE PROBABILIDADES</div>
@@ -397,13 +397,11 @@ async function atualizarTopoFeed(){
   await carregarFeed(true,true);
 }
 function atualizarAcessoCabecalhoP2(email,nivel){
-  const emailEl=document.getElementById("headerAcessoEmailP2");
   const statusEl=document.getElementById("headerAcessoStatusP2");
   const estado=String(nivel||"").toUpperCase();
-  let texto="ACESSO LIBERADO",classe="";
+  let texto="ACESSO PRO",classe="";
   if(estado==="BLOQUEADO"){texto="ACESSO BLOQUEADO";classe="bloqueado"}
   else if(estado.includes("FREE")||estado==="CADASTRADO"){texto="ACESSO FREE";classe="free"}
-  if(emailEl)emailEl.textContent=email||"Acesso protegido";
   if(statusEl){statusEl.textContent=texto;statusEl.className=`header-acesso-status ${classe}`.trim()}
 }
 function atualizarRelogioCabecalhoP2(){
