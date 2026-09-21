@@ -263,6 +263,8 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 .header-mascara-acesso-estatico{right:2%;top:64%;width:31%;height:25%}
 .header-relogio-vivo{position:absolute;z-index:3;right:2.7%;top:30%;width:26%;min-height:30%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #00f08a;border-radius:12px;background:rgba(3,19,13,.96);box-shadow:0 0 13px rgba(0,240,138,.25);font-weight:900;text-align:center;color:#00f08a}
 .header-relogio-vivo .hora{font-size:clamp(18px,4.1vw,35px);line-height:1;letter-spacing:1px}.header-relogio-vivo .data{margin-top:5px;font-size:clamp(7px,1.55vw,12px);letter-spacing:.4px}
+.header-relogio-vivo{border:0;background:transparent;box-shadow:none;border-radius:0}.header-relogio-vivo:before{content:"";position:absolute;inset:7px;background:#03130d;z-index:0}.header-relogio-vivo .hora,.header-relogio-vivo .data{position:relative;z-index:1}
+.header-acesso-vivo{position:absolute;z-index:3;right:2%;top:64%;width:31%;height:25%;display:grid;grid-template-columns:30px minmax(0,1fr);gap:7px;align-items:center;padding:6px 8px;border:1px solid #59615e;border-radius:10px;background:rgba(5,8,8,.96);color:#fff;text-align:left}.header-acesso-icone{width:25px;height:25px;border-radius:50%;background:#e9e9e9;position:relative}.header-acesso-icone:after{content:"";position:absolute;left:3px;right:3px;bottom:2px;height:9px;border-radius:9px 9px 4px 4px;background:#b4b4b4}.header-acesso-email{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(7px,1.25vw,10px);color:#eee}.header-acesso-status{margin-top:3px;font-size:clamp(8px,1.45vw,12px);font-weight:900;color:#00f08a}.header-acesso-status.free{color:#ffd166}.header-acesso-status.bloqueado{color:#ff6767}
 
 /* ===== P3 V2 · ANALISTA VISUAL + HISTÓRICO 24H ===== */
 :root{--mrg-analista-cor:#20c8ff;--mrg-analista-glow:rgba(32,200,255,.32)}
@@ -437,7 +439,7 @@ body{
 <body>
 <div class="container">
 <div class="header header-pro-oficial">
-<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHora">--:--:--</div><div class="data" id="headerRelogioData">--</div></div></div>
+<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHora">--:--:--</div><div class="data" id="headerRelogioData">--</div></div><div class="header-acesso-vivo" aria-live="polite"><span class="header-acesso-icone"></span><div><div class="header-acesso-email" id="headerAcessoEmailP3">Acesso protegido</div><div class="header-acesso-status" id="headerAcessoStatusP3">ACESSO PRO</div></div></div></div>
 <div class="header-pro-titulo"><div class="linha">AVIATOR · SPRIBE · 7K BET</div><div class="sub">MRG SINAIS ALTO PADRÃO</div><div class="linha micro">ANÁLISE · DISCIPLINA · GESTÃO</div></div>
 </div>
 <div class="pwa-hint">Para instalar no iPhone: abra no Safari, toque em <b>Compartilhar</b> e depois <b>Adicionar à Tela de Início</b>.</div>
@@ -1204,6 +1206,7 @@ async function verificarAcesso(redirecionarSemSessao=false){
     document.getElementById("usuarioEmail").innerText=user.email||"";
     painelAtivo=true;
   }
+  p3AtualizarCabecalhoAcesso(user.email,contratoAcesso.nivel_acesso);
 }
 async function sair(){painelAtivo=false;limparEstadoCentralAvisos();localStorage.removeItem(APP_SESSION_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
 function alvoNumero(alvo){return Number(String(alvo||"").replace("x","").replace("X","").trim())||0}
@@ -1645,6 +1648,15 @@ function atualizarRelogioCabecalho(){
     const partes=new Intl.DateTimeFormat("pt-BR",{weekday:"short",day:"2-digit",month:"short",year:"numeric"}).formatToParts(agora);
     const valor=tipo=>partes.find(p=>p.type===tipo)?.value||"";
     data.textContent=`${valor("weekday").replace(".","").toUpperCase()}, ${valor("day")} DE ${valor("month").replace(".","").toUpperCase()} ${valor("year")}`;
+  }
+}
+function p3AtualizarCabecalhoAcesso(email,nivel){
+  const emailEl=document.getElementById("headerAcessoEmailP3");
+  const statusEl=document.getElementById("headerAcessoStatusP3");
+  if(emailEl)emailEl.textContent=email||"Acesso protegido";
+  if(statusEl){
+    statusEl.textContent="ACESSO PRO";
+    statusEl.className="header-acesso-status";
   }
 }
 atualizarRelogioCabecalho();
