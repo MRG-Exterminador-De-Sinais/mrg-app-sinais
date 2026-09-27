@@ -119,6 +119,17 @@ select{
 #btnNovosCadastros.gate-fechado{background:#7a2020;color:#fff}
 </style>
 
+
+<style>
+.contato-adm-box{border:1px solid #444;border-radius:14px;padding:14px;background:#202020;margin-top:10px}
+.contato-adm-preview{border:1px dashed #666;border-radius:12px;padding:14px;margin-top:12px;text-align:center;background:#171717}
+.contato-adm-frase{font-weight:900;color:#fff;margin-bottom:9px}
+.contato-adm-numero{font-size:22px;font-weight:900;color:#00ff88;letter-spacing:.4px;min-height:28px}
+.free-info-mini{font-size:11px;color:#bdbdbd;margin-top:4px;line-height:1.35}
+.badge.free-encerrado{background:#6b4a00;color:#ffd76a}
+.badge.cadastro-inativo{background:#3c3c3c;color:#ddd}
+</style>
+
 </head>
 <body>
 <div class="container">
@@ -133,6 +144,7 @@ select{
   <button id="menuFinanceiro" onclick="mostrarSecaoAdm('financeiro')">💰 FINANCEIRO</button>
   <button id="menuAvisos" onclick="mostrarSecaoAdm('avisos')">📣 AVISOS</button>
   <button id="menuConteudos" onclick="mostrarSecaoAdm('conteudos')">📚 CONTRATOS / CONTEÚDOS</button>
+  <button id="menuContato" onclick="mostrarSecaoAdm('contato')">📱 CONTATO ADM</button>
   <button id="menuOperacional" onclick="mostrarSecaoAdm('operacional')">⚙️ OPERACIONAL</button>
   <button class="bloquear" onclick="sair()">SAIR</button>
 </div>
@@ -270,6 +282,29 @@ select{
   </div>
 </section>
 
+
+<section id="secaoContato" class="secao-adm escondido">
+  <div class="card">
+    <div class="titulo">CONTATO DO ADM PARA CADASTROS SEM ACESSO</div>
+
+    <div class="contato-adm-box">
+      <div class="linha"><b>WhatsApp do ADM:</b></div>
+      <input id="contatoAdmWhatsapp" inputmode="tel" placeholder="(00) 00000-0000">
+
+      <div class="linha" style="margin-top:10px">
+        Se o campo ficar vazio, nenhum número será mostrado ao usuário.
+      </div>
+
+      <button onclick="salvarContatoAdm()">SALVAR CONTATO</button>
+
+      <div class="contato-adm-preview">
+        <div class="contato-adm-frase">Copie esse contato e chame o ADM no WhatsApp.</div>
+        <div id="contatoAdmPreviewNumero" class="contato-adm-numero"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="secaoOperacional" class="secao-adm escondido">
   <div class="card">
     <div class="titulo">CONTROLE OPERACIONAL — MANUTENÇÃO GLOBAL MRG</div>
@@ -283,7 +318,28 @@ select{
 
 <div id="modalHistorico" class="modal-fundo escondido" onclick="fecharHistorico()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">HISTÓRICO FINANCEIRO</div><div id="conteudoHistorico" class="vazio">Carregando histórico...</div><button class="btn-fechar" onclick="fecharHistorico()">FECHAR</button></div></div>
 <div id="modalPago" class="modal-fundo escondido" onclick="fecharModalPago()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">REGISTRAR PAGAMENTO</div><div id="pagoUsuario" class="nome"></div><input id="pagoPerfilId" type="hidden"><div class="duas-colunas"><div><div class="linha"><b>Mensalidade:</b></div><input id="pagoMensalidade" type="number" min="0" step="0.01"></div><div><div class="linha"><b>Inscrição/reinscrição:</b></div><input id="pagoInscricao" type="number" min="0" step="0.01" value="0"></div></div><div class="linha"><b>Total recebido:</b></div><input id="pagoTotal" type="number" min="0" step="0.01"><div class="duas-colunas"><div><div class="linha"><b>Data:</b></div><input id="pagoData" type="date"></div><div><div class="linha"><b>Validade:</b></div><input id="pagoValidade" type="date"></div></div><div class="linha"><b>Observação:</b></div><textarea id="pagoObservacao"></textarea><div class="aviso-modal">Validade definida pelo ADM. Carência PRO automática: 2 dias, controlada pelo Supabase.</div><button class="pago" onclick="salvarPagamento()">SALVAR PAGAMENTO</button><button class="btn-fechar" onclick="fecharModalPago()">CANCELAR</button></div></div>
-<div id="modalFree" class="modal-fundo escondido" onclick="fecharModalFree()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">LIBERAR ACESSO FREE</div><div id="freeUsuario" class="nome"></div><input id="freePerfilId" type="hidden"><div class="duas-colunas"><div><div class="linha"><b>Início:</b></div><input id="freeInicio" type="date"></div><div><div class="linha"><b>Validade:</b></div><input id="freeValidade" type="date"></div></div><div class="linha"><b>Observação:</b></div><textarea id="freeObservacao"></textarea><div class="aviso-modal">FREE termina no último dia do mês atual e não possui carência.</div><button class="free" onclick="salvarFree()">SALVAR FREE</button><button class="btn-fechar" onclick="fecharModalFree()">CANCELAR</button></div></div>
+<div id="modalFree" class="modal-fundo escondido" onclick="fecharModalFree()">
+  <div class="modal-caixa" onclick="event.stopPropagation()">
+    <div class="titulo">LIBERAR CICLO FREE</div>
+    <div id="freeUsuario" class="nome"></div>
+    <input id="freePerfilId" type="hidden">
+
+    <div class="linha"><b>Dias deste ciclo:</b></div>
+    <input id="freeDiasPermitidos" type="number" min="1" max="10" value="10">
+
+    <div class="linha"><b>Observação:</b></div>
+    <textarea id="freeObservacao"></textarea>
+
+    <div class="aviso-modal">
+      O ciclo começa somente no primeiro acesso real à Página 2.
+      Máximo de 2 ciclos FREE. O prazo geral é de 60 dias desde o primeiro uso real.
+    </div>
+
+    <button class="free" onclick="salvarFree()">LIBERAR CICLO FREE</button>
+    <button class="btn-fechar" onclick="fecharModalFree()">CANCELAR</button>
+  </div>
+</div>
+
 <div id="modalManutencao" class="modal-fundo escondido" onclick="fecharModalManutencao()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">PROGRAMAR MANUTENÇÃO GLOBAL MRG</div><div class="duas-colunas"><div><div class="linha"><b>Início:</b></div><input id="inicioManutencao" type="datetime-local"></div><div><div class="linha"><b>Fim:</b></div><input id="fimManutencao" type="datetime-local"></div></div><div class="linha"><b>Aviso prévio (minutos):</b></div><input id="avisoPrevioManutencao" type="number" min="0" max="1440" value="10"><div class="linha"><b>Mensagem:</b></div><textarea id="textoManutencao" placeholder="Manutenção programada. Os recursos de análise avançada ficarão temporariamente indisponíveis."></textarea><div class="aviso-modal">Durante a janela: Página 1 continua disponível; Aviator continua disponível no PC/Android; análises avançadas das páginas 2 e 3 ficam em manutenção.</div><button class="cobranca" onclick="programarManutencaoGlobal()">PROGRAMAR MANUTENÇÃO</button><button class="btn-fechar" onclick="fecharModalManutencao()">CANCELAR</button></div></div>
 
 
@@ -429,23 +485,26 @@ function menorIgual(a,b){const x=parseData(a),y=parseData(b);return !!(x&&y&&x<=
 function moeda(v){return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
 function usuario(id){return window.USUARIOS_CACHE.find(u=>String(u.id)===String(id))}
 function nivelAcessoReal(u){return String(u.nivel_acesso||"CADASTRADO").toUpperCase()}
-function statusFinanceiroReal(u){const n=nivelAcessoReal(u);if(n==="BLOQUEADO")return"BLOQUEADO";if(n==="PRO_ATIVO")return"PAGO";if(n==="PRO_CARENCIA")return"ATRASADO";if(n==="FREE"||n==="PRO_VENCIDO_FREE"||n==="FREE_REINSCRICAO")return"FREE";return"PENDENTE"}
-function badgeNivelAcesso(u){const n=nivelAcessoReal(u);if(n==="PRO_ATIVO")return"<span class='badge liberado'>PRO ATIVO</span>";if(n==="PRO_CARENCIA")return"<span class='badge financeiro-atrasado'>PRO CARÊNCIA</span>";if(n==="FREE")return"<span class='badge financeiro-free'>FREE</span>";if(n==="PRO_VENCIDO_FREE")return"<span class='badge financeiro-free'>EX-PRO / FREE</span>";if(n==="FREE_REINSCRICAO")return"<span class='badge financeiro-free'>FREE / REINSCRIÇÃO</span>";if(n==="BLOQUEADO")return"<span class='badge bloqueado'>BLOQUEADO ADM</span>";return"<span class='badge financeiro-pendente'>AGUARDANDO ATIVAÇÃO</span>"}
+function statusFinanceiroReal(u){const n=nivelAcessoReal(u);if(u?.cadastro_inativo===true)return"FREE";if(u?.free_encerrado_definitivo===true)return"FREE";if(n==="BLOQUEADO")return"BLOQUEADO";if(n==="PRO_ATIVO")return"PAGO";if(n==="PRO_CARENCIA")return"ATRASADO";if(n==="FREE"||n==="PRO_VENCIDO_FREE"||n==="FREE_REINSCRICAO")return"FREE";return"PENDENTE"}
+function badgeNivelAcesso(u){const n=nivelAcessoReal(u);if(u?.cadastro_inativo===true)return"<span class='badge cadastro-inativo'>CADASTRO INATIVO</span>";if(u?.free_encerrado_definitivo===true&&n!=="PRO_ATIVO"&&n!=="PRO_CARENCIA")return"<span class='badge free-encerrado'>FREE ENCERRADO</span>";if(n==="PRO_ATIVO")return"<span class='badge liberado'>PRO ATIVO</span>";if(n==="PRO_CARENCIA")return"<span class='badge financeiro-atrasado'>PRO CARÊNCIA</span>";if(n==="FREE")return"<span class='badge financeiro-free'>FREE</span>";if(n==="PRO_VENCIDO_FREE")return"<span class='badge financeiro-free'>EX-PRO / FREE</span>";if(n==="FREE_REINSCRICAO")return"<span class='badge financeiro-free'>FREE / REINSCRIÇÃO</span>";if(n==="BLOQUEADO")return"<span class='badge bloqueado'>BLOQUEADO ADM</span>";return"<span class='badge financeiro-pendente'>AGUARDANDO ATIVAÇÃO</span>"}
 function badgeLiberado(v){return v?"<span class='badge liberado'>LIBERADO</span>":"<span class='badge bloqueado'>BLOQUEADO / AGUARDANDO</span>"}
 function badgeFinanceiro(st){if(st==="PAGO")return"<span class='badge financeiro-pago'>PAGO</span>";if(st==="FREE")return"<span class='badge financeiro-free'>FREE</span>";if(st==="ATRASADO")return"<span class='badge financeiro-atrasado'>CARÊNCIA</span>";if(st==="BLOQUEADO")return"<span class='badge bloqueado'>BLOQUEADO</span>";return"<span class='badge financeiro-pendente'>PENDENTE</span>"}
 
 function mostrarSecaoAdm(nome){
-  ["Resumo","Clientes","Financeiro","Avisos","Conteudos","Operacional"].forEach(n=>{
+  ["Resumo","Clientes","Financeiro","Avisos","Conteudos","Contato","Operacional"].forEach(n=>{
     const sec=$("secao"+n),btn=$("menu"+n);
     if(sec)sec.classList.toggle("escondido",n.toLowerCase()!==nome);
     if(btn)btn.classList.toggle("ativo",n.toLowerCase()===nome);
   });
   if(nome==="conteudos"){carregarContratosAdm();carregarConteudosAdm();}
+  if(nome==="contato"){carregarContatoAdm();}
 }
 
 function categoriaUsuario(u){
   const n=nivelAcessoReal(u);
-  if(n==="BLOQUEADO")return"BLOQUEADOS";
+  if(u?.cadastro_inativo===true)return"INATIVOS";
+  if(n==="BLOQUEADO"||u?.bloqueio_administrativo===true)return"BLOQUEADOS";
+  if(u?.free_encerrado_definitivo===true)return"FREE";
   if(n==="CADASTRADO")return"AGUARDANDO";
   if(n==="PRO_ATIVO"||n==="PRO_CARENCIA")return"ATIVOS";
   if(n==="FREE"||n==="PRO_VENCIDO_FREE"||n==="FREE_REINSCRICAO")return"FREE";
@@ -520,8 +579,28 @@ async function alternarNovosCadastros(){
   renderizarNovosCadastros();
 }
 
+
+async function carregarContatoAdm(){
+  const{data,error}=await db.rpc("admin_mrg_obter_contato_adm");
+  if(error){console.error(error);return}
+  $("contatoAdmWhatsapp").value=data?.whatsapp_adm||"";
+  atualizarPreviewContatoAdm();
+}
+function atualizarPreviewContatoAdm(){
+  const v=String($("contatoAdmWhatsapp")?.value||"").trim();
+  if($("contatoAdmPreviewNumero"))$("contatoAdmPreviewNumero").innerText=v;
+}
+async function salvarContatoAdm(){
+  const whatsapp=String($("contatoAdmWhatsapp").value||"").trim();
+  const{data,error}=await db.rpc("admin_mrg_salvar_contato_adm",{p_whatsapp:whatsapp});
+  if(error){alert(error.message);return}
+  $("contatoAdmWhatsapp").value=data?.whatsapp_adm||"";
+  atualizarPreviewContatoAdm();
+  alert(whatsapp?"Contato do ADM salvo.":"Contato removido. Nenhum número será exibido aos usuários.");
+}
+
 async function entrar(){const email=$("loginEmail").value.trim(),password=$("loginSenha").value.trim();if(!email||!password){$("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}if(email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){$("loginMsg").innerHTML="<span class='erro'>Este e-mail não é administrador.</span>";return}const{error}=await db.auth.signInWithPassword({email,password});if(error){$("loginMsg").innerHTML="<span class='erro'>Login inválido ou e-mail não confirmado.</span>";return}verificarAdmin()}
-async function verificarAdmin(){const{data}=await db.auth.getSession();const u=data?.session?.user;if(!u){$("loginBox").classList.remove("escondido");$("adminBox").classList.add("escondido");return}if(String(u.email).toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await db.auth.signOut();return}$("loginBox").classList.add("escondido");$("adminBox").classList.remove("escondido");$("adminEmail").innerText=u.email;await carregarUsuarios();await carregarEstadoManutencao();await carregarModelosFinanceiros();await carregarAvisosAdmin();await carregarNovosCadastros()}
+async function verificarAdmin(){const{data}=await db.auth.getSession();const u=data?.session?.user;if(!u){$("loginBox").classList.remove("escondido");$("adminBox").classList.add("escondido");return}if(String(u.email).toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await db.auth.signOut();return}$("loginBox").classList.add("escondido");$("adminBox").classList.remove("escondido");$("adminEmail").innerText=u.email;await carregarUsuarios();await carregarEstadoManutencao();await carregarModelosFinanceiros();await carregarAvisosAdmin();await carregarNovosCadastros();await carregarContatoAdm()}
 async function carregarControleEnvio(){const{data,error}=await db.from("controle_envio").select("*").eq("id",1).single();if(error||!data){$("statusControleEnvio").innerText="Erro ao carregar controle operacional.";return}window.CONTROLE_ENVIO=data;$("mensagemControleEnvio").value=data.mensagem||"";atualizarBotoesControle()}
 function atualizarBotoesControle(){const c=window.CONTROLE_ENVIO,s=c.snarpy_ativo===true,h=c.hyper_ativo===true,t=s&&h;[["btnSnarpy",s,"SNARPY"],["btnHyper",h,"HYPER"],["btnTodos",t,"TODOS"]].forEach(([id,on,n])=>{const b=$(id);b.innerText=(on?"🟢 ":"🔴 ")+n;b.className="btn-toggle "+(on?"ativo":"pausado")});$("statusControleEnvio").innerText=t?"Envio de novos sinais liberado.":!s&&!h?"Novos sinais pausados para SNARPY e HYPER.":!s?"Novos sinais SNARPY pausados. HYPER liberado.":"Novos sinais HYPER pausados. SNARPY liberado."}
 async function salvarControleEnvio(s,h,m=null){const p={snarpy_ativo:s,hyper_ativo:h,atualizado_em:agoraISO()};if(m!==null)p.mensagem=m;const{error}=await db.from("controle_envio").update(p).eq("id",1);if(error){alert(error.message);return false}Object.assign(window.CONTROLE_ENVIO,p);atualizarBotoesControle();return true}
@@ -913,10 +992,23 @@ async function excluirAvisoAdmin(id){
 }
 
 async function carregarReceitaMes(){const i=new Date();i.setDate(1);i.setHours(0,0,0,0);const f=new Date(i.getFullYear(),i.getMonth()+1,1);const{data,error}=await db.from("historico_financeiro").select("valor_total,valor,acao,criado_em").gte("criado_em",i.toISOString()).lt("criado_em",f.toISOString());window.RECEITA_MES=error?0:(data||[]).reduce((s,h)=>s+(String(h.acao).toUpperCase()==="PAGO"?Number(h.valor_total??h.valor??0):0),0)}
-async function carregarUsuarios(){$("listaUsuarios").innerHTML="<div class='vazio'>Carregando usuários...</div>";const{data,error}=await db.from("perfis").select("*").order("nome",{ascending:true});if(error){$("listaUsuarios").innerHTML="<div class='erro'>"+error.message+"</div>";return}await carregarReceitaMes();window.USUARIOS_CACHE=data||[];preencherUsuariosAviso();atualizarResumoFinanceiro(data||[]);atualizarCategoriasUsuarios();filtrarUsuarios()}
+async function carregarUsuarios(){$("listaUsuarios").innerHTML="<div class='vazio'>Carregando usuários...</div>";try{await db.rpc("admin_mrg_processar_prazos_free")}catch(e){console.error("Falha ao processar prazos FREE:",e)}const{data,error}=await db.from("perfis").select("*").order("nome",{ascending:true});if(error){$("listaUsuarios").innerHTML="<div class='erro'>"+error.message+"</div>";return}await carregarReceitaMes();window.USUARIOS_CACHE=data||[];preencherUsuariosAviso();atualizarResumoFinanceiro(data||[]);atualizarCategoriasUsuarios();filtrarUsuarios()}
 function atualizarResumoFinanceiro(lista){let pagos=0,pend=0,carencia=0,free=0,lib=0,bloq=0;lista.forEach(u=>{const n=nivelAcessoReal(u);if(n==="PRO_ATIVO")pagos++;else if(n==="PRO_CARENCIA")carencia++;else if(n==="FREE"||n==="PRO_VENCIDO_FREE"||n==="FREE_REINSCRICAO")free++;else if(n==="BLOQUEADO")bloq++;else pend++;if(n!=="CADASTRADO"&&n!=="BLOQUEADO")lib++});$("resumoFinanceiro").innerHTML=`<div class="resumo-grid"><div class="resumo-item"><div class="resumo-num">${pagos}</div><div class="resumo-label">PRO ATIVOS</div></div><div class="resumo-item"><div class="resumo-num">${pend}</div><div class="resumo-label">AGUARDANDO</div></div><div class="resumo-item"><div class="resumo-num">${carencia}</div><div class="resumo-label">PRO CARÊNCIA</div></div><div class="resumo-item"><div class="resumo-num">${free}</div><div class="resumo-label">FREE / EX-PRO</div></div><div class="resumo-item"><div class="resumo-num">${lib}</div><div class="resumo-label">COM ACESSO</div></div><div class="resumo-item"><div class="resumo-num">${bloq}</div><div class="resumo-label">BLOQUEADOS ADM</div></div></div><div class="receita">Receita do mês: ${moeda(window.RECEITA_MES)}</div>`}
 function esc(v){return String(v||"").replace(/'/g,"&#39;")}
-function renderizarUsuarios(lista){if(!lista.length){$("listaUsuarios").innerHTML="<div class='vazio'>Nenhum usuário encontrado.</div>";return}$("listaUsuarios").innerHTML=lista.map(u=>{const st=statusFinanceiroReal(u),n=texto(u.nome),e=texto(u.email),t=texto(u.telefone);return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeNivelAcesso(u)}</div><div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="linha"><b>Último free:</b> ${formatarDataBR(u.data_free)}</div><div class="linha"><b>Validade free:</b> ${formatarDataBR(u.validade_free)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button><button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button></div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${u.id}','${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`}).join("")}
+function renderizarUsuarios(lista){
+  if(!lista.length){$("listaUsuarios").innerHTML="<div class='vazio'>Nenhum usuário encontrado.</div>";return}
+  $("listaUsuarios").innerHTML=lista.map(u=>{
+    const st=statusFinanceiroReal(u),n=texto(u.nome),e=texto(u.email),t=texto(u.telefone);
+    const ciclos=Number(u.free_ciclos_usados||0);
+    const extraFree=(u.free_primeiro_inicio_em||u.free_encerrado_em||u.cadastro_inativo_em)
+      ?`<div class="free-info-mini">FREE: ${ciclos}/2 ciclos usados · Primeiro início: ${formatarDataHoraBR(u.free_primeiro_inicio_em)}${u.free_encerrado_em?` · Encerrado: ${formatarDataHoraBR(u.free_encerrado_em)}`:""}${u.cadastro_inativo_em?` · Inativo: ${formatarDataHoraBR(u.cadastro_inativo_em)}`:""}</div>`
+      :"";
+    const btnReativar=(u.cadastro_inativo===true||u.free_encerrado_definitivo===true)
+      ?`<button class="pequeno free" onclick="reativarCadastroInativoFree('${u.id}')">REATIVAR FREE</button>`
+      :"";
+    return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeNivelAcesso(u)}</div>${extraFree}<div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button><button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button>${btnReativar}</div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${u.id}','${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`;
+  }).join("");
+}
 function toggleBusca(){const c=$("campoBusca");if(!c.style.display||c.style.display==="none"){c.style.display="block";c.focus()}else{c.value="";c.style.display="none";renderizarUsuarios(window.USUARIOS_CACHE)}}
 function filtrarUsuarios(){const q=$("campoBusca").value.toLowerCase().trim();let lista=window.USUARIOS_CACHE.filter(u=>categoriaUsuario(u)===window.CATEGORIA_USUARIO);if(q)lista=lista.filter(u=>[u.nome,u.email,u.telefone,statusFinanceiroReal(u)].some(v=>String(v||"").toLowerCase().includes(q)));renderizarUsuarios(lista)}
 async function registrarHistorico(x){const{error}=await db.from("historico_financeiro").insert({perfil_id:x.perfil_id,nome:x.nome,email:x.email,acao:x.acao,valor:Number(x.total||0),valor_total:Number(x.total||0),valor_mensalidade:Number(x.mensalidade||0),valor_inscricao:Number(x.inscricao||0),data_pagamento:x.data||null,validade_inicio:x.inicio||null,validade_fim:x.fim||null,observacao:x.obs||null,criado_em:agoraISO()});if(error)throw error}
@@ -943,9 +1035,50 @@ async function salvarPagamento(){
   const r=resultado||{};
   alert(`Pagamento salvo. Estado de acesso: ${r.nivel_acesso||"atualizado"}.`);
 }
-function abrirModalFree(id){const u=usuario(id);if(!u)return;$("freePerfilId").value=id;$("freeUsuario").innerText=`${u.nome} — ${u.email}`;$("freeInicio").value=hojeISO();$("freeValidade").value=fimMesAtual();$("freeObservacao").value="";$("modalFree").classList.remove("escondido")}
+function abrirModalFree(id){
+  const u=usuario(id);if(!u)return;
+  $("freePerfilId").value=id;
+  $("freeUsuario").innerText=`${u.nome} — ${u.email}`;
+  $("freeDiasPermitidos").value=String(Math.min(10,Math.max(1,Number(u.free_dias_permitidos||10))));
+  $("freeObservacao").value="";
+  $("modalFree").classList.remove("escondido");
+}
 function fecharModalFree(){$("modalFree").classList.add("escondido")}
-async function salvarFree(){const id=$("freePerfilId").value,u=usuario(id),inicio=$("freeInicio").value,fim=$("freeValidade").value,obs=$("freeObservacao").value.trim();if(!u||!inicio||!fim){alert("Informe início e validade.");return}const{error}=await db.from("perfis").update({liberado:true,status_pagamento:"FREE",data_free:inicio,validade_free:fim,validade_inicio:inicio,validade_fim:null,carencia_ate:null,observacao_financeira:obs}).eq("id",id);if(error){alert(error.message);return}try{await registrarHistorico({perfil_id:id,nome:u.nome,email:u.email,acao:"FREE",total:0,data:inicio,inicio,fim,obs})}catch(e){}fecharModalFree();recarregarMantendoBusca()}
+async function salvarFree(){
+  const id=$("freePerfilId").value,u=usuario(id),dias=Number($("freeDiasPermitidos").value||10),obs=$("freeObservacao").value.trim();
+  if(!u||!Number.isInteger(dias)||dias<1||dias>10){alert("Informe de 1 a 10 dias.");return}
+  const{data,error}=await db.rpc("admin_mrg_ativar_cadastro_free",{p_perfil_id:id,p_dias_permitidos:dias,p_observacao:obs||null});
+  if(error){
+    const msg=String(error.message||"");
+    if(msg.includes("LIMITE_DE_2_CICLOS_FREE_ATINGIDO")||msg.includes("FREE_ENCERRADO_USE_REATIVACAO_EXCEPCIONAL")){
+      alert("O período FREE deste cadastro já foi encerrado. Use REATIVAR FREE somente se quiser liberar uma exceção administrativa.");
+    }else if(msg.includes("CICLO_FREE_ATUAL_AINDA_ESTA_ATIVO")){
+      alert("O ciclo FREE atual ainda está ativo.");
+    }else{
+      alert(msg);
+    }
+    return;
+  }
+  fecharModalFree();
+  try{await registrarHistorico({perfil_id:id,nome:u.nome,email:u.email,acao:"FREE",total:0,obs:`Ciclo FREE liberado pelo ADM: ${dias} dia(s). ${obs}`.trim()})}catch(e){}
+  await recarregarMantendoBusca();
+  alert(`Ciclo FREE liberado. Ele começará somente quando o usuário entrar de verdade na Página 2.`);
+}
+async function reativarCadastroInativoFree(id){
+  const u=usuario(id);if(!u)return;
+  if(!confirm(`Reativar excepcionalmente o FREE de ${u.nome}?\n\nIsso inicia uma nova etapa FREE do zero, mas NÃO apaga pagamentos nem históricos anteriores.`))return;
+  const diasRaw=prompt("Quantos dias terá o primeiro ciclo desta nova etapa? (1 a 10)","10");
+  if(diasRaw===null)return;
+  const dias=Number(diasRaw);
+  if(!Number.isInteger(dias)||dias<1||dias>10){alert("Informe de 1 a 10 dias.");return}
+  const obs=prompt("Observação da reativação:","Reativação excepcional pelo administrador");
+  if(obs===null)return;
+  const{error}=await db.rpc("admin_mrg_reativar_cadastro_inativo_free",{p_perfil_id:id,p_dias_permitidos:dias,p_observacao:obs.trim()||null});
+  if(error){alert(error.message);return}
+  try{await registrarHistorico({perfil_id:id,nome:u.nome,email:u.email,acao:"REATIVACAO_FREE",total:0,obs:obs.trim()||"Reativação excepcional pelo administrador"})}catch(e){}
+  await recarregarMantendoBusca();
+  alert("Cadastro reativado como FREE. O ciclo só começa no primeiro acesso real à Página 2.");
+}
 async function bloquearUsuario(id){
   const u=usuario(id);
   if(!u)return;
