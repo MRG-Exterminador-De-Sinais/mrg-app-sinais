@@ -1006,7 +1006,9 @@ function renderizarUsuarios(lista){
     const btnReativar=(u.cadastro_inativo===true||u.free_encerrado_definitivo===true)
       ?`<button class="pequeno free" onclick="reativarCadastroInativoFree('${u.id}')">REATIVAR FREE</button>`
       :"";
-    return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeNivelAcesso(u)}</div>${extraFree}<div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button><button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button>${btnReativar}</div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${u.id}','${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`;
+    return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeNivelAcesso(u)}</div>${extraFree}<div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button>${(u.bloqueio_administrativo===true || String(u.nivel_acesso||"").toUpperCase()==="BLOQUEADO")
+?`<button class="pequeno free" onclick="desbloquearUsuario('${u.id}')">DESBLOQUEAR</button>`
+:`<button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button>`}${btnReativar}</div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${u.id}','${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`;
   }).join("");
 }
 function toggleBusca(){const c=$("campoBusca");if(!c.style.display||c.style.display==="none"){c.style.display="block";c.focus()}else{c.value="";c.style.display="none";renderizarUsuarios(window.USUARIOS_CACHE)}}
@@ -1088,6 +1090,20 @@ async function bloquearUsuario(id){
   const{error}=await db.rpc("admin_mrg_bloquear_usuario",{p_perfil_id:id,p_motivo:(motivo.trim()||"Bloqueio manual pelo administrador")});
   if(error){alert(error.message);return}
   try{await registrarHistorico({perfil_id:id,nome:u.nome,email:u.email,acao:"BLOQUEADO",total:0,obs:motivo.trim()||"Bloqueio manual pelo administrador"})}catch(e){}
+  await recarregarMantendoBusca();
+}
+async function desbloquearUsuario(id){
+  const u=usuario(id);
+  if(!u)return;
+  if(!confirm("Confirmar DESBLOQUEIO ADMINISTRATIVO deste usuário? O acesso será recalculado pelo backend sem apagar pagamento ou validade."))return;
+  const{error}=await db.rpc("admin_mrg_desbloquear_usuario",{p_perfil_id:id});
+  if(error){alert(error.message);return}
+  try{
+    await registrarHistorico({
+      perfil_id:id,nome:u.nome,email:u.email,acao:"DESBLOQUEADO",total:0,
+      obs:"Desbloqueio manual pelo administrador"
+    });
+  }catch(e){}
   await recarregarMantendoBusca();
 }
 async function abrirHistorico(id,nome){$("modalHistorico").classList.remove("escondido");const{data,error}=await db.from("historico_financeiro").select("*").eq("perfil_id",id).order("criado_em",{ascending:false}).limit(100);if(error){$("conteudoHistorico").innerHTML="<div class='erro'>"+error.message+"</div>";return}if(!data.length){$("conteudoHistorico").innerHTML=`<div class='vazio'>Nenhum histórico para ${nome}.</div>`;return}$("conteudoHistorico").innerHTML=data.map(h=>`<div class="historico-item"><div class="historico-data">${formatarDataHoraBR(h.criado_em)}</div><div><b>Ação:</b> ${texto(h.acao)}</div><div><b>Total:</b> ${moeda(h.valor_total??h.valor)}</div><div><b>Mensalidade:</b> ${moeda(h.valor_mensalidade)}</div><div><b>Inscrição/reinscrição:</b> ${moeda(h.valor_inscricao)}</div><div><b>Pagamento:</b> ${formatarDataBR(h.data_pagamento)}</div><div><b>Validade:</b> ${formatarDataBR(h.validade_inicio)} até ${formatarDataBR(h.validade_fim)}</div><div><b>Observação:</b> ${texto(h.observacao)}</div></div>`).join("")}
