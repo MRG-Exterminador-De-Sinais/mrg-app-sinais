@@ -878,7 +878,12 @@ window.addEventListener("focus",()=>{
     }else if(painelAtivo){
       await sincronizarFinanceiro("FOCO");
     }
+    ressincronizarP3AoRetomar();
   },300);
+});
+window.addEventListener("pageshow",()=>setTimeout(ressincronizarP3AoRetomar,120));
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible")setTimeout(ressincronizarP3AoRetomar,120);
 });
 
 
@@ -1097,7 +1102,7 @@ function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";p3AtualizarCab
 function mostrarRecuperar(){painelAtivo=false;telaAtual="recuperar";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("recuperarBox").classList.remove("escondido")}
 function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("novaSenhaBox").classList.remove("escondido")}
 function mostrarAguardando(email){painelAtivo=false;telaAtual="aguardando";esconderTudo();document.getElementById("aguardandoBox").classList.remove("escondido");document.getElementById("emailAguardando").innerText=email||""}
-function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;carregarControleEnvio();carregar();carregarLeitura();carregarProjecoes();carregarRosas();p3CarregarAnalista();p3CarregarFeed24h(true);consultarEstadoNotificacoes();carregarAvisos()}
+function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;iniciarCanalEntradasP3();carregarControleEnvio();carregar();carregarLeitura(true);carregarProjecoes();carregarRosas();p3CarregarAnalista();p3CarregarFeed24h(true);consultarEstadoNotificacoes();carregarAvisos()}
 async function criarConta(){
   const nome=document.getElementById("cadNome").value.trim(),email=document.getElementById("cadEmail").value.trim(),telefone=document.getElementById("cadTelefone").value.trim(),senha=document.getElementById("cadSenha").value.trim();
   if(!nome||!email||!telefone||!senha){document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";return}
@@ -1223,9 +1228,16 @@ function mensagemPausaOperacional(){if(CONTROLE_ENVIO.mensagem&&String(CONTROLE_
 function avisoOperacionalHTML(){if(!existePausaOperacional())return"";let detalhe="";if(CONTROLE_ENVIO.snarpy_ativo!==true&&CONTROLE_ENVIO.hyper_ativo!==true)detalhe="\n\nSNARPY e HYPER pausados temporariamente.";else if(CONTROLE_ENVIO.snarpy_ativo!==true)detalhe="\n\nSNARPY pausado temporariamente.";else if(CONTROLE_ENVIO.hyper_ativo!==true)detalhe="\n\nHYPER pausado temporariamente.";return`<div class="aviso-operacional">${mensagemPausaOperacional()}${detalhe}</div>`}
 function rosaVisual(texto){return String(texto||"").replace(/🟢/g,"🩷")}
 function linhasUnicas(valores){return[...new Set(valores.map(v=>String(v||"").trim()).filter(Boolean))]}
-function linhaEntradaAoVivo(linha){const t=String(linha||"").toUpperCase();return t.includes("APÓS")&&t.includes("SAIR")&&(t.includes("2C")||t.includes("4C"))}
+function linhaEntradaAoVivo(linha){
+ const t=String(linha||"").toUpperCase();
+ const legado=t.includes("APÓS")&&t.includes("SAIR")&&(t.includes("2C")||t.includes("4C"));
+ const compacto=/(?:REF\.?|REFER[EÊ]NCIA)\s*[:=·-]?\s*\d+(?:[.,]\d+)?\s*X?/i.test(t)&&
+  (t.includes("PADRÃO")||t.includes("PADRAO")||t.includes("PROB."))&&
+  (t.includes("ROXA")||t.includes("ROXO")||t.includes("ROSA")||t.includes("🟣")||t.includes("🩷"));
+ return legado||compacto;
+}
 function modalidadeEntradaAoVivo(linha){const t=String(linha||"").toUpperCase();if(t.includes("🩷")||t.includes("ROSA")||t.includes("4C"))return"ROSA";if(t.includes("🟣")||t.includes("ROXA")||t.includes("2C"))return"ROXA";return""}
-function registroAoVivoRecente(row){const bruto=valorPrimeiro(row,["atualizado_em","data_hora","data_hora_entrada","criado_em"],"");if(!bruto)return true;const d=dataValida(bruto);if(!d)return true;const idade=Date.now()-d.getTime();return idade>=-300000&&idade<=1200000}
+function registroAoVivoRecente(row){const bruto=valorPrimeiro(row,["atualizado_em","data_hora_entrada","criado_em","data_hora"],"");if(!bruto)return true;const d=dataValida(bruto);if(!d)return true;const idade=Date.now()-d.getTime();return idade>=-300000&&idade<=1200000}
 function selecionarEstadoAoVivo(rows){
  const estado={ROXA:null,ROSA:null};
  for(const row of rows||[]){
@@ -1255,17 +1267,28 @@ const ENTRADAS_AO_VIVO={ROXA:null,ROSA:null};
 const ENTRADAS_ENCERRADAS={ROXA:new Set(),ROSA:new Set()};
 
 function dataRegistroAoVivo(row){
- const bruto=valorPrimeiro(row,["atualizado_em","data_hora","data_hora_entrada","criado_em"],"");
+ // O relógio da entrada é o momento em que o sinal nasceu. "atualizado_em"
+ // fica por último porque também muda quando o mesmo registro é encerrado.
+ const bruto=valorPrimeiro(row,["data_hora_entrada","criado_em","data_hora","atualizado_em"],"");
  const d=dataValida(bruto);
  return d?d.getTime():Date.now();
+}
+
+function gatilhoEntradaAoVivo(linha){
+ const m=String(linha||"").match(/(?:AP[ÓO]S|REF\.?|REFER[EÊ]NCIA)\s*[:=·-]?\s*(\d+(?:[.,]\d+)?)\s*[xX]?/i);
+ if(!m)return null;
+ const n=Number(m[1].replace(",","."));
+ return Number.isFinite(n)?n:null;
 }
 
 function identidadeEntradaAoVivo(tipo,item){
  const row=item?.row||{};
  const id=valorPrimeiro(row,["id","uuid","sinal_id","sinalId"],"");
- if(id!==""&&id!==null&&id!==undefined)return `${tipo}:ID:${id}`;
- const bruto=valorPrimeiro(row,["data_hora_entrada","criado_em","data_hora","atualizado_em"],"");
- return `${tipo}:TXT:${String(item?.linha||"").trim()}|${String(bruto||"").trim()}`;
+ const bruto=valorPrimeiro(row,["data_hora_entrada","criado_em","data_hora","horario_entrada","horario_chamada"],valorPrimeiro(row,["atualizado_em"],""));
+ const gatilho=gatilhoEntradaAoVivo(item?.linha);
+ // O publicador pode reaproveitar o mesmo ID. Por isso o ID sozinho não
+ // identifica uma entrada: gatilho, horário e texto também participam da chave.
+ return `${tipo}:SIG:${String(id??"")}|${gatilho===null?"":gatilho}|${String(bruto||"").trim()}|${String(item?.linha||"").trim()}`;
 }
 
 function atualizarEntradaAoVivo(tipo,item){
@@ -1294,13 +1317,30 @@ function atualizarEntradaAoVivo(tipo,item){
  atual.linha=item.linha;
 }
 
+function dataResultadoComparavel(valor,referenciaMs){
+ const direta=dataValida(valor);
+ if(direta)return direta;
+ const m=String(valor||"").trim().match(/(?:^|\s)(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+ if(!m)return null;
+ const base=new Date(Number.isFinite(referenciaMs)?referenciaMs:Date.now());
+ const d=new Date(base);
+ d.setHours(Number(m[1]),Number(m[2]),Number(m[3]||0),0);
+ // Na virada do dia, 00:xx pertence ao dia seguinte da entrada 23:xx.
+ if(d.getTime()<base.getTime()-5*60*1000)d.setDate(d.getDate()+1);
+ return d;
+}
+
 function resultadoPosteriorEntrada(tipo){
  const entrada=ENTRADAS_AO_VIVO[tipo];
  if(!entrada)return false;
  const lista=tipo==="ROXA"?RESULTADOS_RESUMO_ROWS.ROXA:RESULTADOS_RESUMO_ROWS.ROSA;
  return(lista||[]).some(row=>{
-  const d=dataValida(dataResultado(row));
-  return d&&d.getTime()>=entrada.ts-3000&&resultadoFinalAoVivo(row);
+  if(!resultadoFinalAoVivo(row))return false;
+  const gatilhoEntrada=gatilhoEntradaAoVivo(entrada.linha);
+  const gatilhoResultado=Number(String(valorGatilho(row)).replace(",",".").replace(/x/ig,""));
+  if(gatilhoEntrada!==null&&Number.isFinite(gatilhoResultado)&&Math.abs(gatilhoEntrada-gatilhoResultado)>0.011)return false;
+  const d=dataResultadoComparavel(dataResultado(row),entrada.ts);
+  return d&&d.getTime()>=entrada.ts-3000;
  });
 }
 
@@ -1392,8 +1432,55 @@ function htmlResumoModalidade(tipo,resultados){
  return`<div class="leitura-resumo ${rosa?"rosa":"roxa"}" onclick="abrirHistorico('${tipo}')"><div class="leitura-resumo-nome">${iconeNome} ${nome}</div><div class="leitura-bolinhas mrg-marcadores">${marcadores}<span class="leitura-percentual">${percentual}% ${tendenciaResultados(ultimos)}</span></div></div>`
 }
 function renderizarResumosAoVivo(){document.getElementById("leitura").innerHTML=`<div class="leitura-resumos">${htmlResumoModalidade("ROXA",RESULTADOS_RESUMO.ROXA)}${htmlResumoModalidade("ROSA",RESULTADOS_RESUMO.ROSA)}</div>`}
-async function carregarResumosAoVivo(){const agora=Date.now();if(agora-ULTIMA_ATUALIZACAO_RESUMOS<5000)return;ULTIMA_ATUALIZACAO_RESUMOS=agora;const[roxos,rosa]=await Promise.all([buscarResultadosRoxos(20),db.from("executor_rosa_resultados_app").select("*").order("data_hora_resultado",{ascending:false}).limit(10)]);RESULTADOS_RESUMO_ROWS.ROXA=roxos.slice(0,20);RESULTADOS_RESUMO_ROWS.ROSA=!rosa.error&&rosa.data?rosa.data:[];RESULTADOS_RESUMO.ROXA=roxos.slice(0,10).map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");if(!rosa.error&&rosa.data)RESULTADOS_RESUMO.ROSA=rosa.data.map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");limparEntradasJulgadas();renderizarResumosAoVivo()}
-async function carregarLeitura(){if(!painelAtivo)return;const{data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(50);const estado=!error&&data?selecionarEstadoAoVivo(data):{ROXA:null,ROSA:null};atualizarEntradaAoVivo("ROXA",estado.ROXA);atualizarEntradaAoVivo("ROSA",estado.ROSA);await carregarResumosAoVivo();limparEntradasJulgadas();renderizarEstadoAoVivo(estado)}
+async function carregarResumosAoVivo(forcar=false){const agora=Date.now();if(!forcar&&agora-ULTIMA_ATUALIZACAO_RESUMOS<5000)return;ULTIMA_ATUALIZACAO_RESUMOS=agora;const[roxos,rosa]=await Promise.all([buscarResultadosRoxos(20),db.from("executor_rosa_resultados_app").select("*").order("data_hora_resultado",{ascending:false}).limit(10)]);RESULTADOS_RESUMO_ROWS.ROXA=roxos.slice(0,20);RESULTADOS_RESUMO_ROWS.ROSA=!rosa.error&&rosa.data?rosa.data:[];RESULTADOS_RESUMO.ROXA=roxos.slice(0,10).map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");if(!rosa.error&&rosa.data)RESULTADOS_RESUMO.ROSA=rosa.data.map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");limparEntradasJulgadas();renderizarResumosAoVivo()}
+
+let LEITURA_AO_VIVO_CARREGANDO=false;
+let LEITURA_AO_VIVO_PENDENTE=false;
+let LEITURA_AO_VIVO_SEQ=0;
+let LEITURA_AO_VIVO_ULTIMA_APLICADA=0;
+async function carregarLeitura(forcar=false){
+ if(!painelAtivo)return;
+ if(LEITURA_AO_VIVO_CARREGANDO){LEITURA_AO_VIVO_PENDENTE=true;return}
+ LEITURA_AO_VIVO_CARREGANDO=true;
+ const seq=++LEITURA_AO_VIVO_SEQ;
+ try{
+  const{data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(50);
+  await carregarResumosAoVivo(forcar);
+  if(seq<LEITURA_AO_VIVO_ULTIMA_APLICADA)return;
+  LEITURA_AO_VIVO_ULTIMA_APLICADA=seq;
+  const estado=!error&&data?selecionarEstadoAoVivo(data):{ROXA:null,ROSA:null};
+  atualizarEntradaAoVivo("ROXA",estado.ROXA);
+  atualizarEntradaAoVivo("ROSA",estado.ROSA);
+  limparEntradasJulgadas();
+  renderizarEstadoAoVivo(estado);
+ }catch(e){console.error("Falha ao sincronizar entradas ao vivo:",e)}
+ finally{
+  LEITURA_AO_VIVO_CARREGANDO=false;
+  if(LEITURA_AO_VIVO_PENDENTE){LEITURA_AO_VIVO_PENDENTE=false;setTimeout(()=>carregarLeitura(true),0)}
+ }
+}
+
+let CANAL_ENTRADAS_P3=null;
+function iniciarCanalEntradasP3(){
+ if(CANAL_ENTRADAS_P3||!db?.channel)return;
+ try{
+  CANAL_ENTRADAS_P3=db.channel("mrg-p3-entradas-v4")
+   .on("postgres_changes",{event:"*",schema:"public",table:"leituras_ao_vivo"},()=>carregarLeitura(true))
+   .on("postgres_changes",{event:"*",schema:"public",table:"executor_rosa_resultados_app"},()=>carregarLeitura(true))
+   .on("postgres_changes",{event:"*",schema:"public",table:"surf_roxo_resultados_v2_app"},()=>carregarLeitura(true))
+   .on("postgres_changes",{event:"*",schema:"public",table:"surf_roxo_resultados_app"},()=>carregarLeitura(true))
+   .subscribe(status=>{if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("Realtime P3 indisponível; polling continua ativo.",status)});
+ }catch(e){console.warn("Realtime P3 não iniciado; polling continua ativo.",e)}
+}
+
+function ressincronizarP3AoRetomar(){
+ if(!painelAtivo)return;
+ ULTIMA_ATUALIZACAO_RESUMOS=0;
+ carregarLeitura(true);
+ carregarFeed50Velas();
+ p3CarregarAnalista();
+ p3AtualizarTopoFeed24h();
+}
 async function carregarProjecoes(){const alvo=document.getElementById("conteudoProjecoes");if(!alvo)return;const{data,error}=await db.from("projecoes_mercado").select("*").eq("ativo",true).order("id",{ascending:false}).limit(1);alvo.innerText=(error||!data||!data.length)?"Aguardando projeções...":(data[0].mensagem||"Aguardando projeções...")}
 function valorPrimeiro(obj,campos,padrao="-"){for(const campo of campos){const v=obj?.[campo];if(v!==undefined&&v!==null&&String(v).trim()!=="")return v}return padrao}
 function escaparHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
