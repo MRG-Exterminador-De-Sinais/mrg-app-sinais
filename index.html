@@ -1265,12 +1265,66 @@ function selecionarEstadoAoVivo(rows){
 
 const ENTRADAS_AO_VIVO={ROXA:null,ROSA:null};
 const ENTRADAS_ENCERRADAS={ROXA:new Set(),ROSA:new Set()};
+let VELAS_AO_VIVO_RECENTES=[];
+let ESTADO_AO_VIVO_ATUAL={ROXA:null,ROSA:null};
+
+function identidadeVelaAoVivo(vela){
+ const momento=valorPrimeiro(vela,["id","data_hora","timestamp","criado_em","hora","horario"],"");
+ const mult=valorPrimeiro(vela,["multiplicador_num","multiplicador","mult","valor","x"],"");
+ return `${String(momento||"").trim()}|${String(mult||"").trim()}`;
+}
+
+function velaBaseEntradaAoVivo(referenciaMs=Date.now()){
+ const tolerancia=Number(referenciaMs)+3000;
+ const candidata=VELAS_AO_VIVO_RECENTES.find(v=>Number.isFinite(v.ts)&&v.ts<=tolerancia);
+ return candidata?.chave||VELAS_AO_VIVO_RECENTES[0]?.chave||"";
+}
+
+function encerrarEntradaAoVivo(tipo){
+ const entrada=ENTRADAS_AO_VIVO[tipo];
+ if(!entrada)return false;
+ ENTRADAS_ENCERRADAS[tipo].add(entrada.chave);
+ if(ENTRADAS_ENCERRADAS[tipo].size>50){
+  const primeira=ENTRADAS_ENCERRADAS[tipo].values().next().value;
+  ENTRADAS_ENCERRADAS[tipo].delete(primeira);
+ }
+ ENTRADAS_AO_VIVO[tipo]=null;
+ return true;
+}
+
+function limparEntradasPorLimiteCasas(){
+ let mudou=false;
+ for(const tipo of["ROXA","ROSA"]){
+  const entrada=ENTRADAS_AO_VIVO[tipo];
+  if(!entrada)continue;
+  if(!entrada.velaBase){entrada.velaBase=velaBaseEntradaAoVivo();continue}
+  const indiceBase=VELAS_AO_VIVO_RECENTES.findIndex(v=>v.chave===entrada.velaBase);
+  const limite=tipo==="ROXA"?2:4;
+  // A lista está da vela mais nova para a mais antiga. O índice da vela-base
+  // corresponde ao número de casas que fecharam depois do gatilho.
+  if(indiceBase>=limite)mudou=encerrarEntradaAoVivo(tipo)||mudou;
+ }
+ if(mudou)renderizarEstadoAoVivo(ESTADO_AO_VIVO_ATUAL);
+ return mudou;
+}
+
+function dataRegistroComparavel(valor,referenciaMs=Date.now()){
+ const direta=dataValida(valor);
+ if(direta)return direta;
+ const m=String(valor||"").trim().match(/(?:^|\s)(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+ if(!m)return null;
+ const base=new Date(referenciaMs);
+ const d=new Date(base);
+ d.setHours(Number(m[1]),Number(m[2]),Number(m[3]||0),0);
+ if(d.getTime()>base.getTime()+5*60*1000)d.setDate(d.getDate()-1);
+ return d;
+}
 
 function dataRegistroAoVivo(row){
  // O relógio da entrada é o momento em que o sinal nasceu. "atualizado_em"
  // fica por último porque também muda quando o mesmo registro é encerrado.
  const bruto=valorPrimeiro(row,["data_hora_entrada","criado_em","data_hora","atualizado_em"],"");
- const d=dataValida(bruto);
+ const d=dataRegistroComparavel(bruto);
  return d?d.getTime():Date.now();
 }
 
@@ -1305,10 +1359,12 @@ function atualizarEntradaAoVivo(tipo,item){
  // se chegou OUTRO registro de entrada da mesma modalidade,
  // ele assume imediatamente a linha. Não depende de timestamp.
  if(!atual||atual.chave!==chave){
+  const tsEntrada=dataRegistroAoVivo(item.row||{});
   ENTRADAS_AO_VIVO[tipo]={
    linha:item.linha,
-   ts:dataRegistroAoVivo(item.row||{}),
-   chave
+   ts:tsEntrada,
+   chave,
+   velaBase:velaBaseEntradaAoVivo(tsEntrada)
   };
   return;
  }
@@ -1348,13 +1404,7 @@ function limparEntradasJulgadas(){
  for(const tipo of["ROXA","ROSA"]){
   const entrada=ENTRADAS_AO_VIVO[tipo];
   if(entrada&&resultadoPosteriorEntrada(tipo)){
-   ENTRADAS_ENCERRADAS[tipo].add(entrada.chave);
-   // Evita crescimento indefinido durante uma sessão longa.
-   if(ENTRADAS_ENCERRADAS[tipo].size>50){
-    const primeira=ENTRADAS_ENCERRADAS[tipo].values().next().value;
-    ENTRADAS_ENCERRADAS[tipo].delete(primeira);
-   }
-   ENTRADAS_AO_VIVO[tipo]=null;
+   encerrarEntradaAoVivo(tipo);
   }
  }
 }
@@ -1449,9 +1499,11 @@ async function carregarLeitura(forcar=false){
   if(seq<LEITURA_AO_VIVO_ULTIMA_APLICADA)return;
   LEITURA_AO_VIVO_ULTIMA_APLICADA=seq;
   const estado=!error&&data?selecionarEstadoAoVivo(data):{ROXA:null,ROSA:null};
+  ESTADO_AO_VIVO_ATUAL=estado;
   atualizarEntradaAoVivo("ROXA",estado.ROXA);
   atualizarEntradaAoVivo("ROSA",estado.ROSA);
   limparEntradasJulgadas();
+  limparEntradasPorLimiteCasas();
   renderizarEstadoAoVivo(estado);
  }catch(e){console.error("Falha ao sincronizar entradas ao vivo:",e)}
  finally{
@@ -1536,6 +1588,12 @@ async function carregarFeed50Velas(){
     let pacote=data.velas_json;if(typeof pacote==="string")pacote=JSON.parse(pacote);
     const velas=Array.isArray(pacote?.velas)?pacote.velas.slice(-50).reverse():[];
     if(!velas.length){alvo.innerHTML="<div class='vazio' style='grid-column:1/-1'>Aguardando últimas 50 velas...</div>";return}
+    VELAS_AO_VIVO_RECENTES=velas.map(v=>{
+      const bruto=valorPrimeiro(v,["data_hora","timestamp","criado_em","hora","horario"],"");
+      const d=dataRegistroComparavel(bruto);
+      return{chave:identidadeVelaAoVivo(v),ts:d?d.getTime():null,vela:v};
+    }).filter(v=>v.chave!=="|");
+    limparEntradasPorLimiteCasas();
     alvo.innerHTML=velas.map(v=>{const mult=String(v.multiplicador||v.mult||v.multiplicador_num||"-");const multTxt=/x$/i.test(mult)?mult:`${mult}x`;const hora=String(v.hora||v.horario||"--:--:--").slice(-8);return `<div class="feed50-vela ${classeCorFeed50(v)}"><div class="feed50-mult">${escaparHtml(multTxt)}</div><div class="feed50-hora">${escaparHtml(hora)}</div></div>`}).join("");
   }catch(e){console.error("Falha ao carregar últimas 50 velas:",e);alvo.innerHTML="<div class='vazio' style='grid-column:1/-1'>Erro ao carregar últimas velas.</div>"}
 }
