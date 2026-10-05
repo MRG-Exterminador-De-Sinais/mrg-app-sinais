@@ -1102,7 +1102,7 @@ function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";p3AtualizarCab
 function mostrarRecuperar(){painelAtivo=false;telaAtual="recuperar";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("recuperarBox").classList.remove("escondido")}
 function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("novaSenhaBox").classList.remove("escondido")}
 function mostrarAguardando(email){painelAtivo=false;telaAtual="aguardando";esconderTudo();document.getElementById("aguardandoBox").classList.remove("escondido");document.getElementById("emailAguardando").innerText=email||""}
-function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;iniciarCanalEntradasP3();carregarControleEnvio();carregar();carregarLeitura(true);carregarProjecoes();carregarRosas();p3CarregarAnalista();p3CarregarFeed24h(true);consultarEstadoNotificacoes();carregarAvisos()}
+function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;iniciarCanalEntradasP3();inicializarPushModalidades();carregar();carregarLeitura(true);carregarFeed50Velas();carregarProjecoes();carregarRosas();p3CarregarAnalista();p3CarregarFeed24h(true);carregarAvisos()}
 async function criarConta(){
   const nome=document.getElementById("cadNome").value.trim(),email=document.getElementById("cadEmail").value.trim(),telefone=document.getElementById("cadTelefone").value.trim(),senha=document.getElementById("cadSenha").value.trim();
   if(!nome||!email||!telefone||!senha){document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";return}
@@ -1267,17 +1267,14 @@ const ENTRADAS_AO_VIVO={ROXA:null,ROSA:null};
 const ENTRADAS_ENCERRADAS={ROXA:new Set(),ROSA:new Set()};
 let VELAS_AO_VIVO_RECENTES=[];
 let ESTADO_AO_VIVO_ATUAL={ROXA:null,ROSA:null};
+let ULTIMA_VELA_AO_VIVO_CHAVE="";
+let ULTIMO_EVENTO_TEMPO_REAL=Date.now();
+let CONFIRMACAO_JANELA_TIMER=null;
 
 function identidadeVelaAoVivo(vela){
  const momento=valorPrimeiro(vela,["id","data_hora","timestamp","criado_em","hora","horario"],"");
  const mult=valorPrimeiro(vela,["multiplicador_num","multiplicador","mult","valor","x"],"");
  return `${String(momento||"").trim()}|${String(mult||"").trim()}`;
-}
-
-function velaBaseEntradaAoVivo(referenciaMs=Date.now()){
- const tolerancia=Number(referenciaMs)+3000;
- const candidata=VELAS_AO_VIVO_RECENTES.find(v=>Number.isFinite(v.ts)&&v.ts<=tolerancia);
- return candidata?.chave||VELAS_AO_VIVO_RECENTES[0]?.chave||"";
 }
 
 function encerrarEntradaAoVivo(tipo){
@@ -1292,19 +1289,34 @@ function encerrarEntradaAoVivo(tipo){
  return true;
 }
 
+function agendarConfirmacaoEncerramento(){
+ if(CONFIRMACAO_JANELA_TIMER)clearTimeout(CONFIRMACAO_JANELA_TIMER);
+ CONFIRMACAO_JANELA_TIMER=setTimeout(()=>{
+  CONFIRMACAO_JANELA_TIMER=null;
+  carregarLeitura(true);
+ },500);
+}
+
 function limparEntradasPorLimiteCasas(){
  let mudou=false;
  for(const tipo of["ROXA","ROSA"]){
   const entrada=ENTRADAS_AO_VIVO[tipo];
   if(!entrada)continue;
-  if(!entrada.velaBase){entrada.velaBase=velaBaseEntradaAoVivo();continue}
-  const indiceBase=VELAS_AO_VIVO_RECENTES.findIndex(v=>v.chave===entrada.velaBase);
   const limite=tipo==="ROXA"?2:4;
-  // A lista está da vela mais nova para a mais antiga. O índice da vela-base
-  // corresponde ao número de casas que fecharam depois do gatilho.
-  if(indiceBase>=limite)mudou=encerrarEntradaAoVivo(tipo)||mudou;
+  const porHorario=new Set(VELAS_AO_VIVO_RECENTES
+   .filter(v=>Number.isFinite(v.ts)&&v.ts>entrada.ts+500)
+   .map(v=>v.chave)).size;
+  let casas=porHorario;
+  // A vela-base protege contra atraso entre a geração do sinal e a gravação
+  // do horário no banco. Vale sempre o maior contador confirmado.
+  if(entrada.velaBase){
+   const indiceBase=VELAS_AO_VIVO_RECENTES.findIndex(v=>v.chave===entrada.velaBase);
+   if(indiceBase>0)casas=Math.max(casas,indiceBase);
+  }
+  entrada.casasFechadas=casas;
+  if(casas>=limite)mudou=encerrarEntradaAoVivo(tipo)||mudou;
  }
- if(mudou)renderizarEstadoAoVivo(ESTADO_AO_VIVO_ATUAL);
+ if(mudou){renderizarEstadoAoVivo(ESTADO_AO_VIVO_ATUAL);agendarConfirmacaoEncerramento()}
  return mudou;
 }
 
@@ -1364,7 +1376,8 @@ function atualizarEntradaAoVivo(tipo,item){
    linha:item.linha,
    ts:tsEntrada,
    chave,
-   velaBase:velaBaseEntradaAoVivo(tsEntrada)
+   velaBase:ULTIMA_VELA_AO_VIVO_CHAVE,
+   casasFechadas:0
   };
   return;
  }
@@ -1417,18 +1430,23 @@ function renderizarEstadoAoVivo(estado){
 }
 const MRG_PUSH_PREF_KEY="mrg_push_modalidades_v1";
 let MRG_PUSH_PREFS={ROXA:true,ROSA:true};
+let MRG_PUSH_ASSINATURA_ATIVA=false;
+let MRG_PUSH_VERIFICANDO=false;
 function carregarPreferenciasPushModalidade(){
  try{const p=JSON.parse(localStorage.getItem(MRG_PUSH_PREF_KEY)||"{}");MRG_PUSH_PREFS.ROXA=p.ROXA!==false;MRG_PUSH_PREFS.ROSA=p.ROSA!==false}catch(e){}
- atualizarBotoesPushModalidade();sincronizarPreferenciasServiceWorker();
+ atualizarBotoesPushModalidade();
 }
 function atualizarBotoesPushModalidade(){
  const r=document.getElementById("btnPushRoxa"),p=document.getElementById("btnPushRosa");
- if(r)r.innerHTML=MRG_PUSH_PREFS.ROXA?"🔔 DESATIVAR":"🔕 ATIVAR";
- if(p)p.innerHTML=MRG_PUSH_PREFS.ROSA?"🔔 DESATIVAR":"🔕 ATIVAR";
+ const permissao=typeof Notification!=="undefined"&&Notification.permission==="granted";
+ const roxaAtiva=MRG_PUSH_PREFS.ROXA&&MRG_PUSH_ASSINATURA_ATIVA&&permissao;
+ const rosaAtiva=MRG_PUSH_PREFS.ROSA&&MRG_PUSH_ASSINATURA_ATIVA&&permissao;
+ if(r){r.innerHTML=roxaAtiva?"🔔 DESATIVAR":"🔕 ATIVAR";r.title=roxaAtiva?"Desativar avisos do Surf Roxo":"Ativar avisos do Surf Roxo"}
+ if(p){p.innerHTML=rosaAtiva?"🔔 DESATIVAR":"🔕 ATIVAR";p.title=rosaAtiva?"Desativar avisos do Executor Rosa":"Ativar avisos do Executor Rosa"}
 }
 async function sincronizarPreferenciasServiceWorker(){
  try{
-  const reg=await navigator.serviceWorker?.ready;
+  const reg=await comTempoMaximo(navigator.serviceWorker?.ready,7000,"Service Worker");
   const alvo=navigator.serviceWorker?.controller||reg?.active;
   if(alvo)alvo.postMessage({tipo:"MRG_PUSH_PREFS",roxa:MRG_PUSH_PREFS.ROXA,rosa:MRG_PUSH_PREFS.ROSA});
  }catch(e){}
@@ -1439,31 +1457,72 @@ async function garantirAssinaturaPushMRG(){
  let permissao=Notification.permission;
  if(permissao!=="granted")permissao=await Notification.requestPermission();
  if(permissao!=="granted")throw new Error("Permissão de notificações não autorizada.");
- const registro=await registrarServiceWorker();
+ const registro=await comTempoMaximo(registrarServiceWorker(),7000,"registro Push");
  if(!registro)throw new Error("Service Worker não registrado.");
- await navigator.serviceWorker.ready;
- let assinatura=await registro.pushManager.getSubscription();
+ await comTempoMaximo(navigator.serviceWorker.ready,7000,"ativação Push");
+ let assinatura=await comTempoMaximo(registro.pushManager.getSubscription(),7000,"assinatura Push");
  if(!assinatura){
-  assinatura=await registro.pushManager.subscribe({
+  assinatura=await comTempoMaximo(registro.pushManager.subscribe({
    userVisibleOnly:true,
    applicationServerKey:base64UrlParaUint8Array(VAPID_PUBLIC_KEY)
-  });
+  }),10000,"autorização Push");
  }
- await salvarAssinaturaPush(assinatura,true);
+ await comTempoMaximo(salvarAssinaturaPush(assinatura,true),10000,"gravação Push");
+ MRG_PUSH_ASSINATURA_ATIVA=true;
  return assinatura;
+}
+async function verificarAssinaturaPushModalidades(){
+ if(MRG_PUSH_VERIFICANDO)return MRG_PUSH_ASSINATURA_ATIVA;
+ MRG_PUSH_VERIFICANDO=true;
+ try{
+  if(!pushDisponivel()||Notification.permission!=="granted"){
+   MRG_PUSH_ASSINATURA_ATIVA=false;
+  }else{
+   await comTempoMaximo(registrarServiceWorker(),7000,"registro Push");
+   MRG_PUSH_ASSINATURA_ATIVA=Boolean(await comTempoMaximo(obterAssinaturaPush(),7000,"assinatura Push"));
+  }
+ }catch(e){MRG_PUSH_ASSINATURA_ATIVA=false;console.error("Falha ao verificar Push por modalidade:",e)}
+ finally{MRG_PUSH_VERIFICANDO=false;atualizarBotoesPushModalidade()}
+ return MRG_PUSH_ASSINATURA_ATIVA;
+}
+async function inicializarPushModalidades(){
+ carregarPreferenciasPushModalidade();
+ try{
+  if((MRG_PUSH_PREFS.ROXA||MRG_PUSH_PREFS.ROSA)&&pushDisponivel()&&Notification.permission==="granted"){
+   await garantirAssinaturaPushMRG();
+  }else{
+   await verificarAssinaturaPushModalidades();
+  }
+  await sincronizarPreferenciasServiceWorker();
+ }catch(e){console.error("Falha ao restaurar avisos Roxo/Rosa:",e);MRG_PUSH_ASSINATURA_ATIVA=false}
+ atualizarBotoesPushModalidade();
 }
 async function alternarPushModalidade(tipo){
  tipo=String(tipo||"").toUpperCase();if(!["ROXA","ROSA"].includes(tipo))return;
- const novoEstado=!MRG_PUSH_PREFS[tipo];
+ const permissao=typeof Notification!=="undefined"&&Notification.permission==="granted";
+ const estaRealmenteAtivo=MRG_PUSH_PREFS[tipo]&&MRG_PUSH_ASSINATURA_ATIVA&&permissao;
+ const novoEstado=!estaRealmenteAtivo;
  try{
-  if(novoEstado)await garantirAssinaturaPushMRG();
+  if(novoEstado){
+   await garantirAssinaturaPushMRG();
+  }
   MRG_PUSH_PREFS[tipo]=novoEstado;
   localStorage.setItem(MRG_PUSH_PREF_KEY,JSON.stringify(MRG_PUSH_PREFS));
-  atualizarBotoesPushModalidade();
   await sincronizarPreferenciasServiceWorker();
+  if(!MRG_PUSH_PREFS.ROXA&&!MRG_PUSH_PREFS.ROSA){
+   const assinatura=await comTempoMaximo(obterAssinaturaPush(),7000,"assinatura Push");
+   if(assinatura){
+    await comTempoMaximo(marcarAssinaturaInativa(assinatura),10000,"desativação Push");
+    await comTempoMaximo(assinatura.unsubscribe(),7000,"cancelamento Push");
+   }
+   MRG_PUSH_ASSINATURA_ATIVA=false;
+  }else{
+   await verificarAssinaturaPushModalidades();
+  }
+  atualizarBotoesPushModalidade();
  }catch(e){
   console.error("Falha ao alterar Push "+tipo,e);
-  atualizarBotoesPushModalidade();
+  await verificarAssinaturaPushModalidades();
   alert(e?.message||"Não foi possível ativar as notificações.");
  }
 }
@@ -1471,6 +1530,13 @@ async function alternarPushModalidade(tipo){
 let ULTIMA_ATUALIZACAO_RESUMOS=0;
 let RESULTADOS_RESUMO={ROXA:[],ROSA:[]};
 let RESULTADOS_RESUMO_ROWS={ROXA:[],ROSA:[]};
+let RESUMOS_AO_VIVO_SEQ=0;
+function comTempoMaximo(promessa,ms,nome="consulta"){
+ return new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>reject(new Error(`${nome} excedeu ${ms}ms`)),ms);
+  Promise.resolve(promessa).then(v=>{clearTimeout(timer);resolve(v)},e=>{clearTimeout(timer);reject(e)});
+ });
+}
 function tendenciaResultados(resultados){if(resultados.length<4)return"↔";const meio=Math.ceil(resultados.length/2),novos=resultados.slice(0,meio),antigos=resultados.slice(meio),taxa=lista=>lista.filter(x=>x==="WIN").length/Math.max(1,lista.length);return taxa(novos)>=taxa(antigos)?"↑":"↓"}
 function htmlResumoModalidade(tipo,resultados){
  const rosa=tipo==="ROSA",nome=rosa?"ROSA":"ROXA";
@@ -1482,21 +1548,42 @@ function htmlResumoModalidade(tipo,resultados){
  return`<div class="leitura-resumo ${rosa?"rosa":"roxa"}" onclick="abrirHistorico('${tipo}')"><div class="leitura-resumo-nome">${iconeNome} ${nome}</div><div class="leitura-bolinhas mrg-marcadores">${marcadores}<span class="leitura-percentual">${percentual}% ${tendenciaResultados(ultimos)}</span></div></div>`
 }
 function renderizarResumosAoVivo(){document.getElementById("leitura").innerHTML=`<div class="leitura-resumos">${htmlResumoModalidade("ROXA",RESULTADOS_RESUMO.ROXA)}${htmlResumoModalidade("ROSA",RESULTADOS_RESUMO.ROSA)}</div>`}
-async function carregarResumosAoVivo(forcar=false){const agora=Date.now();if(!forcar&&agora-ULTIMA_ATUALIZACAO_RESUMOS<5000)return;ULTIMA_ATUALIZACAO_RESUMOS=agora;const[roxos,rosa]=await Promise.all([buscarResultadosRoxos(20),db.from("executor_rosa_resultados_app").select("*").order("data_hora_resultado",{ascending:false}).limit(10)]);RESULTADOS_RESUMO_ROWS.ROXA=roxos.slice(0,20);RESULTADOS_RESUMO_ROWS.ROSA=!rosa.error&&rosa.data?rosa.data:[];RESULTADOS_RESUMO.ROXA=roxos.slice(0,10).map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");if(!rosa.error&&rosa.data)RESULTADOS_RESUMO.ROSA=rosa.data.map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");limparEntradasJulgadas();renderizarResumosAoVivo()}
+async function carregarResumosAoVivo(forcar=false){
+ const agora=Date.now();if(!forcar&&agora-ULTIMA_ATUALIZACAO_RESUMOS<5000)return;
+ ULTIMA_ATUALIZACAO_RESUMOS=agora;
+ const token=++RESUMOS_AO_VIVO_SEQ;
+ const consultas=Promise.all([buscarResultadosRoxos(20),db.from("executor_rosa_resultados_app").select("*").order("data_hora_resultado",{ascending:false}).limit(10)]);
+ const[roxos,rosa]=await comTempoMaximo(consultas,7000,"resultados ao vivo");
+ if(token!==RESUMOS_AO_VIVO_SEQ)return;
+ RESULTADOS_RESUMO_ROWS.ROXA=roxos.slice(0,20);RESULTADOS_RESUMO_ROWS.ROSA=!rosa.error&&rosa.data?rosa.data:[];
+ RESULTADOS_RESUMO.ROXA=roxos.slice(0,10).map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");
+ if(!rosa.error&&rosa.data)RESULTADOS_RESUMO.ROSA=rosa.data.map(normalizarResultadoAoVivo).filter(r=>r==="WIN"||r==="LOSS");
+ limparEntradasJulgadas();renderizarResumosAoVivo();
+}
 
 let LEITURA_AO_VIVO_CARREGANDO=false;
 let LEITURA_AO_VIVO_PENDENTE=false;
 let LEITURA_AO_VIVO_SEQ=0;
 let LEITURA_AO_VIVO_ULTIMA_APLICADA=0;
+let LEITURA_AO_VIVO_INICIO=0;
+let LEITURA_AO_VIVO_TOKEN=0;
 async function carregarLeitura(forcar=false){
  if(!painelAtivo)return;
- if(LEITURA_AO_VIVO_CARREGANDO){LEITURA_AO_VIVO_PENDENTE=true;return}
+ if(LEITURA_AO_VIVO_CARREGANDO&&Date.now()-LEITURA_AO_VIVO_INICIO<8000){LEITURA_AO_VIVO_PENDENTE=true;return}
+ if(LEITURA_AO_VIVO_CARREGANDO){
+  // A consulta anterior perdeu validade. A resposta tardia será ignorada.
+  LEITURA_AO_VIVO_TOKEN++;
+  LEITURA_AO_VIVO_CARREGANDO=false;
+ }
  LEITURA_AO_VIVO_CARREGANDO=true;
+ LEITURA_AO_VIVO_INICIO=Date.now();
+ const token=++LEITURA_AO_VIVO_TOKEN;
  const seq=++LEITURA_AO_VIVO_SEQ;
  try{
-  const{data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(50);
-  await carregarResumosAoVivo(forcar);
-  if(seq<LEITURA_AO_VIVO_ULTIMA_APLICADA)return;
+  const consulta=Promise.resolve(db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(50));
+  const{data,error}=await comTempoMaximo(consulta,7000,"entradas ao vivo");
+  await comTempoMaximo(carregarResumosAoVivo(forcar),7500,"resumos ao vivo");
+  if(token!==LEITURA_AO_VIVO_TOKEN||seq<LEITURA_AO_VIVO_ULTIMA_APLICADA)return;
   LEITURA_AO_VIVO_ULTIMA_APLICADA=seq;
   const estado=!error&&data?selecionarEstadoAoVivo(data):{ROXA:null,ROSA:null};
   ESTADO_AO_VIVO_ATUAL=estado;
@@ -1507,8 +1594,11 @@ async function carregarLeitura(forcar=false){
   renderizarEstadoAoVivo(estado);
  }catch(e){console.error("Falha ao sincronizar entradas ao vivo:",e)}
  finally{
-  LEITURA_AO_VIVO_CARREGANDO=false;
-  if(LEITURA_AO_VIVO_PENDENTE){LEITURA_AO_VIVO_PENDENTE=false;setTimeout(()=>carregarLeitura(true),0)}
+  if(token===LEITURA_AO_VIVO_TOKEN){
+   LEITURA_AO_VIVO_CARREGANDO=false;
+   LEITURA_AO_VIVO_INICIO=0;
+   if(LEITURA_AO_VIVO_PENDENTE){LEITURA_AO_VIVO_PENDENTE=false;setTimeout(()=>carregarLeitura(true),0)}
+  }
  }
 }
 
@@ -1516,13 +1606,37 @@ let CANAL_ENTRADAS_P3=null;
 function iniciarCanalEntradasP3(){
  if(CANAL_ENTRADAS_P3||!db?.channel)return;
  try{
-  CANAL_ENTRADAS_P3=db.channel("mrg-p3-entradas-v4")
-   .on("postgres_changes",{event:"*",schema:"public",table:"leituras_ao_vivo"},()=>carregarLeitura(true))
-   .on("postgres_changes",{event:"*",schema:"public",table:"executor_rosa_resultados_app"},()=>carregarLeitura(true))
-   .on("postgres_changes",{event:"*",schema:"public",table:"surf_roxo_resultados_v2_app"},()=>carregarLeitura(true))
-   .on("postgres_changes",{event:"*",schema:"public",table:"surf_roxo_resultados_app"},()=>carregarLeitura(true))
-   .subscribe(status=>{if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("Realtime P3 indisponível; polling continua ativo.",status)});
- }catch(e){console.warn("Realtime P3 não iniciado; polling continua ativo.",e)}
+  const eventoLeitura=()=>{ULTIMO_EVENTO_TEMPO_REAL=Date.now();carregarLeitura(true)};
+  CANAL_ENTRADAS_P3=db.channel("mrg-p3-entradas-v5")
+   .on("postgres_changes",{event:"*",schema:"public",table:"leituras_ao_vivo"},eventoLeitura)
+   .on("postgres_changes",{event:"*",schema:"public",table:"executor_rosa_resultados_app"},eventoLeitura)
+   .on("postgres_changes",{event:"*",schema:"public",table:"surf_roxo_resultados_v2_app"},eventoLeitura)
+   .on("postgres_changes",{event:"*",schema:"public",table:"surf_roxo_resultados_app"},eventoLeitura)
+   .on("postgres_changes",{event:"*",schema:"public",table:"sinais"},()=>{
+    ULTIMO_EVENTO_TEMPO_REAL=Date.now();carregar();
+   })
+   .on("postgres_changes",{event:"*",schema:"public",table:"controle_envio"},()=>{
+    ULTIMO_EVENTO_TEMPO_REAL=Date.now();carregar();
+   })
+   .on("postgres_changes",{event:"*",schema:"public",table:"rosas_por_hora_app"},()=>{
+    ULTIMO_EVENTO_TEMPO_REAL=Date.now();carregarRosas();
+   })
+   .on("postgres_changes",{event:"*",schema:"public",table:"mrg_analista_snapshot_app"},()=>{
+    ULTIMO_EVENTO_TEMPO_REAL=Date.now();p3CarregarAnalista();
+   })
+   .on("postgres_changes",{event:"*",schema:"public",table:"mrg_analista_velas_24h"},()=>{
+    ULTIMO_EVENTO_TEMPO_REAL=Date.now();p3AtualizarTopoFeed24h();
+   })
+   .on("postgres_changes",{event:"*",schema:"public",table:"ultimas_velas_app"},payload=>{
+    ULTIMO_EVENTO_TEMPO_REAL=Date.now();
+    const nova=payload?.new;
+    if(nova?.velas_json)processarPacoteVelasAoVivo(nova,true);else carregarFeed50Velas();
+   })
+   .subscribe(status=>{
+    if(status==="SUBSCRIBED")ULTIMO_EVENTO_TEMPO_REAL=Date.now();
+    if(status==="CHANNEL_ERROR"||status==="TIMED_OUT")console.warn("Realtime P3 temporariamente indisponível.",status);
+   });
+ }catch(e){console.warn("Realtime P3 não iniciado; a verificação de segurança permanece ativa.",e)}
 }
 
 function ressincronizarP3AoRetomar(){
@@ -1530,8 +1644,25 @@ function ressincronizarP3AoRetomar(){
  ULTIMA_ATUALIZACAO_RESUMOS=0;
  carregarLeitura(true);
  carregarFeed50Velas();
+ verificarAssinaturaPushModalidades();
  p3CarregarAnalista();
  p3AtualizarTopoFeed24h();
+}
+
+async function verificarSaudeTempoReal(){
+ if(!painelAtivo||document.visibilityState!=="visible")return;
+ if(Date.now()-ULTIMO_EVENTO_TEMPO_REAL<14000)return;
+ // Uma única leitura leve quando o canal fica silencioso. Só consulta as
+ // demais áreas se realmente apareceu uma vela nova.
+ const houveNova=await carregarFeed50Velas();
+ ULTIMO_EVENTO_TEMPO_REAL=Date.now();
+ if(houveNova){
+  carregarLeitura(true);
+  carregar();
+  carregarRosas();
+  p3CarregarAnalista();
+  p3AtualizarTopoFeed24h();
+ }
 }
 async function carregarProjecoes(){const alvo=document.getElementById("conteudoProjecoes");if(!alvo)return;const{data,error}=await db.from("projecoes_mercado").select("*").eq("ativo",true).order("id",{ascending:false}).limit(1);alvo.innerText=(error||!data||!data.length)?"Aguardando projeções...":(data[0].mensagem||"Aguardando projeções...")}
 function valorPrimeiro(obj,campos,padrao="-"){for(const campo of campos){const v=obj?.[campo];if(v!==undefined&&v!==null&&String(v).trim()!=="")return v}return padrao}
@@ -1579,23 +1710,40 @@ function classeCorFeed50(vela){
   const n=Number(String((vela&&(vela.multiplicador_num??vela.multiplicador))||0).replace(/x/ig,"").replace(",","."));
   return n>=10?"rosa":n>=2?"roxo":"azul";
 }
+function processarPacoteVelasAoVivo(row,renderizar=true){
+  const alvo=document.getElementById("feed50Velas");
+  let pacote=row?.velas_json??row;
+  if(typeof pacote==="string")pacote=JSON.parse(pacote);
+  const velas=Array.isArray(pacote?.velas)?pacote.velas.slice(-50).reverse():[];
+  if(!velas.length){
+    if(renderizar&&alvo)alvo.innerHTML="<div class='vazio' style='grid-column:1/-1'>Aguardando últimas 50 velas...</div>";
+    return false;
+  }
+  const unicas=new Map();
+  for(const v of velas){
+    const chave=identidadeVelaAoVivo(v);if(chave==="|"||unicas.has(chave))continue;
+    const bruto=valorPrimeiro(v,["data_hora","timestamp","criado_em","hora","horario"],"");
+    const d=dataRegistroComparavel(bruto);
+    unicas.set(chave,{chave,ts:d?d.getTime():null,vela:v});
+  }
+  VELAS_AO_VIVO_RECENTES=[...unicas.values()];
+  const chaveNova=VELAS_AO_VIVO_RECENTES[0]?.chave||"";
+  const houveNovaVela=Boolean(ULTIMA_VELA_AO_VIVO_CHAVE&&chaveNova&&chaveNova!==ULTIMA_VELA_AO_VIVO_CHAVE);
+  ULTIMA_VELA_AO_VIVO_CHAVE=chaveNova||ULTIMA_VELA_AO_VIVO_CHAVE;
+  if(houveNovaVela)limparEntradasPorLimiteCasas();
+  if(renderizar&&alvo)alvo.innerHTML=velas.map(v=>{const mult=String(v.multiplicador||v.mult||v.multiplicador_num||"-");const multTxt=/x$/i.test(mult)?mult:`${mult}x`;const hora=String(v.hora||v.horario||"--:--:--").slice(-8);return `<div class="feed50-vela ${classeCorFeed50(v)}"><div class="feed50-mult">${escaparHtml(multTxt)}</div><div class="feed50-hora">${escaparHtml(hora)}</div></div>`}).join("");
+  return houveNovaVela;
+}
+
 async function carregarFeed50Velas(){
-  if(!painelAtivo)return;
-  const alvo=document.getElementById("feed50Velas");if(!alvo)return;
+  if(!painelAtivo)return false;
+  const alvo=document.getElementById("feed50Velas");if(!alvo)return false;
   try{
-    const{data,error}=await db.from("ultimas_velas_app").select("velas_json,status,total,atualizado_em").eq("id",1).single();
-    if(error||!data||!data.velas_json){alvo.innerHTML="<div class='vazio' style='grid-column:1/-1'>Aguardando últimas 50 velas...</div>";return}
-    let pacote=data.velas_json;if(typeof pacote==="string")pacote=JSON.parse(pacote);
-    const velas=Array.isArray(pacote?.velas)?pacote.velas.slice(-50).reverse():[];
-    if(!velas.length){alvo.innerHTML="<div class='vazio' style='grid-column:1/-1'>Aguardando últimas 50 velas...</div>";return}
-    VELAS_AO_VIVO_RECENTES=velas.map(v=>{
-      const bruto=valorPrimeiro(v,["data_hora","timestamp","criado_em","hora","horario"],"");
-      const d=dataRegistroComparavel(bruto);
-      return{chave:identidadeVelaAoVivo(v),ts:d?d.getTime():null,vela:v};
-    }).filter(v=>v.chave!=="|");
-    limparEntradasPorLimiteCasas();
-    alvo.innerHTML=velas.map(v=>{const mult=String(v.multiplicador||v.mult||v.multiplicador_num||"-");const multTxt=/x$/i.test(mult)?mult:`${mult}x`;const hora=String(v.hora||v.horario||"--:--:--").slice(-8);return `<div class="feed50-vela ${classeCorFeed50(v)}"><div class="feed50-mult">${escaparHtml(multTxt)}</div><div class="feed50-hora">${escaparHtml(hora)}</div></div>`}).join("");
-  }catch(e){console.error("Falha ao carregar últimas 50 velas:",e);alvo.innerHTML="<div class='vazio' style='grid-column:1/-1'>Erro ao carregar últimas velas.</div>"}
+    const consulta=Promise.resolve(db.from("ultimas_velas_app").select("velas_json,status,total,atualizado_em").eq("id",1).single());
+    const{data,error}=await comTempoMaximo(consulta,7000,"últimas velas");
+    if(error||!data||!data.velas_json){alvo.innerHTML="<div class='vazio' style='grid-column:1/-1'>Aguardando últimas 50 velas...</div>";return false}
+    return processarPacoteVelasAoVivo(data,true);
+  }catch(e){console.error("Falha ao carregar últimas 50 velas:",e);return false}
 }
 
 async function carregar(){if(!painelAtivo)return;await carregarControleEnvio();
@@ -1618,7 +1766,11 @@ if(FINANCEIRO.bloquearSinais){
 const{data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Serviço temporariamente indisponível</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Serviço temporariamente indisponível</div>";return}let ativos=(data||[]).filter(ehAtivo),historico=(data||[]).filter(item=>!ehAtivo(item));ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo)});ativos=ativos.slice(0,3);historico=historico.slice(0,20);atualizarResumoFechados(historico);let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";const aviso=avisoOperacionalHTML();document.getElementById("ativos").innerHTML=ativos.length?`${aviso}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:(aviso?aviso:"<div class='vazio'>Nenhum sinal ativo no momento</div>");document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`<div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>"}
 registrarServiceWorker();
 db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY")mostrarNovaSenha()});if(window.location.hash.includes("type=recovery"))mostrarNovaSenha();else verificarAcesso(true);
-setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},10000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarFeed50Velas,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);setInterval(carregarAvisos,30000);setInterval(verificarFinanceiroPeriodico,FINANCEIRO_INTERVALO_MS);
+setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},10000);
+setInterval(verificarSaudeTempoReal,15000);
+setInterval(carregarProjecoes,60000);
+setInterval(carregarAvisos,30000);
+setInterval(verificarFinanceiroPeriodico,FINANCEIRO_INTERVALO_MS);
 
 
 /* ===== P3 V2 · ANALISTA SOMENTE VISUAL (SEM PUSH) ===== */
@@ -1646,17 +1798,18 @@ function p3AplicarCorAnalista(tipo){
 }
 let P3_ANALISTA_CARREGANDO=false;
 async function p3CarregarAnalista(){
-  if(P3_ANALISTA_CARREGANDO)return;
+  if(!painelAtivo||P3_ANALISTA_CARREGANDO)return;
   P3_ANALISTA_CARREGANDO=true;
   try{
     /* Confirma a sessão antes da leitura. Isso evita a abertura externa
        ficar em AGUARDANDO quando a tela abre durante a restauração da sessão. */
-    const{data:sessao}=await db.auth.getSession();
+    const{data:sessao}=await comTempoMaximo(db.auth.getSession(),7000,"sessão do analista");
     if(!sessao?.session?.user)return;
-    const{data,error}=await db.from("mrg_analista_snapshot_app")
+    const consulta=Promise.resolve(db.from("mrg_analista_snapshot_app")
       .select("snapshot_json,atualizado_em")
       .eq("id",1)
-      .maybeSingle();
+      .maybeSingle());
+    const{data,error}=await comTempoMaximo(consulta,7000,"snapshot do analista");
     if(error){console.error("P3 snapshot Analista:",error);return}
     if(!data?.snapshot_json)return;
     const snap=typeof data.snapshot_json==="string"?JSON.parse(data.snapshot_json):data.snapshot_json||{};
@@ -1736,7 +1889,7 @@ async function p3CarregarFeed24h(reset=true,silencioso=false){
   if(reset&&!silencioso&&P3_FEED24.length===0&&alvo)alvo.innerHTML='<div class="vazio" style="grid-column:1/-1">Carregando histórico...</div>';
   try{
     const offset=reset?0:P3_FEED24_OFFSET;
-    const{data,error}=await p3ConsultaFeed24(offset);
+    const{data,error}=await comTempoMaximo(Promise.resolve(p3ConsultaFeed24(offset)),7000,"histórico de velas");
     if(error)throw error;
     const lote=Array.isArray(data)?data:[];
     if(reset){P3_FEED24=lote;P3_FEED24_OFFSET=lote.length}else{P3_FEED24=P3_FEED24.concat(lote);P3_FEED24_OFFSET=P3_FEED24.length}
@@ -1763,7 +1916,6 @@ async function p3CarregarMais24h(){
   await p3CarregarFeed24h(false);
 }
 async function p3TrocarFiltro24h(){P3_FEED24=[];P3_FEED24_OFFSET=0;P3_FEED24_FIM=false;await p3CarregarFeed24h(true)}
-setInterval(p3CarregarAnalista,1000);
 db.auth.onAuthStateChange((evento,sessao)=>{
   if(sessao?.user)setTimeout(()=>p3CarregarAnalista(),120);
 });
@@ -1782,7 +1934,6 @@ async function p3AtualizarTopoFeed24h(){
   if(!painelAtivo||P3_FEED24_CARREGANDO||P3_FEED24_OFFSET>P3_PAGINA24)return;
   await p3CarregarFeed24h(true,true);
 }
-setInterval(p3AtualizarTopoFeed24h,2000);
 
 function atualizarRelogioCabecalho(){
   const agora=new Date();
