@@ -434,13 +434,47 @@ body{
 .leitura-resumo-nome{display:flex;align-items:center;gap:5px}
 .mrg-marcadores .leitura-percentual{margin-left:4px}
 
+/* ===== P3 · MINUTO BOM E MARCA 1WIN BET AVIATOR ===== */
+.header-plataforma-viva{
+  position:absolute;z-index:4;left:36%;top:67%;width:35%;height:15%;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(90deg,rgba(5,14,17,.96),#061015 14%,#061015 86%,rgba(5,14,17,.96));
+  color:#fff;font-size:clamp(9px,2vw,15px);font-weight:900;letter-spacing:.7px;
+  pointer-events:none;
+}
+.mobile-status{grid-template-columns:minmax(0,1fr) 72px 72px}
+.minuto-bom-mini{
+  width:72px;min-width:0;min-height:56px;margin:0;padding:5px 3px;
+  border:1px solid #ff3fae!important;border-radius:12px;
+  background:rgba(8,8,8,.92);color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  cursor:pointer;transition:.15s;box-shadow:none!important;
+}
+.minuto-bom-mini:active{transform:scale(.985);filter:brightness(1.16)}
+.minuto-bom-mini span{font-size:7px;line-height:1.1;color:#ff8bd0;font-weight:900;letter-spacing:.35px;white-space:nowrap}
+.minuto-bom-mini strong{font-size:15px;line-height:1.05;color:#ff50be;font-weight:950;white-space:nowrap}
+.ranking-minutos{display:grid;gap:8px}
+.ranking-minuto{
+  display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:8px;
+  padding:11px 12px;border:1px solid #61304f;border-radius:11px;background:#080808;
+}
+.ranking-minuto.primeiro{border-color:#ff3fae;box-shadow:0 0 10px rgba(255,63,174,.16)}
+.ranking-posicao{font-size:18px;font-weight:950;color:#ff50be}
+.ranking-final{font-size:15px;font-weight:900;color:#fff}
+.ranking-detalhe{font-size:10px;color:#a8a8a8;text-align:right;line-height:1.3}
+@media(max-width:420px){
+  .mobile-status{grid-template-columns:minmax(0,1fr) 66px 66px;gap:6px}
+  .minuto-bom-mini{width:66px}.rosas-mini{min-width:0}
+  .mobile-live #leituraCompacta{font-size:10px}
+}
+
 </style>
 </head>
 <body>
 <div class="container">
 <div class="header header-pro-oficial">
-<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHora">--:--:--</div><div class="data" id="headerRelogioData">--</div></div><div class="header-acesso-vivo" aria-live="polite"><div class="header-acesso-status publico" id="headerAcessoStatusP3">FAÇA LOGIN</div></div></div>
-<div class="header-pro-titulo"><div class="linha">AVIATOR · SPRIBE · 7K BET</div><div class="sub">MRG SINAIS ALTO PADRÃO</div><div class="linha micro">ANÁLISE · DISCIPLINA · GESTÃO</div></div>
+<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-plataforma-viva">1WIN BET AVIATOR</div><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHora">--:--:--</div><div class="data" id="headerRelogioData">--</div></div><div class="header-acesso-vivo" aria-live="polite"><div class="header-acesso-status publico" id="headerAcessoStatusP3">FAÇA LOGIN</div></div></div>
+<div class="header-pro-titulo"><div class="linha">1WIN BET AVIATOR</div><div class="sub">MRG SINAIS ALTO PADRÃO</div><div class="linha micro">ANÁLISE · DISCIPLINA · GESTÃO</div></div>
 </div>
 <div class="pwa-hint">Para instalar no iPhone: abra no Safari, toque em <b>Compartilhar</b> e depois <b>Adicionar à Tela de Início</b>.</div>
 <div id="loginBox" class="card"><div class="titulo">ENTRAR</div><input id="loginEmail" type="email" placeholder="E-mail"><input id="loginSenha" type="password" placeholder="Senha"><button type="button" onclick="entrar()">ENTRAR</button><button type="button" class="sec" onclick="mostrarCadastro()">CRIAR CONTA</button><button type="button" class="sec" onclick="mostrarRecuperar()">ESQUECI MINHA SENHA</button><div id="loginMsg" class="msg">Entre com seu e-mail e senha.</div></div>
@@ -495,11 +529,12 @@ body{
     <div class="analista-h-melhor"><small>MELHOR PREVISÃO</small><strong id="miniAnalistaMelhor">--</strong></div>
   </div>
 </div>
-<div class="mobile-status"><div class="mobile-live"><div class="tag">ENTRADAS AGORA</div><div id="leituraCompacta">Aguardando nova oportunidade...</div></div><div id="rosasMini" class="rosas-mini" onclick="abrirRosas()">🌹 0</div></div>
+<div class="mobile-status"><div class="mobile-live"><div class="tag">ENTRADAS AGORA</div><div id="leituraCompacta">Aguardando nova oportunidade...</div></div><div id="rosasMini" class="rosas-mini" onclick="abrirRosas()">🌹 0</div><button type="button" class="minuto-bom-mini" onclick="abrirMinutoBom()" aria-label="Ver os três minutos finais mais favoráveis"><span>MINUTO BOM</span><strong id="p3MinutoBomValor">--</strong></button></div>
 <div id="modalProjecoes" class="modal-projecoes escondido" onclick="fecharProjecoes()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">PROJEÇÕES FUTURAS DE MERCADO</div><div id="conteudoProjecoes" class="projecoes-texto">Aguardando projeções...</div><button type="button" class="sec" onclick="fecharProjecoes()">FECHAR</button></div></div>
 <div id="modalHistoricoAoVivo" class="modal-projecoes escondido" onclick="fecharHistoricoAoVivo()"><div id="caixaHistoricoAoVivo" class="modal-caixa surf" onclick="event.stopPropagation()"><div id="tituloHistoricoAoVivo" class="titulo">HISTÓRICO AO VIVO</div><div class="modal-subtitulo">Últimas entradas finalizadas</div><div id="conteudoAoVivo" class="lista-surf"><div class="vazio">Carregando resultados...</div></div><button type="button" class="sec modal-voltar" onclick="fecharHistoricoAoVivo()">FECHAR</button></div></div>
 <div id="modalRosas" class="modal-projecoes escondido" onclick="fecharRosas()"><div class="modal-caixa rosa" onclick="event.stopPropagation()"><div class="titulo">🌹 ROSAS POR HORA</div><div class="modal-subtitulo">Clique em um horário para ver as rosas daquela hora</div><div id="conteudoRosas" class="lista-horas"><div class="vazio">Aguardando contagem...</div></div><button type="button" class="sec" onclick="fecharRosas()">FECHAR</button></div></div>
 <div id="modalRosasDetalhes" class="modal-projecoes escondido" onclick="fecharDetalhesRosas()"><div class="modal-caixa rosa" onclick="event.stopPropagation()"><div id="tituloDetalhesRosas" class="titulo">🌹 DETALHES DAS ROSAS</div><div id="conteudoDetalhesRosas" class="lista-detalhes"><div class="vazio">Carregando detalhes...</div></div><button type="button" class="sec" onclick="fecharDetalhesRosas()">VOLTAR</button></div></div>
+<div id="modalMinutoBom" class="modal-projecoes escondido" onclick="fecharMinutoBom()"><div class="modal-caixa rosa" onclick="event.stopPropagation()"><div class="titulo">🌹 MINUTOS MAIS FAVORÁVEIS</div><div class="modal-subtitulo">Ranking das velas rosas na última hora</div><div id="conteudoMinutoBom" class="ranking-minutos"><div class="vazio">Aguardando velas rosas...</div></div><button type="button" class="sec" onclick="fecharMinutoBom()">FECHAR</button></div></div>
 <div id="leituraCard" class="card leitura"><div class="titulo">ÚLTIMOS RESULTADOS AO VIVO</div><div id="leitura"><div class="vazio">Aguardando resultados...</div></div></div>
 <div class="card"><div class="titulo">SINAIS ATIVOS</div><div id="ativos">Carregando sinais...</div></div>
 <div class="card resumo-fechados"><div class="titulo">RESUMO DOS ÚLTIMOS 5 FECHADOS</div><div id="resumoFechados" class="vazio">Aguardando histórico...</div></div>
@@ -584,6 +619,8 @@ async function navegarPaginaMRG(pagina){
 
 let painelAtivo=false,telaAtual="login";
 let ROSAS_HORAS=[];
+let P3_ROSAS_ULTIMA_HORA=[];
+let P3_CANAL_MINUTO_BOM=null;
 let FILA_AVISOS=[];
 let AVISO_ATUAL=null;
 let BUSCANDO_AVISOS=false;
@@ -1105,7 +1142,7 @@ function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";p3AtualizarCab
 function mostrarRecuperar(){painelAtivo=false;telaAtual="recuperar";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("recuperarBox").classList.remove("escondido")}
 function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("novaSenhaBox").classList.remove("escondido")}
 function mostrarAguardando(email){painelAtivo=false;telaAtual="aguardando";esconderTudo();document.getElementById("aguardandoBox").classList.remove("escondido");document.getElementById("emailAguardando").innerText=email||""}
-function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;iniciarCanalEntradasP3();carregarControleEnvio();carregar();carregarLeitura(true);carregarFeed50Velas();carregarProjecoes();carregarRosas();p3CarregarAnalista();p3CarregarFeed24h(true);sincronizarPushNoLogin();carregarAvisos()}
+function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;iniciarCanalEntradasP3();p3IniciarCanalMinutoBom();carregarControleEnvio();carregar();carregarLeitura(true);carregarFeed50Velas();carregarProjecoes();carregarRosas();p3CarregarAnalista();p3CarregarFeed24h(true);p3CarregarMinutosFavoraveis();sincronizarPushNoLogin();carregarAvisos()}
 async function criarConta(){
   const nome=document.getElementById("cadNome").value.trim(),email=document.getElementById("cadEmail").value.trim(),telefone=document.getElementById("cadTelefone").value.trim(),senha=document.getElementById("cadSenha").value.trim();
   if(!nome||!email||!telefone||!senha){document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";return}
@@ -1606,6 +1643,8 @@ function fecharHistoricoAoVivo(){document.getElementById("modalHistoricoAoVivo")
 function abrirRosas(){renderizarHorasRosas();document.getElementById("modalRosas").classList.remove("escondido")}
 function fecharRosas(){document.getElementById("modalRosas").classList.add("escondido")}
 function fecharDetalhesRosas(){document.getElementById("modalRosasDetalhes").classList.add("escondido")}
+function abrirMinutoBom(){p3RenderizarMinutoBom();document.getElementById("modalMinutoBom").classList.remove("escondido")}
+function fecharMinutoBom(){document.getElementById("modalMinutoBom").classList.add("escondido")}
 function abrirProjecoes(){carregarProjecoes();document.getElementById("modalProjecoes").classList.remove("escondido")}
 function fecharProjecoes(){document.getElementById("modalProjecoes").classList.add("escondido")}
 
@@ -1770,6 +1809,64 @@ function p3ClasseVela24(v){
   if(c==="ROSA")return"rosa";if(c==="ROXO")return"roxo";if(c==="AZUL")return"azul";
   const x=p3Num(v?.multiplicador)||0;return x>=10?"rosa":x>=2?"roxo":"azul";
 }
+function p3DataHoraVela(v){
+  if(v?.data_hora){const d=new Date(v.data_hora);if(!Number.isNaN(d.getTime()))return d}
+  const m=String(v?.hora||"").match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if(!m)return null;
+  const agora=new Date(),d=new Date(agora);
+  d.setHours(Number(m[1]),Number(m[2]),Number(m[3]||0),0);
+  if(d.getTime()>agora.getTime()+5*60*1000)d.setDate(d.getDate()-1);
+  return d;
+}
+function p3ChaveMinutoVela(v){return String(v?.id??`${v?.data_hora||""}|${v?.hora||""}|${v?.multiplicador||""}`)}
+function p3IncorporarVelasMinuto(velas=[]){
+  const limite=Date.now()-60*60*1000,porChave=new Map();
+  [...P3_ROSAS_ULTIMA_HORA,...velas].forEach(v=>{
+    const mult=p3Num(v?.multiplicador)||0,d=p3DataHoraVela(v);
+    if(mult<10||!d||d.getTime()<limite||d.getTime()>Date.now()+5*60*1000)return;
+    porChave.set(p3ChaveMinutoVela(v),v);
+  });
+  P3_ROSAS_ULTIMA_HORA=[...porChave.values()];
+  p3RenderizarMinutoBom();
+}
+function p3RankingMinutos(){
+  const limite=Date.now()-60*60*1000,grupos=new Map();
+  P3_ROSAS_ULTIMA_HORA=P3_ROSAS_ULTIMA_HORA.filter(v=>{
+    const d=p3DataHoraVela(v);return d&&d.getTime()>=limite;
+  });
+  P3_ROSAS_ULTIMA_HORA.forEach(v=>{
+    const d=p3DataHoraVela(v);if(!d)return;
+    const minuto=d.getMinutes()%10,mult=p3Num(v?.multiplicador)||0;
+    const atual=grupos.get(minuto)||{minuto,qtd:0,soma:0,recente:0};
+    atual.qtd++;atual.soma+=mult;atual.recente=Math.max(atual.recente,d.getTime());grupos.set(minuto,atual);
+  });
+  return[...grupos.values()].sort((a,b)=>b.qtd-a.qtd||b.soma-a.soma||b.recente-a.recente).slice(0,3);
+}
+function p3RenderizarMinutoBom(){
+  const ranking=p3RankingMinutos(),principal=document.getElementById("p3MinutoBomValor");
+  if(principal)principal.textContent=ranking.length?`FINAL ${ranking[0].minuto}`:"--";
+  const alvo=document.getElementById("conteudoMinutoBom");if(!alvo)return;
+  alvo.innerHTML=ranking.length?ranking.map((r,i)=>`<div class="ranking-minuto ${i===0?"primeiro":""}"><div class="ranking-posicao">${i+1}º</div><div class="ranking-final">FINAL ${r.minuto}</div><div class="ranking-detalhe">${r.qtd} rosa${r.qtd===1?"":"s"}<br>${r.soma.toFixed(2)}x</div></div>`).join(""):"<div class='vazio'>Nenhuma vela rosa na última hora.</div>";
+}
+async function p3CarregarMinutosFavoraveis(){
+  try{
+    const desde=new Date(Date.now()-60*60*1000).toISOString();
+    const{data,error}=await db.from("mrg_analista_velas_24h")
+      .select("id,data_hora,hora,multiplicador,cor")
+      .gte("data_hora",desde).gte("multiplicador",10)
+      .order("data_hora",{ascending:false}).limit(500);
+    if(error)throw error;
+    P3_ROSAS_ULTIMA_HORA=[];p3IncorporarVelasMinuto(Array.isArray(data)?data:[]);
+  }catch(e){console.error("P3 minuto bom:",e);p3RenderizarMinutoBom()}
+}
+function p3IniciarCanalMinutoBom(){
+  if(P3_CANAL_MINUTO_BOM||!db?.channel)return;
+  try{
+    P3_CANAL_MINUTO_BOM=db.channel("mrg-p3-minuto-bom-v1")
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"mrg_analista_velas_24h"},evento=>p3IncorporarVelasMinuto([evento.new]))
+      .subscribe();
+  }catch(e){console.warn("Realtime do minuto bom indisponível; atualização normal continua ativa.",e)}
+}
 function p3ConsultaFeed24(offset=0){
   let q=db.from("mrg_analista_velas_24h").select("id,data_hora,hora,multiplicador,cor")
     .order("data_hora",{ascending:false}).range(offset,offset+P3_PAGINA24-1);
@@ -1794,6 +1891,7 @@ async function p3CarregarFeed24h(reset=true,silencioso=false){
     const lote=Array.isArray(data)?data:[];
     if(reset){P3_FEED24=lote;P3_FEED24_OFFSET=lote.length}else{P3_FEED24=P3_FEED24.concat(lote);P3_FEED24_OFFSET=P3_FEED24.length}
     P3_FEED24_FIM=lote.length<P3_PAGINA24;
+    p3IncorporarVelasMinuto(lote);
     p3RenderFeed24h();
   }catch(e){
     console.error("P3 histórico 24h:",e);
@@ -1838,6 +1936,7 @@ async function p3AtualizarTopoFeed24h(){
     const{data,error}=await p3ConsultaFeed24(0);
     if(error)throw error;
     const recentes=Array.isArray(data)?data:[];
+    p3IncorporarVelasMinuto(recentes);
     const chave=v=>String(v?.id??`${v?.data_hora||""}|${v?.hora||""}|${v?.multiplicador||""}`);
     const vistos=new Set(recentes.map(chave));
     const limite=Math.max(P3_FEED24.length,P3_PAGINA24);
@@ -1848,6 +1947,7 @@ async function p3AtualizarTopoFeed24h(){
   finally{P3_FEED24_CARREGANDO=false}
 }
 setInterval(p3AtualizarTopoFeed24h,2000);
+setInterval(p3RenderizarMinutoBom,60000);
 
 function atualizarRelogioCabecalho(){
   const agora=new Date();
