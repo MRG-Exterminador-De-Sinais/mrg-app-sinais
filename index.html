@@ -1842,18 +1842,29 @@ function p3ClasseVela24(v){
   const x=p3Num(v?.multiplicador)||0;return x>=10?"rosa":x>=2?"roxo":"azul";
 }
 function p3DataHoraVela(v){
-  if(v?.data_hora){const d=new Date(v.data_hora);if(!Number.isNaN(d.getTime()))return d}
-  const m=String(v?.hora||"").match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
-  if(!m)return null;
-  const agora=new Date(),d=new Date(agora);
+  const agora=new Date(),horario=String(v?.horario_vela||v?.horario||v?.hora||"");
+  const m=horario.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  const base=v?.criado_em||v?.data_hora;
+  let d=base?new Date(base):new Date(agora);
+  if(Number.isNaN(d.getTime()))d=new Date(agora);
+  // horario_vela é a hora real da rodada. Ele prevalece sobre uma data de
+  // agrupamento (por exemplo 21:00:00), para não transformar todas em FINAL 0.
+  if(!m)return d;
   d.setHours(Number(m[1]),Number(m[2]),Number(m[3]||0),0);
   if(d.getTime()>agora.getTime()+5*60*1000)d.setDate(d.getDate()-1);
   return d;
 }
-function p3ChaveMinutoVela(v){return String(v?.id??`${v?.data_hora||""}|${v?.hora||""}|${v?.multiplicador||""}`)}
+function p3NormalizarRosa(v){
+  return {...v,
+    hora:v?.horario_vela||v?.horario||v?.hora||"",
+    data_hora:v?.data_hora||v?.criado_em||null,
+    multiplicador:valorPrimeiro(v,["multiplicador","multiplicador_real","valor","x"],0)
+  };
+}
+function p3ChaveMinutoVela(v){return String(v?.id??`${v?.data_hora||""}|${v?.horario_vela||v?.horario||v?.hora||""}|${v?.multiplicador||""}`)}
 function p3IncorporarVelasMinuto(velas=[]){
   const limite=Date.now()-60*60*1000,porChave=new Map();
-  [...P3_ROSAS_ULTIMA_HORA,...velas].forEach(v=>{
+  [...P3_ROSAS_ULTIMA_HORA,...velas].map(p3NormalizarRosa).forEach(v=>{
     const mult=p3Num(v?.multiplicador)||0,d=p3DataHoraVela(v);
     if(mult<10||!d||d.getTime()<limite||d.getTime()>Date.now()+5*60*1000)return;
     porChave.set(p3ChaveMinutoVela(v),v);
@@ -1884,11 +1895,9 @@ function p3RenderizarMinutoBom(){
 }
 async function p3CarregarMinutosFavoraveis(){
   try{
-    const desde=new Date(Date.now()-60*60*1000).toISOString();
-    const{data,error}=await db.from("mrg_analista_velas_24h")
-      .select("id,data_hora,hora,multiplicador,cor")
-      .gte("data_hora",desde).gte("multiplicador",10)
-      .order("data_hora",{ascending:false}).limit(500);
+    // Mesma fonte do modal “Rosas por hora”: o ranking não pode divergir dela.
+    const{data,error}=await db.from("rosas_detalhes_app")
+      .select("*").order("id",{ascending:false}).limit(500);
     if(error)throw error;
     P3_ROSAS_ULTIMA_HORA=[];p3IncorporarVelasMinuto(Array.isArray(data)?data:[]);
   }catch(e){console.error("P3 minuto bom:",e);p3RenderizarMinutoBom()}
@@ -1896,8 +1905,8 @@ async function p3CarregarMinutosFavoraveis(){
 function p3IniciarCanalMinutoBom(){
   if(P3_CANAL_MINUTO_BOM||!db?.channel)return;
   try{
-    P3_CANAL_MINUTO_BOM=db.channel("mrg-p3-minuto-bom-v1")
-      .on("postgres_changes",{event:"INSERT",schema:"public",table:"mrg_analista_velas_24h"},evento=>p3IncorporarVelasMinuto([evento.new]))
+    P3_CANAL_MINUTO_BOM=db.channel("mrg-p3-minuto-bom-v2")
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"rosas_detalhes_app"},evento=>p3IncorporarVelasMinuto([evento.new]))
       .subscribe();
   }catch(e){console.warn("Realtime do minuto bom indisponível; atualização normal continua ativa.",e)}
 }
