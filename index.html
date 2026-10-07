@@ -434,13 +434,41 @@ body{
 .leitura-resumo-nome{display:flex;align-items:center;gap:5px}
 .mrg-marcadores .leitura-percentual{margin-left:4px}
 
-/* ===== P3 · MINUTO BOM E MARCA 1WIN BET AVIATOR ===== */
-.header-plataforma-viva{
-  position:absolute;z-index:4;left:36%;top:67%;width:35%;height:15%;
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(90deg,rgba(5,14,17,.96),#061015 14%,#061015 86%,rgba(5,14,17,.96));
-  color:#fff;font-size:clamp(9px,2vw,15px);font-weight:900;letter-spacing:.7px;
-  pointer-events:none;
+/* ===== P3 · CABEÇALHO RECONSTRUÍDO E MINUTO BOM ===== */
+.header-pro-oficial .header-identidade{
+  background-image:
+    url('16037623-50c1-4b03-b31c-35b5261d38ac.jpg'),
+    radial-gradient(circle at 51% 22%,rgba(26,72,96,.24),transparent 38%),
+    linear-gradient(90deg,#010305 0%,#030a0d 49%,#020604 100%)!important;
+  background-size:34% auto,100% 100%,100% 100%!important;
+  background-position:left center,center,center!important;
+  background-repeat:no-repeat!important;
+}
+.header-mascara{display:none!important}
+.header-marca-central{
+  position:absolute;z-index:2;left:31%;top:5%;width:39%;height:90%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;pointer-events:none;color:#fff;
+}
+.header-marca-mrg{
+  margin:0;font-family:Arial Black,Arial,sans-serif;
+  font-size:clamp(27px,6.6vw,58px);font-weight:950;line-height:.86;letter-spacing:-1.5px;
+  color:#e4b64b;background:linear-gradient(180deg,#fff0a0 0%,#e8bb52 38%,#9e6816 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.72));
+}
+.header-marca-nome{
+  margin-top:4px;font-size:clamp(10px,2.35vw,20px);font-weight:950;
+  line-height:.95;letter-spacing:-.25px;text-shadow:0 2px 3px #000;
+}
+.header-marca-plataforma{
+  margin-top:6px;font-size:clamp(8px,1.65vw,14px);font-weight:900;
+  line-height:1;letter-spacing:.25px;text-shadow:0 2px 3px #000;white-space:nowrap;
+}
+.header-marca-lema{
+  margin-top:7px;font-size:clamp(6px,1.15vw,9px);font-weight:700;
+  line-height:1;letter-spacing:clamp(1px,.32vw,2.2px);color:#d7d7d7;
+  text-shadow:0 2px 3px #000;white-space:nowrap;
 }
 .mobile-status{grid-template-columns:minmax(0,1fr) 72px 72px}
 .minuto-bom-mini{
@@ -463,6 +491,10 @@ body{
 .ranking-final{font-size:15px;font-weight:900;color:#fff}
 .ranking-detalhe{font-size:10px;color:#a8a8a8;text-align:right;line-height:1.3}
 @media(max-width:420px){
+  .header-marca-central{left:30%;width:41%}
+  .header-marca-nome{margin-top:3px}
+  .header-marca-plataforma{margin-top:4px}
+  .header-marca-lema{margin-top:5px}
   .mobile-status{grid-template-columns:minmax(0,1fr) 66px 66px;gap:6px}
   .minuto-bom-mini{width:66px}.rosas-mini{min-width:0}
   .mobile-live #leituraCompacta{font-size:10px}
@@ -473,7 +505,7 @@ body{
 <body>
 <div class="container">
 <div class="header header-pro-oficial">
-<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><span class="header-mascara header-mascara-hora-telefone"></span><span class="header-mascara header-mascara-status-telefone"></span><span class="header-mascara header-mascara-acesso-estatico"></span><div class="header-plataforma-viva">1WIN BET AVIATOR</div><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHora">--:--:--</div><div class="data" id="headerRelogioData">--</div></div><div class="header-acesso-vivo" aria-live="polite"><div class="header-acesso-status publico" id="headerAcessoStatusP3">FAÇA LOGIN</div></div></div>
+<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><div class="header-marca-central"><div class="header-marca-mrg">MRG</div><div class="header-marca-nome">EXTERMINADOR<br>DE SINAIS</div><div class="header-marca-plataforma">1WIN BET AVIATOR</div><div class="header-marca-lema">CONHECIMENTO · ESTUDO · EVOLUÇÃO</div></div><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHora">--:--:--</div><div class="data" id="headerRelogioData">--</div></div><div class="header-acesso-vivo" aria-live="polite"><div class="header-acesso-status publico" id="headerAcessoStatusP3">FAÇA LOGIN</div></div></div>
 <div class="header-pro-titulo"><div class="linha">1WIN BET AVIATOR</div><div class="sub">MRG SINAIS ALTO PADRÃO</div><div class="linha micro">ANÁLISE · DISCIPLINA · GESTÃO</div></div>
 </div>
 <div class="pwa-hint">Para instalar no iPhone: abra no Safari, toque em <b>Compartilhar</b> e depois <b>Adicionar à Tela de Início</b>.</div>
@@ -1721,7 +1753,7 @@ function p3Primeiro(obj,chaves,padrao=null){
   for(const k of chaves){if(obj&&obj[k]!==undefined&&obj[k]!==null&&obj[k]!=="")return obj[k]}
   return padrao;
 }
-function p3Num(v){const n=Number(String(v??"").replace(",",".").replace("%",""));return Number.isFinite(n)?n:null}
+function p3Num(v){const n=Number(String(v??"").trim().replace(/x$/i,"").replace(",",".").replace("%",""));return Number.isFinite(n)?n:null}
 function p3Pct(v){const n=p3Num(v);return n===null?"--":`${Math.round(n)}%`}
 function p3CorTipo(tipo){
   const t=String(tipo||"").toUpperCase();
@@ -1836,17 +1868,19 @@ function p3RankingMinutos(){
   });
   P3_ROSAS_ULTIMA_HORA.forEach(v=>{
     const d=p3DataHoraVela(v);if(!d)return;
-    const minuto=d.getMinutes()%10,mult=p3Num(v?.multiplicador)||0;
-    const atual=grupos.get(minuto)||{minuto,qtd:0,soma:0,recente:0};
-    atual.qtd++;atual.soma+=mult;atual.recente=Math.max(atual.recente,d.getTime());grupos.set(minuto,atual);
+    const minuto=d.getMinutes()%10;
+    const atual=grupos.get(minuto)||{minuto,qtd:0,recente:0};
+    atual.qtd++;atual.recente=Math.max(atual.recente,d.getTime());grupos.set(minuto,atual);
   });
-  return[...grupos.values()].sort((a,b)=>b.qtd-a.qtd||b.soma-a.soma||b.recente-a.recente).slice(0,3);
+  // Cada rosa (10x+) vale uma ocorrência: o tamanho do multiplicador não pesa.
+  // Em empate, usa-se apenas a mais recente para definir a ordem visual.
+  return[...grupos.values()].sort((a,b)=>b.qtd-a.qtd||b.recente-a.recente).slice(0,3);
 }
 function p3RenderizarMinutoBom(){
   const ranking=p3RankingMinutos(),principal=document.getElementById("p3MinutoBomValor");
   if(principal)principal.textContent=ranking.length?`FINAL ${ranking[0].minuto}`:"--";
   const alvo=document.getElementById("conteudoMinutoBom");if(!alvo)return;
-  alvo.innerHTML=ranking.length?ranking.map((r,i)=>`<div class="ranking-minuto ${i===0?"primeiro":""}"><div class="ranking-posicao">${i+1}º</div><div class="ranking-final">FINAL ${r.minuto}</div><div class="ranking-detalhe">${r.qtd} rosa${r.qtd===1?"":"s"}<br>${r.soma.toFixed(2)}x</div></div>`).join(""):"<div class='vazio'>Nenhuma vela rosa na última hora.</div>";
+  alvo.innerHTML=ranking.length?ranking.map((r,i)=>`<div class="ranking-minuto ${i===0?"primeiro":""}"><div class="ranking-posicao">${i+1}º</div><div class="ranking-final">FINAL ${r.minuto}</div><div class="ranking-detalhe">${r.qtd} rosa${r.qtd===1?"":"s"}</div></div>`).join(""):"<div class='vazio'>Nenhuma vela rosa na última hora.</div>";
 }
 async function p3CarregarMinutosFavoraveis(){
   try{
