@@ -1841,18 +1841,27 @@ function p3ClasseVela24(v){
   if(c==="ROSA")return"rosa";if(c==="ROXO")return"roxo";if(c==="AZUL")return"azul";
   const x=p3Num(v?.multiplicador)||0;return x>=10?"rosa":x>=2?"roxo":"azul";
 }
+function p3HoraMinutoGravado(v){
+  return String(v?.horario_vela||v?.horario||v?.hora||"").match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+}
 function p3DataHoraVela(v){
-  const agora=new Date(),horario=String(v?.horario_vela||v?.horario||v?.hora||"");
-  const m=horario.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
-  const base=v?.criado_em||v?.data_hora;
-  let d=base?new Date(base):new Date(agora);
-  if(Number.isNaN(d.getTime()))d=new Date(agora);
-  // horario_vela é a hora real da rodada. Ele prevalece sobre uma data de
-  // agrupamento (por exemplo 21:00:00), para não transformar todas em FINAL 0.
-  if(!m)return d;
-  d.setHours(Number(m[1]),Number(m[2]),Number(m[3]||0),0);
-  if(d.getTime()>agora.getTime()+5*60*1000)d.setDate(d.getDate()-1);
-  return d;
+  const horario=p3HoraMinutoGravado(v);
+  if(!horario)return null;
+  /*
+   * hora_inicio é a data lógica da rodada gravada pelo coletor. Não usamos
+   * new Date(hora_inicio) para extrair a hora: o sufixo UTC poderia deslocar
+   * a data/hora conforme o fuso do aparelho. Só a DATA vem dela; o horário
+   * exato vem sempre de horario_vela (por exemplo 21:02:36).
+   */
+  const base=String(v?.hora_inicio||v?.data_hora||v?.criado_em||"");
+  const dia=base.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(dia)return new Date(Number(dia[1]),Number(dia[2])-1,Number(dia[3]),Number(horario[1]),Number(horario[2]),Number(horario[3]||0),0);
+  const agora=new Date();
+  return new Date(agora.getFullYear(),agora.getMonth(),agora.getDate(),Number(horario[1]),Number(horario[2]),Number(horario[3]||0),0);
+}
+function p3FinalMinutoVela(v){
+  const horario=p3HoraMinutoGravado(v);
+  return horario?Number(horario[2])%10:null;
 }
 function p3NormalizarRosa(v){
   return {...v,
@@ -1862,7 +1871,7 @@ function p3NormalizarRosa(v){
   };
 }
 function p3ChaveMinutoVela(v){return String(v?.id??`${v?.data_hora||""}|${v?.horario_vela||v?.horario||v?.hora||""}|${v?.multiplicador||""}`)}
-function p3IncorporarVelasMinuto(velas=[]){
+function p3IncorporarRosasMinuto(velas=[]){
   const limite=Date.now()-60*60*1000,porChave=new Map();
   [...P3_ROSAS_ULTIMA_HORA,...velas].map(p3NormalizarRosa).forEach(v=>{
     const mult=p3Num(v?.multiplicador)||0,d=p3DataHoraVela(v);
@@ -1878,8 +1887,7 @@ function p3RankingMinutos(){
     const d=p3DataHoraVela(v);return d&&d.getTime()>=limite;
   });
   P3_ROSAS_ULTIMA_HORA.forEach(v=>{
-    const d=p3DataHoraVela(v);if(!d)return;
-    const minuto=d.getMinutes()%10;
+    const d=p3DataHoraVela(v),minuto=p3FinalMinutoVela(v);if(!d||minuto===null)return;
     const atual=grupos.get(minuto)||{minuto,qtd:0,recente:0};
     atual.qtd++;atual.recente=Math.max(atual.recente,d.getTime());grupos.set(minuto,atual);
   });
@@ -1899,14 +1907,14 @@ async function p3CarregarMinutosFavoraveis(){
     const{data,error}=await db.from("rosas_detalhes_app")
       .select("*").order("id",{ascending:false}).limit(500);
     if(error)throw error;
-    P3_ROSAS_ULTIMA_HORA=[];p3IncorporarVelasMinuto(Array.isArray(data)?data:[]);
+    P3_ROSAS_ULTIMA_HORA=[];p3IncorporarRosasMinuto(Array.isArray(data)?data:[]);
   }catch(e){console.error("P3 minuto bom:",e);p3RenderizarMinutoBom()}
 }
 function p3IniciarCanalMinutoBom(){
   if(P3_CANAL_MINUTO_BOM||!db?.channel)return;
   try{
     P3_CANAL_MINUTO_BOM=db.channel("mrg-p3-minuto-bom-v2")
-      .on("postgres_changes",{event:"INSERT",schema:"public",table:"rosas_detalhes_app"},evento=>p3IncorporarVelasMinuto([evento.new]))
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"rosas_detalhes_app"},evento=>p3IncorporarRosasMinuto([evento.new]))
       .subscribe();
   }catch(e){console.warn("Realtime do minuto bom indisponível; atualização normal continua ativa.",e)}
 }
@@ -1934,7 +1942,6 @@ async function p3CarregarFeed24h(reset=true,silencioso=false){
     const lote=Array.isArray(data)?data:[];
     if(reset){P3_FEED24=lote;P3_FEED24_OFFSET=lote.length}else{P3_FEED24=P3_FEED24.concat(lote);P3_FEED24_OFFSET=P3_FEED24.length}
     P3_FEED24_FIM=lote.length<P3_PAGINA24;
-    p3IncorporarVelasMinuto(lote);
     p3RenderFeed24h();
   }catch(e){
     console.error("P3 histórico 24h:",e);
@@ -1979,7 +1986,6 @@ async function p3AtualizarTopoFeed24h(){
     const{data,error}=await p3ConsultaFeed24(0);
     if(error)throw error;
     const recentes=Array.isArray(data)?data:[];
-    p3IncorporarVelasMinuto(recentes);
     const chave=v=>String(v?.id??`${v?.data_hora||""}|${v?.hora||""}|${v?.multiplicador||""}`);
     const vistos=new Set(recentes.map(chave));
     const limite=Math.max(P3_FEED24.length,P3_PAGINA24);
