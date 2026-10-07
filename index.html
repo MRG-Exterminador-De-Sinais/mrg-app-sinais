@@ -566,7 +566,7 @@ body{
 <div id="modalHistoricoAoVivo" class="modal-projecoes escondido" onclick="fecharHistoricoAoVivo()"><div id="caixaHistoricoAoVivo" class="modal-caixa surf" onclick="event.stopPropagation()"><div id="tituloHistoricoAoVivo" class="titulo">HISTÓRICO AO VIVO</div><div class="modal-subtitulo">Últimas entradas finalizadas</div><div id="conteudoAoVivo" class="lista-surf"><div class="vazio">Carregando resultados...</div></div><button type="button" class="sec modal-voltar" onclick="fecharHistoricoAoVivo()">FECHAR</button></div></div>
 <div id="modalRosas" class="modal-projecoes escondido" onclick="fecharRosas()"><div class="modal-caixa rosa" onclick="event.stopPropagation()"><div class="titulo">🌹 ROSAS POR HORA</div><div class="modal-subtitulo">Clique em um horário para ver as rosas daquela hora</div><div id="conteudoRosas" class="lista-horas"><div class="vazio">Aguardando contagem...</div></div><button type="button" class="sec" onclick="fecharRosas()">FECHAR</button></div></div>
 <div id="modalRosasDetalhes" class="modal-projecoes escondido" onclick="fecharDetalhesRosas()"><div class="modal-caixa rosa" onclick="event.stopPropagation()"><div id="tituloDetalhesRosas" class="titulo">🌹 DETALHES DAS ROSAS</div><div id="conteudoDetalhesRosas" class="lista-detalhes"><div class="vazio">Carregando detalhes...</div></div><button type="button" class="sec" onclick="fecharDetalhesRosas()">VOLTAR</button></div></div>
-<div id="modalMinutoBom" class="modal-projecoes escondido" onclick="fecharMinutoBom()"><div class="modal-caixa rosa" onclick="event.stopPropagation()"><div class="titulo">🌹 MINUTOS MAIS FAVORÁVEIS</div><div class="modal-subtitulo">Ranking das velas rosas na última hora</div><div id="conteudoMinutoBom" class="ranking-minutos"><div class="vazio">Aguardando velas rosas...</div></div><button type="button" class="sec" onclick="fecharMinutoBom()">FECHAR</button></div></div>
+<div id="modalMinutoBom" class="modal-projecoes escondido" onclick="fecharMinutoBom()"><div class="modal-caixa rosa" onclick="event.stopPropagation()"><div class="titulo">🌹 MINUTOS MAIS FAVORÁVEIS</div><div class="modal-subtitulo">Ranking com 10 rosas selecionadas</div><div id="conteudoMinutoBom" class="ranking-minutos"><div class="vazio">Aguardando velas rosas...</div></div><button type="button" class="sec" onclick="fecharMinutoBom()">FECHAR</button></div></div>
 <div id="leituraCard" class="card leitura"><div class="titulo">ÚLTIMOS RESULTADOS AO VIVO</div><div id="leitura"><div class="vazio">Aguardando resultados...</div></div></div>
 <div class="card"><div class="titulo">SINAIS ATIVOS</div><div id="ativos">Carregando sinais...</div></div>
 <div class="card resumo-fechados"><div class="titulo">RESUMO DOS ÚLTIMOS 5 FECHADOS</div><div id="resumoFechados" class="vazio">Aguardando histórico...</div></div>
@@ -652,7 +652,11 @@ async function navegarPaginaMRG(pagina){
 let painelAtivo=false,telaAtual="login";
 let ROSAS_HORAS=[];
 let P3_ROSAS_ULTIMA_HORA=[];
+let P3_HISTORICO_ROSAS_MINUTO=[];
 let P3_CANAL_MINUTO_BOM=null;
+let P3_ULTIMO_ID_ROSA=0;
+let P3_MINUTO_BOM_CARREGANDO=false;
+const P3_QTD_ROSAS_RANKING=10;
 let FILA_AVISOS=[];
 let AVISO_ATUAL=null;
 let BUSCANDO_AVISOS=false;
@@ -1871,44 +1875,101 @@ function p3NormalizarRosa(v){
   };
 }
 function p3ChaveMinutoVela(v){return String(v?.id??`${v?.data_hora||""}|${v?.horario_vela||v?.horario||v?.hora||""}|${v?.multiplicador||""}`)}
-function p3IncorporarRosasMinuto(velas=[]){
-  const limite=Date.now()-60*60*1000,porChave=new Map();
-  [...P3_ROSAS_ULTIMA_HORA,...velas].map(p3NormalizarRosa).forEach(v=>{
-    const mult=p3Num(v?.multiplicador)||0,d=p3DataHoraVela(v);
-    if(mult<10||!d||d.getTime()<limite||d.getTime()>Date.now()+5*60*1000)return;
-    porChave.set(p3ChaveMinutoVela(v),v);
+function p3OrdenarRosas(velas=[]){
+  return velas.slice().sort((a,b)=>{
+    const da=p3DataHoraVela(a)?.getTime()||0,db=p3DataHoraVela(b)?.getTime()||0;
+    return db-da||Number(b?.id||0)-Number(a?.id||0);
   });
-  P3_ROSAS_ULTIMA_HORA=[...porChave.values()];
+}
+function p3ResumoFinais(velas=[]){
+  const grupos=new Map();
+  velas.forEach(v=>{
+    const d=p3DataHoraVela(v),minuto=p3FinalMinutoVela(v);if(!d||minuto===null)return;
+    const atual=grupos.get(minuto)||{minuto,qtd:0,recente:0,emAlta:false};
+    atual.qtd++;atual.recente=Math.max(atual.recente,d.getTime());grupos.set(minuto,atual);
+  });
+  const ultimasTres=velas.slice(0,3).map(p3FinalMinutoVela).filter(v=>v!==null);
+  const finalEmAlta=ultimasTres.length===3&&ultimasTres.every(v=>v===ultimasTres[0])?ultimasTres[0]:null;
+  if(finalEmAlta!==null&&grupos.has(finalEmAlta))grupos.get(finalEmAlta).emAlta=true;
+  const ordem=[...grupos.values()].sort((a,b)=>b.qtd-a.qtd||b.recente-a.recente);
+  if(finalEmAlta===null)return ordem.slice(0,3);
+  const lider=grupos.get(finalEmAlta);
+  return[lider,...ordem.filter(r=>r.minuto!==finalEmAlta).slice(0,2)];
+}
+function p3FecharAmostraRanking(velas=[]){
+  const ordem=p3OrdenarRosas(velas),acumuladas=[];
+  for(const vela of ordem){
+    acumuladas.push(vela);
+    const finais=p3ResumoFinais(acumuladas);
+    const total=finais.reduce((s,r)=>s+r.qtd,0);
+    if(total>=P3_QTD_ROSAS_RANKING){
+      const escolhidos=new Set(finais.map(r=>r.minuto));
+      return acumuladas.filter(v=>escolhidos.has(p3FinalMinutoVela(v))).slice(0,P3_QTD_ROSAS_RANKING);
+    }
+  }
+  return acumuladas;
+}
+function p3IncorporarRosasMinuto(velas=[]){
+  const porChave=new Map();
+  [...P3_HISTORICO_ROSAS_MINUTO,...velas].map(p3NormalizarRosa).forEach(v=>{
+    const mult=p3Num(v?.multiplicador)||0,d=p3DataHoraVela(v);
+    if(mult<10||!d||d.getTime()>Date.now()+5*60*1000)return;
+    porChave.set(p3ChaveMinutoVela(v),v);
+    const id=Number(v?.id||0);if(id>P3_ULTIMO_ID_ROSA)P3_ULTIMO_ID_ROSA=id;
+  });
+  P3_HISTORICO_ROSAS_MINUTO=p3OrdenarRosas([...porChave.values()]);
+  /* A leitura recua sem limite de tempo até fechar uma amostra de 10 rosas. */
+  P3_ROSAS_ULTIMA_HORA=p3FecharAmostraRanking(P3_HISTORICO_ROSAS_MINUTO);
   p3RenderizarMinutoBom();
 }
 function p3RankingMinutos(){
-  const limite=Date.now()-60*60*1000,grupos=new Map();
-  P3_ROSAS_ULTIMA_HORA=P3_ROSAS_ULTIMA_HORA.filter(v=>{
-    const d=p3DataHoraVela(v);return d&&d.getTime()>=limite;
-  });
-  P3_ROSAS_ULTIMA_HORA.forEach(v=>{
-    const d=p3DataHoraVela(v),minuto=p3FinalMinutoVela(v);if(!d||minuto===null)return;
-    const atual=grupos.get(minuto)||{minuto,qtd:0,recente:0};
-    atual.qtd++;atual.recente=Math.max(atual.recente,d.getTime());grupos.set(minuto,atual);
-  });
-  // Cada rosa (10x+) vale uma ocorrência: o tamanho do multiplicador não pesa.
-  // Em empate, usa-se apenas a mais recente para definir a ordem visual.
-  return[...grupos.values()].sort((a,b)=>b.qtd-a.qtd||b.recente-a.recente).slice(0,3);
+  const ranking=p3ResumoFinais(P3_ROSAS_ULTIMA_HORA);
+  // Cada rosa (10x+) vale uma ocorrência. Três rosas recentes do mesmo final
+  // só dão prioridade de momento; uma rosa isolada não altera a liderança.
+  return ranking;
 }
 function p3RenderizarMinutoBom(){
   const ranking=p3RankingMinutos(),principal=document.getElementById("p3MinutoBomValor");
   if(principal)principal.textContent=ranking.length?`FINAL ${ranking[0].minuto}`:"--";
   const alvo=document.getElementById("conteudoMinutoBom");if(!alvo)return;
-  alvo.innerHTML=ranking.length?ranking.map((r,i)=>`<div class="ranking-minuto ${i===0?"primeiro":""}"><div class="ranking-posicao">${i+1}º</div><div class="ranking-final">FINAL ${r.minuto}</div><div class="ranking-detalhe">${r.qtd} rosa${r.qtd===1?"":"s"}</div></div>`).join(""):"<div class='vazio'>Nenhuma vela rosa na última hora.</div>";
+  alvo.innerHTML=ranking.length?ranking.map((r,i)=>`<div class="ranking-minuto ${i===0?"primeiro":""}"><div class="ranking-posicao">${i+1}º</div><div class="ranking-final">FINAL ${r.minuto}</div><div class="ranking-detalhe">${r.qtd} rosa${r.qtd===1?"":"s"}${r.emAlta?" · EM ALTA":""}</div></div>`).join(""):"<div class='vazio'>Nenhuma vela rosa registrada.</div>";
 }
 async function p3CarregarMinutosFavoraveis(){
+  if(P3_MINUTO_BOM_CARREGANDO)return;
+  P3_MINUTO_BOM_CARREGANDO=true;
   try{
-    // Mesma fonte do modal “Rosas por hora”: o ranking não pode divergir dela.
-    const{data,error}=await db.from("rosas_detalhes_app")
-      .select("*").order("id",{ascending:false}).limit(500);
-    if(error)throw error;
-    P3_ROSAS_ULTIMA_HORA=[];p3IncorporarRosasMinuto(Array.isArray(data)?data:[]);
+    // Fonte exclusiva das rosas, independente da grade geral de 24 horas.
+    P3_ROSAS_ULTIMA_HORA=[];P3_HISTORICO_ROSAS_MINUTO=[];P3_ULTIMO_ID_ROSA=0;
+    let inicio=0;
+    while(true){
+      const{data,error}=await db.from("rosas_detalhes_app")
+        .select("id,hora_inicio,horario_vela,multiplicador,criado_em")
+        .gte("multiplicador",10).order("id",{ascending:false}).range(inicio,inicio+99);
+      if(error)throw error;
+      const lote=Array.isArray(data)?data:[];
+      if(!lote.length)break;
+      p3IncorporarRosasMinuto(lote);
+      /* Sem janela de tempo: continua voltando até fechar as 10 evidências. */
+      if(P3_ROSAS_ULTIMA_HORA.length>=P3_QTD_ROSAS_RANKING||lote.length<100)break;
+      inicio+=lote.length;
+    }
   }catch(e){console.error("P3 minuto bom:",e);p3RenderizarMinutoBom()}
+  finally{P3_MINUTO_BOM_CARREGANDO=false}
+}
+async function p3ReconciliarMinutoBom(){
+  if(!painelAtivo||document.visibilityState!=="visible"||P3_MINUTO_BOM_CARREGANDO)return;
+  if(!P3_ULTIMO_ID_ROSA){await p3CarregarMinutosFavoraveis();return}
+  P3_MINUTO_BOM_CARREGANDO=true;
+  try{
+    /* Consulta incremental: só rosas novas após o último ID, a cada 20 s. */
+    const{data,error}=await db.from("rosas_detalhes_app")
+      .select("id,hora_inicio,horario_vela,multiplicador,criado_em")
+      .gt("id",P3_ULTIMO_ID_ROSA).gte("multiplicador",10)
+      .order("id",{ascending:true}).limit(30);
+    if(error)throw error;
+    if(Array.isArray(data)&&data.length)p3IncorporarRosasMinuto(data);
+  }catch(e){console.warn("P3 reconciliação do minuto bom:",e)}
+  finally{P3_MINUTO_BOM_CARREGANDO=false}
 }
 function p3IniciarCanalMinutoBom(){
   if(P3_CANAL_MINUTO_BOM||!db?.channel)return;
@@ -1996,7 +2057,12 @@ async function p3AtualizarTopoFeed24h(){
   finally{P3_FEED24_CARREGANDO=false}
 }
 setInterval(p3AtualizarTopoFeed24h,2000);
-setInterval(p3RenderizarMinutoBom,60000);
+/* Realtime atualiza no ato; este retorno incremental cobre quedas do canal
+   sem reconsultar a grade inteira nem fazer uma busca por vela. */
+setInterval(p3ReconciliarMinutoBom,20000);
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible")p3ReconciliarMinutoBom();
+});
 
 function atualizarRelogioCabecalho(){
   const agora=new Date();
