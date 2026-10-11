@@ -219,6 +219,7 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 .feed50-vela.azul{border-top-color:#16c8ef}.feed50-vela.roxo{border-top-color:#a93cff}.feed50-vela.rosa{border-top-color:#ff3da7}
 .feed50-mult{font-size:15px;font-weight:800;line-height:1.1;white-space:nowrap}.feed50-vela.azul .feed50-mult{color:#22d3ee}.feed50-vela.roxo .feed50-mult{color:#b95cff}.feed50-vela.rosa .feed50-mult{color:#ff55b4}
 .feed50-hora{margin-top:4px;color:#d6d6d6;font-size:10px;font-weight:600;white-space:nowrap}
+.feed50-round,.hist24-round{display:table;max-width:94%;margin:2px auto 0;padding:1px 4px;border-radius:3px;background:rgba(255,255,255,.10);color:#b9c2bd;font-size:6.5px;font-weight:800;line-height:1;letter-spacing:.15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:420px){.feed50-grid{gap:5px}.feed50-vela{padding:7px 2px 5px;border-radius:8px}.feed50-mult{font-size:13px}.feed50-hora{font-size:9px}}
 
 
@@ -389,6 +390,7 @@ body{
 .analista-h-linha-secundaria{display:grid;grid-template-columns:.8fr .8fr .8fr .8fr 1.55fr;gap:5px;margin-top:6px}
 .analista-h-linha-secundaria>div{min-width:0;border:1px solid #25302b;border-radius:8px;background:#060908;padding:5px 6px;text-align:center}
 .analista-h-linha-secundaria strong{display:block;color:#e8f7ef;font-size:10px;white-space:normal}
+.analista-round{display:block!important;margin-top:2px!important;color:#718078!important;font-size:6px!important;font-weight:700;letter-spacing:.35px;line-height:1.05}
 .analista-h-melhor strong{color:var(--mrg-analista-cor)}
 @media(max-width:700px){
  .analista-h-linha-principal{grid-template-columns:1fr 1.35fr}
@@ -554,7 +556,7 @@ body{
   </div>
 
   <div class="analista-h-linha-secundaria">
-    <div><small>ÚLTIMA VELA</small><strong id="miniAnalistaUltima">--</strong></div>
+    <div><small>ÚLTIMA VELA</small><strong id="miniAnalistaUltima">--</strong><small id="miniAnalistaRound" class="analista-round" hidden></small></div>
     <div><small>CONVICÇÃO</small><strong id="miniAnalistaConviccao">--</strong></div>
     <div><small>EXATO 30</small><strong id="miniAnalistaExato30">--</strong></div>
     <div><small>FAMÍLIA 30</small><strong id="miniAnalistaFamilia30">--</strong></div>
@@ -1684,6 +1686,17 @@ function fecharMinutoBom(){document.getElementById("modalMinutoBom").classList.a
 function abrirProjecoes(){carregarProjecoes();document.getElementById("modalProjecoes").classList.remove("escondido")}
 function fecharProjecoes(){document.getElementById("modalProjecoes").classList.add("escondido")}
 
+function numeroRodadaVela(vela){
+  if(!vela||typeof vela!=="object")return"";
+  const bruto=vela.numero_rodada??vela.roundId??"";
+  return String(bruto).trim();
+}
+function mostrarRoundUltimaVela(numero){
+  const alvo=document.getElementById("miniAnalistaRound");if(!alvo)return;
+  const valor=String(numero||"").trim();
+  alvo.textContent=valor?`ROUND ${valor}`:"";
+  alvo.hidden=!valor;
+}
 function classeCorFeed50(vela){
   const c=String((vela&&vela.cor)||"").toUpperCase();
   if(c.includes("ROSA")||c==="K")return "rosa";
@@ -1715,7 +1728,7 @@ async function carregarFeed50Velas(){
     const chegouNovaVela=Boolean(FEED50_ULTIMA_CHAVE&&chaveAtual&&chaveAtual!==FEED50_ULTIMA_CHAVE);
     FEED50_ULTIMA_CHAVE=chaveAtual||FEED50_ULTIMA_CHAVE;
     limparEntradasPorLimiteCasas();
-    alvo.innerHTML=velas.map(v=>{const mult=String(v.multiplicador||v.mult||v.multiplicador_num||"-");const multTxt=/x$/i.test(mult)?mult:`${mult}x`;const hora=String(v.hora||v.horario||"--:--:--").slice(-8);return `<div class="feed50-vela ${classeCorFeed50(v)}"><div class="feed50-mult">${escaparHtml(multTxt)}</div><div class="feed50-hora">${escaparHtml(hora)}</div></div>`}).join("");
+    alvo.innerHTML=velas.map(v=>{const mult=String(v.multiplicador||v.mult||v.multiplicador_num||"-");const multTxt=/x$/i.test(mult)?mult:`${mult}x`;const hora=String(v.hora||v.horario||"--:--:--").slice(-8);const rodada=numeroRodadaVela(v);return `<div class="feed50-vela ${classeCorFeed50(v)}"><div class="feed50-mult">${escaparHtml(multTxt)}</div>${rodada?`<div class="feed50-round">${escaparHtml(rodada)}</div>`:""}<div class="feed50-hora">${escaparHtml(hora)}</div></div>`}).join("");
     // Cada vela nova também força a releitura do estado publicado dos dois
     // executores, sem criar outro temporizador nem aumentar o polling normal.
     if(chegouNovaVela)carregarLeitura(true);
@@ -1795,6 +1808,7 @@ async function p3CarregarAnalista(){
     const status=String(p3Primeiro(snap,["proxima_status","status"],"--")).toUpperCase();
 
     let ultima=p3Primeiro(snap,["ultima"],"--");
+    const rodadaUltima=numeroRodadaVela(ultima&&typeof ultima==="object"?ultima:snap);
     if(ultima&&typeof ultima==="object") ultima=p3Primeiro(ultima,["multiplicador","valor","x"],"--");
     if(ultima!==null&&ultima!==undefined&&ultima!=="--"){
       const us=String(ultima).trim(); ultima=/x$/i.test(us)?us:`${us}x`;
@@ -1832,6 +1846,7 @@ async function p3CarregarAnalista(){
     document.getElementById("miniAnalistaSegundoPct").textContent=p3Pct(segundoForca);
     document.getElementById("miniAnalistaConvergencia").textContent=convergencia;
     document.getElementById("miniAnalistaUltima").textContent=ultima||"--";
+    mostrarRoundUltimaVela(rodadaUltima);
     document.getElementById("miniAnalistaConviccao").textContent=p3Pct(conviccao);
     document.getElementById("miniAnalistaExato30").textContent=p3Pct(exato);
     document.getElementById("miniAnalistaFamilia30").textContent=p3Pct(familia);
@@ -1980,7 +1995,9 @@ function p3IniciarCanalMinutoBom(){
   }catch(e){console.warn("Realtime do minuto bom indisponível; atualização normal continua ativa.",e)}
 }
 function p3ConsultaFeed24(offset=0){
-  let q=db.from("mrg_analista_velas_24h").select("id,data_hora,hora,multiplicador,cor")
+  /* O asterisco permite receber numero_rodada assim que a coluna for criada,
+     mantendo compatibilidade enquanto o publicador antigo ainda estiver ativo. */
+  let q=db.from("mrg_analista_velas_24h").select("*")
     .order("data_hora",{ascending:false}).range(offset,offset+P3_PAGINA24-1);
   const cor=document.getElementById("p3FiltroCor")?.value||"TODAS";
   const fx=document.getElementById("p3FiltroFaixa")?.value||"TODAS";
@@ -2015,7 +2032,8 @@ function p3RenderFeed24h(){
     const x=v.multiplicador??"-";
     const mult=/x$/i.test(String(x))?String(x):`${x}x`;
     let h=String(v.hora||"").slice(-8);if(!h&&v.data_hora)h=new Date(v.data_hora).toLocaleTimeString("pt-BR");
-    return `<div class="hist24-vela ${p3ClasseVela24(v)}"><div class="hist24-mult">${escaparHtml(mult)}</div><div class="hist24-hora">${escaparHtml(h||"--:--:--")}</div></div>`;
+    const rodada=numeroRodadaVela(v);
+    return `<div class="hist24-vela ${p3ClasseVela24(v)}"><div class="hist24-mult">${escaparHtml(mult)}</div>${rodada?`<div class="hist24-round">${escaparHtml(rodada)}</div>`:""}<div class="hist24-hora">${escaparHtml(h||"--:--:--")}</div></div>`;
   }).join(""):'<div class="vazio" style="grid-column:1/-1">Nenhuma vela neste filtro.</div>';
   const b=document.getElementById("p3BtnMais24h");if(b){b.disabled=P3_FEED24_FIM||!P3_FEED24.length;b.textContent=P3_FEED24_FIM?"FIM DAS VELAS":"CARREGAR MAIS"}
   const i=document.getElementById("p3FeedInfo24h");if(i)i.textContent=`${P3_FEED24.length} vela${P3_FEED24.length===1?"":"s"} exibida${P3_FEED24.length===1?"":"s"} · retenção móvel de 24h`;
