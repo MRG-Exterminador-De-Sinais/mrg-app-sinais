@@ -113,6 +113,8 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
 .header-padrao-p1 .header-titulo .sub{font-size:15px;color:#00f08a;letter-spacing:.8px;margin:6px 0 0}
 .header-padrao-p1 .header-titulo .micro{font-size:9px;letter-spacing:2px;margin-top:6px}
 @media(max-width:520px){.header-padrao-p1 .header-titulo .sub{font-size:14px}.header-marca-central{left:30%;width:41%}.header-marca-nome{margin-top:3px}.header-marca-plataforma{margin-top:4px}.header-marca-lema{margin-top:5px}}
+
+#modalTexto.projecoes-p1{white-space:pre-wrap;font-family:Consolas,monospace;font-size:13px;line-height:1.35;background:#050505;border:1px solid #333;border-radius:12px;padding:12px;text-align:left}
 </style>
 </head>
 <body>
@@ -146,7 +148,7 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
       <div class="tile roxo" onclick="abrirConteudo('Curso','Área destinada ao curso e materiais de aprendizado MRG.')"><div class="ico">🎓</div><b>CURSO</b><small>Conteúdo do básico ao avançado.</small></div>
       <div class="tile azul" onclick="abrirConteudo('Tutoriais','Área destinada aos vídeos, tutoriais e orientações práticas.')"><div class="ico">▶️</div><b>TUTORIAIS</b><small>Vídeos e orientações práticas.</small></div>
       <div class="tile verde" onclick="abrirConteudo('Suporte','Área destinada aos canais oficiais de suporte MRG.')"><div class="ico">🎧</div><b>SUPORTE</b><small>Canais de atendimento e auxílio.</small></div>
-      <div class="tile roxo" onclick="abrirConteudo('Projeções','Ponto preparado para integrar as Projeções Futuras já existentes, sem criar cálculo novo no cliente.')"><div class="ico">📊</div><b>PROJEÇÕES</b><small>Projeções e tendências futuras.</small></div>
+      <div class="tile roxo" onclick="abrirProjecoesP1()"><div class="ico">📊</div><b>PROJEÇÕES</b><small>Projeções e tendências futuras.</small></div>
       <div class="tile azul" onclick="abrirConteudo('Mercado','Ponto preparado para integrar o Estado de Mercado já existente, sem cálculo local de acesso.')"><div class="ico">◕</div><b>MERCADO</b><small>Estado e cenários do mercado.</small></div>
       <div class="tile amarelo" onclick="abrirConteudo('Banca','Área de conteúdo para gestão de banca e disciplina.')"><div class="ico">🪙</div><b>BANCA</b><small>Gestão e disciplina.</small></div>
       <div class="tile rosa" onclick="abrirConteudo('Avisos','Área destinada aos avisos importantes da equipe MRG.')"><div class="ico">⚠️</div><b>AVISOS</b><small>Comunicados e atualizações.</small></div>
@@ -184,8 +186,32 @@ const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let contrato=null;
 const el=id=>document.getElementById(id);
 
-function abrirConteudo(t,x){el("modalTitulo").textContent=t;el("modalTexto").textContent=x;el("modal").classList.remove("escondido")}
-function fecharModal(){el("modal").classList.add("escondido")}
+function abrirConteudo(t,x){fecharModal();el("modalTitulo").textContent=t;el("modalTexto").textContent=x;el("modal").classList.remove("escondido")}
+let projecoesP1Timer=null;
+let projecoesP1Versao=0;
+let projecoesP1Carregando=false;
+function fecharModal(){
+  el("modal").classList.add("escondido");
+  el("modalTexto").classList.remove("projecoes-p1");
+  clearInterval(projecoesP1Timer);projecoesP1Timer=null;projecoesP1Versao++;
+}
+async function carregarProjecoesP1(){
+  if(projecoesP1Carregando||el("modal").classList.contains("escondido")||!el("modalTexto").classList.contains("projecoes-p1"))return;
+  const versao=projecoesP1Versao;projecoesP1Carregando=true;
+  try{
+    const {data,error}=await db.from("projecoes_mercado").select("*").eq("ativo",true).order("id",{ascending:false}).limit(1);
+    if(versao!==projecoesP1Versao)return;
+    el("modalTexto").textContent=error?"Projeções indisponíveis no momento.":(data?.[0]?.mensagem||"Aguardando projeções...");
+  }catch(e){if(versao===projecoesP1Versao)el("modalTexto").textContent="Projeções indisponíveis no momento."}
+  finally{projecoesP1Carregando=false}
+}
+function abrirProjecoesP1(){
+  fecharModal();el("modalTitulo").textContent="PROJEÇÕES FUTURAS DE MERCADO";
+  el("modalTexto").textContent="Carregando projeções...";
+  el("modalTexto").classList.add("projecoes-p1");el("modal").classList.remove("escondido");
+  carregarProjecoesP1();
+  projecoesP1Timer=setInterval(()=>{if(document.visibilityState==="visible")carregarProjecoesP1()},60000);
+}
 
 async function entrar(){
   const email=el("email").value.trim(),password=el("senha").value;
@@ -195,7 +221,7 @@ async function entrar(){
   if(error){el("loginMsg").textContent="Login ou senha inválidos.";return}
   await iniciarApp();
 }
-async function sair(){await db.auth.signOut({scope:"local"});contrato=null;el("appBox").classList.add("escondido");atualizarStatusCabecalhoP1();el("loginBox").classList.remove("escondido")}
+async function sair(){fecharModal();await db.auth.signOut({scope:"local"});contrato=null;el("appBox").classList.add("escondido");atualizarStatusCabecalhoP1();el("loginBox").classList.remove("escondido")}
 
 function normalizarContrato(data){
   if(Array.isArray(data)) data=data[0]||{};
