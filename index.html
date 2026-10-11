@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<!-- MRG P3 ROUND VISUAL V2 2026-10-11 -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#060606">
@@ -218,9 +219,10 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 .feed50-vela{min-width:0;background:#0b0b0d;border:1px solid #333;border-top-width:3px;border-radius:10px;padding:8px 3px 6px;text-align:center;box-shadow:inset 0 0 12px rgba(255,255,255,.025)}
 .feed50-vela.azul{border-top-color:#16c8ef}.feed50-vela.roxo{border-top-color:#a93cff}.feed50-vela.rosa{border-top-color:#ff3da7}
 .feed50-mult{font-size:15px;font-weight:800;line-height:1.1;white-space:nowrap}.feed50-vela.azul .feed50-mult{color:#22d3ee}.feed50-vela.roxo .feed50-mult{color:#b95cff}.feed50-vela.rosa .feed50-mult{color:#ff55b4}
-.feed50-hora{margin-top:4px;color:#d6d6d6;font-size:10px;font-weight:600;white-space:nowrap}
-.feed50-round,.hist24-round{display:table;max-width:94%;margin:2px auto 0;padding:1px 4px;border-radius:3px;background:rgba(255,255,255,.10);color:#b9c2bd;font-size:6.5px;font-weight:800;line-height:1;letter-spacing:.15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media(max-width:420px){.feed50-grid{gap:5px}.feed50-vela{padding:7px 2px 5px;border-radius:8px}.feed50-mult{font-size:13px}.feed50-hora{font-size:9px}}
+.feed50-hora{margin-top:4px;color:#00e889;font-size:10px;font-weight:600;white-space:nowrap}
+.feed50-round,.hist24-round{display:block;margin:3px auto 0;color:#fff;font-size:10px;font-weight:700;line-height:1.15;white-space:nowrap}
+.analista-round[hidden]{display:none!important}
+@media(max-width:420px){.feed50-grid{gap:5px}.feed50-vela{padding:7px 2px 5px;border-radius:8px}.feed50-mult{font-size:13px}.feed50-hora,.feed50-round{font-size:9px}}
 
 
 /* P3 NOVA ARTE — camada visual; dinâmica original preservada */
@@ -296,11 +298,11 @@ body{
 .hist24-vela{min-width:0;background:#0b0b0d;border:1px solid #333;border-top-width:3px;border-radius:9px;padding:7px 2px 5px;text-align:center}
 .hist24-vela.azul{border-top-color:#16c8ef}.hist24-vela.roxo{border-top-color:#a93cff}.hist24-vela.rosa{border-top-color:#ff3da7}
 .hist24-mult{font-size:13px;font-weight:900;white-space:nowrap}.hist24-vela.azul .hist24-mult{color:#22d3ee}.hist24-vela.roxo .hist24-mult{color:#b95cff}.hist24-vela.rosa .hist24-mult{color:#ff55b4}
-.hist24-hora{margin-top:3px;color:#c5cec9;font-size:8px;white-space:nowrap}
+.hist24-hora{margin-top:3px;color:#00e889;font-size:10px;white-space:nowrap}
 .hist24-acoes{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
 .hist24-acoes button{font-size:9px;padding:9px 5px;border-radius:8px}
 .hist24-info{text-align:center;color:#70877b;font-size:8px;margin-top:7px}
-@media(max-width:420px){.hist24-grid{gap:4px}.hist24-mult{font-size:12px}.hist24-hora{font-size:7.5px}}
+@media(max-width:420px){.hist24-grid{gap:4px}.hist24-mult{font-size:12px}.hist24-hora,.hist24-round{font-size:9px}}
 
 
 /* ===== P3 V4 · COR DO ANALISTA EM TODA A INTERFACE ===== */
@@ -390,7 +392,7 @@ body{
 .analista-h-linha-secundaria{display:grid;grid-template-columns:.8fr .8fr .8fr .8fr 1.55fr;gap:5px;margin-top:6px}
 .analista-h-linha-secundaria>div{min-width:0;border:1px solid #25302b;border-radius:8px;background:#060908;padding:5px 6px;text-align:center}
 .analista-h-linha-secundaria strong{display:block;color:#e8f7ef;font-size:10px;white-space:normal}
-.analista-round{display:block!important;margin-top:2px!important;color:#718078!important;font-size:6px!important;font-weight:700;letter-spacing:.35px;line-height:1.05}
+.analista-round{display:block!important;margin-top:2px!important;color:#fff!important;font-size:10px!important;font-weight:700;letter-spacing:.35px;line-height:1.05}
 .analista-h-melhor strong{color:var(--mrg-analista-cor)}
 @media(max-width:700px){
  .analista-h-linha-principal{grid-template-columns:1fr 1.35fr}
@@ -539,6 +541,7 @@ body{
     <div class="analista-h-box analista-h-destaque">
       <small>GATILHO</small>
       <strong id="miniAnalistaGatilho">--</strong>
+      <small id="miniAnalistaGatilhoRound" class="analista-round" hidden></small>
     </div>
     <div class="analista-h-box analista-h-destaque">
       <small>PREDOMINA</small>
@@ -1689,11 +1692,11 @@ function fecharProjecoes(){document.getElementById("modalProjecoes").classList.a
 function numeroRodadaVela(vela){
   if(!vela||typeof vela!=="object")return"";
   const bruto=vela.numero_rodada??vela.roundId??"";
-  return String(bruto).trim();
+  return String(bruto).trim().replace(/^1WIN[_\s-]*/i,"");
 }
 function mostrarRoundUltimaVela(numero){
   const alvo=document.getElementById("miniAnalistaRound");if(!alvo)return;
-  const valor=String(numero||"").trim();
+  const valor=String(numero||"").trim().replace(/^1WIN[_\s-]*/i,"");
   alvo.textContent=valor?`ROUND ${valor}`:"";
   alvo.hidden=!valor;
 }
@@ -1728,7 +1731,7 @@ async function carregarFeed50Velas(){
     const chegouNovaVela=Boolean(FEED50_ULTIMA_CHAVE&&chaveAtual&&chaveAtual!==FEED50_ULTIMA_CHAVE);
     FEED50_ULTIMA_CHAVE=chaveAtual||FEED50_ULTIMA_CHAVE;
     limparEntradasPorLimiteCasas();
-    alvo.innerHTML=velas.map(v=>{const mult=String(v.multiplicador||v.mult||v.multiplicador_num||"-");const multTxt=/x$/i.test(mult)?mult:`${mult}x`;const hora=String(v.hora||v.horario||"--:--:--").slice(-8);const rodada=numeroRodadaVela(v);return `<div class="feed50-vela ${classeCorFeed50(v)}"><div class="feed50-mult">${escaparHtml(multTxt)}</div>${rodada?`<div class="feed50-round">${escaparHtml(rodada)}</div>`:""}<div class="feed50-hora">${escaparHtml(hora)}</div></div>`}).join("");
+    alvo.innerHTML=velas.map(v=>{const mult=String(v.multiplicador||v.mult||v.multiplicador_num||"-");const multTxt=/x$/i.test(mult)?mult:`${mult}x`;const hora=String(v.hora||v.horario||"--:--:--").slice(-8);const rodada=numeroRodadaVela(v);return `<div class="feed50-vela ${classeCorFeed50(v)}"><div class="feed50-mult">${escaparHtml(multTxt)}</div><div class="feed50-hora">${escaparHtml(hora)}</div>${rodada?`<div class="feed50-round">${escaparHtml(rodada)}</div>`:""}</div>`}).join("");
     // Cada vela nova também força a releitura do estado publicado dos dois
     // executores, sem criar outro temporizador nem aumentar o polling normal.
     if(chegouNovaVela)carregarLeitura(true);
@@ -1815,6 +1818,7 @@ async function p3CarregarAnalista(){
     }
 
     let gatilho=p3Primeiro(snap,["tese_ref"],ultima);
+    const rodadaGatilho=gatilho&&typeof gatilho==="object"?numeroRodadaVela(gatilho):numeroRodadaVela({numero_rodada:snap.gatilho_numero_rodada});
     if(gatilho&&typeof gatilho==="object") gatilho=p3Primeiro(gatilho,["multiplicador","valor","x","ref"],ultima);
     if(gatilho!==null&&gatilho!==undefined&&gatilho!=="--"){
       const gs=String(gatilho).trim(); gatilho=/x$/i.test(gs)?gs:`${gs}x`;
@@ -1839,6 +1843,8 @@ async function p3CarregarAnalista(){
     }
 
     document.getElementById("miniAnalistaGatilho").textContent=gatilho||"--";
+    const roundGatilho=document.getElementById("miniAnalistaGatilhoRound");
+    if(roundGatilho){roundGatilho.textContent=rodadaGatilho?`ROUND ${rodadaGatilho}`:"";roundGatilho.hidden=!rodadaGatilho;}
     document.getElementById("miniAnalistaTipo").textContent=tipo;
     document.getElementById("miniAnalistaPct").textContent=p3Pct(conf);
     document.getElementById("miniAnalistaStatus").textContent=status;
@@ -2033,7 +2039,7 @@ function p3RenderFeed24h(){
     const mult=/x$/i.test(String(x))?String(x):`${x}x`;
     let h=String(v.hora||"").slice(-8);if(!h&&v.data_hora)h=new Date(v.data_hora).toLocaleTimeString("pt-BR");
     const rodada=numeroRodadaVela(v);
-    return `<div class="hist24-vela ${p3ClasseVela24(v)}"><div class="hist24-mult">${escaparHtml(mult)}</div>${rodada?`<div class="hist24-round">${escaparHtml(rodada)}</div>`:""}<div class="hist24-hora">${escaparHtml(h||"--:--:--")}</div></div>`;
+    return `<div class="hist24-vela ${p3ClasseVela24(v)}"><div class="hist24-mult">${escaparHtml(mult)}</div><div class="hist24-hora">${escaparHtml(h||"--:--:--")}</div>${rodada?`<div class="hist24-round">${escaparHtml(rodada)}</div>`:""}</div>`;
   }).join(""):'<div class="vazio" style="grid-column:1/-1">Nenhuma vela neste filtro.</div>';
   const b=document.getElementById("p3BtnMais24h");if(b){b.disabled=P3_FEED24_FIM||!P3_FEED24.length;b.textContent=P3_FEED24_FIM?"FIM DAS VELAS":"CARREGAR MAIS"}
   const i=document.getElementById("p3FeedInfo24h");if(i)i.textContent=`${P3_FEED24.length} vela${P3_FEED24.length===1?"":"s"} exibida${P3_FEED24.length===1?"":"s"} · retenção móvel de 24h`;
