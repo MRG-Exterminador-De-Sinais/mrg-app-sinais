@@ -48,13 +48,72 @@ html.ios-iq-fallback .iq-fallback a{display:block;padding:13px 16px;border-radiu
   .asset{grid-column:1;grid-row:1;font-size:14px}.label-price{display:block!important;grid-column:2;grid-row:1;align-self:end;font-size:8px!important}.price{grid-column:2;grid-row:2;align-self:start;font-size:17px}.label-signal{display:block!important;grid-column:3;grid-row:1;align-self:end;font-size:8px!important}.signal{grid-column:3;grid-row:2;align-self:start;font-size:18px;margin:0}.operation-grid{grid-column:1;grid-row:2;margin:0;gap:4px}.operation-grid .muted{font-size:7px}.operation-grid .detail{font-size:12px}
   .mobile-landscape-secondary,.metrics{display:none!important}.tools{justify-content:center;padding-top:1px;gap:3px}.tools button{font-size:9px;padding:4px 6px}
 }
+
+/* ===== MRG P4 MOBILE V2 — sem corte + destaque operacional ===== */
+.panel{transition:background .28s ease,border-color .28s ease,box-shadow .28s ease}
+body.state-buy header{background:linear-gradient(90deg,#0b1220 0%,#0a2d22 62%,#0b4b34 100%);box-shadow:inset 0 -2px 0 #31d889}
+body.state-sell header{background:linear-gradient(90deg,#0b1220 0%,#35101b 62%,#6a1d33 100%);box-shadow:inset 0 -2px 0 #ff6385}
+.panel.state-buy{background:linear-gradient(145deg,rgba(8,35,27,.96) 0%,rgba(9,83,54,.94) 54%,rgba(16,47,38,.97) 100%);box-shadow:inset 0 0 0 2px #31d889,0 0 18px rgba(49,216,137,.18)}
+.panel.state-sell{background:linear-gradient(145deg,rgba(41,11,22,.96) 0%,rgba(121,34,56,.94) 54%,rgba(53,16,27,.97) 100%);box-shadow:inset 0 0 0 2px #ff6385,0 0 18px rgba(255,99,133,.18)}
+.panel.state-buy .essential{border-color:#55e8a8;box-shadow:inset 0 0 0 1px rgba(85,232,168,.32)}
+.panel.state-sell .essential{border-color:#ff7896;box-shadow:inset 0 0 0 1px rgba(255,120,150,.32)}
+
+@media(max-width:850px){
+  /* O painel ocupa menos altura, mas nada essencial é cortado: o miolo rola internamente. */
+  header{height:42px;padding:5px 8px}
+  main{height:calc(100dvh - 42px)}
+  .panel{display:grid;grid-template-rows:minmax(0,1fr) auto;flex:0 0 40dvh;max-height:40dvh;padding:4px;gap:3px;overflow:hidden;border-bottom:1px solid #334158}
+  .essential{position:relative;min-height:0;height:100%;padding:6px 8px;gap:1px;overflow-y:auto;overflow-x:hidden;justify-content:flex-start;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  .asset{font-size:15px;line-height:1.08;margin:0}
+  #instruction{display:none}
+  .best-choice{padding:3px 6px;margin-top:2px}
+  .best-choice .best-title{font-size:7.5px}.best-choice strong{font-size:10.5px;line-height:1.08}.best-choice small{display:none}
+  .essential>.muted[style*="margin-top:10px"]{margin-top:3px!important}
+  .muted{font-size:8.5px;line-height:1.12}
+  .price{font-size:21px;line-height:1;margin:0}
+  .signal{font-size:23px;line-height:1;margin:2px 0 1px}
+  .follow{font-size:12px;line-height:1.1;margin:0 0 2px}
+  .grid{gap:6px;margin-top:2px}.detail{font-size:13px;line-height:1.05}
+  .metrics{margin-top:3px;padding-top:3px}.metric,#accuracy{font-size:15px;line-height:1}.metrics .muted{font-size:7.5px;line-height:1.08}.bar{height:3px;margin-top:2px}
+  #memory,#memory+.muted{display:none}
+  #timing{display:block!important;font-size:8px;line-height:1.08;margin-top:3px!important;white-space:normal}
+  #reason{display:block!important;font-size:8px;line-height:1.08;margin-top:1px;white-space:normal}
+  .tools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:3px;margin:0;padding:0;flex-wrap:initial}
+  .tools button{min-width:0;min-height:28px;padding:3px 2px;font-size:8px;line-height:1.05;white-space:normal}
+  .mobile-details{display:block!important}
+  .iq{min-height:0}
+  html.ios-iq-fallback .iq{align-items:flex-start;padding:8px 10px}
+  html.ios-iq-fallback .iq-fallback{width:min(100%,430px);padding:12px 14px;margin-top:6px}
+  html.ios-iq-fallback .iq-fallback h2{font-size:16px;margin-bottom:5px}
+  html.ios-iq-fallback .iq-fallback p{font-size:12px;line-height:1.3;margin-bottom:8px}
+  html.ios-iq-fallback .iq-fallback a{padding:10px;font-size:13px}
+}
+
+@media(max-width:850px) and (orientation:landscape){
+  header{height:32px;padding:2px 7px}h1{font-size:13px}#status{font-size:7.5px}.back-p3{font-size:8px;padding:3px 5px}
+  main{height:calc(100dvh - 32px)}
+  .panel{flex:0 0 31dvh;max-height:31dvh;padding:2px 4px;gap:2px}
+  .essential{display:grid;grid-template-columns:1.25fr .95fr .72fr .82fr;grid-template-rows:auto auto auto;column-gap:6px;row-gap:0;padding:3px 6px;overflow-y:auto;align-items:center}
+  .asset{grid-column:1/3;grid-row:1;font-size:12px;line-height:1.05;align-self:center}
+  .label-price{display:block!important;grid-column:3;grid-row:1;align-self:end;font-size:6.5px!important}
+  .price{grid-column:3;grid-row:2;align-self:start;font-size:15px;line-height:1}
+  .label-signal{display:block!important;grid-column:4;grid-row:1;align-self:end;font-size:6.5px!important}
+  .signal{grid-column:4;grid-row:2;align-self:start;font-size:16px;line-height:1;margin:0}
+  .follow{display:block!important;grid-column:1;grid-row:2;font-size:9px;line-height:1.05;margin:0;align-self:start}
+  .operation-grid{grid-column:2;grid-row:2;margin:0;gap:3px;align-self:start}.operation-grid .muted{font-size:6px}.operation-grid .detail{font-size:9.5px}
+  #timing{display:block!important;grid-column:1/5;grid-row:3;font-size:6.5px;line-height:1.05;margin:1px 0 0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mobile-landscape-secondary,.metrics{display:none!important}
+  .tools{grid-template-columns:repeat(4,minmax(0,1fr));gap:2px}.tools button{min-height:21px;font-size:6.8px;padding:2px;line-height:1}
+  html.ios-iq-fallback .iq{padding:4px 8px}html.ios-iq-fallback .iq-fallback{padding:7px 10px;margin-top:2px}.iq-fallback p{display:none}.iq-fallback h2{font-size:13px!important;margin-bottom:4px!important}.iq-fallback a{padding:7px!important;font-size:11px!important}
+}
+
 </style>
 <header><h1>MRG MERCADO</h1><div class="head-actions"><span id="status">Validando acesso…</span><button id="backP3" class="back-p3" hidden>← P3</button></div></header>
 <main id="app" hidden><div class="iq"><iframe title="IQ Option" src="https://iqoption.com/traderoom"></iframe></div><aside class="panel"><section class="essential"><div id="asset" class="asset">Nenhum ativo selecionado</div><div class="muted" id="instruction">Abaixo, toque em Ativos para escolher.</div><button type="button" id="bestChoice" class="best-choice" hidden><span class="best-title" id="bestTitle">MELHOR ASSERTIVIDADE AGORA</span><strong id="bestAsset">—</strong><small id="bestDetail">Clique para alterar somente o painel MRG</small></button><div class="muted" style="margin-top:10px">PREÇO AGORA</div><div class="price" id="price">—</div><div id="updated" class="muted">Sem atualização confirmada</div><div class="muted" style="margin-top:10px">SINAL</div><div id="signal" class="signal wait">AGUARDAR</div><div class="muted">ACOMPANHAMENTO</div><div id="follow" class="follow">Aguardando seleção do usuário</div><div class="grid"><div><div class="muted">DURAÇÃO DA ANÁLISE</div><div id="horizon" class="detail">—</div></div><div><div class="muted">PREÇO DE ENTRADA</div><div id="entry" class="detail">—</div></div></div><div class="metrics"><div class="grid"><div><div class="muted">CONVICÇÃO ATUAL DO MOTOR</div><div id="confidence" class="metric">—</div><div class="bar"><span id="confidenceBar" style="width:0"></span></div></div><div><div class="muted">ACERTOS DO HISTÓRICO</div><div id="accuracy" class="metric">—</div><div id="sample" class="muted">Sem resultados</div></div></div><div class="grid"><div><div class="muted">PROJEÇÃO DE ALTA</div><div id="upProb" class="detail">—</div></div><div><div class="muted">PROJEÇÃO DE BAIXA</div><div id="downProb" class="detail">—</div></div></div><div id="memory" class="muted" style="margin-top:8px"></div><div class="muted">Convicção é um indicador do motor, não garantia de acerto.</div></div><div id="timing" class="muted" style="margin-top:8px"></div><div id="reason" class="muted"></div></section><div class="tools"><button id="choose">Ativos</button><button id="recent">Últimos 20 sinais</button><button id="all">Todos os ativos MRG</button></div></aside></main>
 <section class="gate" id="gate"><h2>PRO+ Mercado</h2><p id="gateText">Validando o acesso ao MRG Mercado…</p><button id="goLogin" hidden>Entrar</button></section>
 <dialog id="picker"><div class="head"><h2>Escolha um ativo</h2><button data-close="picker">Fechar</button></div><p class="muted">Blitz primeiro · Binária abaixo. Disponíveis em destaque. Fora de operação não podem ser selecionados.</p><div id="assetList"></div></dialog><dialog id="historyModal"><div class="head"><h2>Últimos 20 sinais</h2><button data-close="historyModal">Fechar</button></div><div id="historyAsset" class="asset"></div><p id="stats" class="muted"></p><div id="history"></div><p class="muted">Resultados do estudo por preço observado; não são liquidações oficiais da IQ.</p></dialog><dialog id="catalogModal"><div class="head"><h2>Todos os ativos MRG</h2><button data-close="catalogModal">Fechar</button></div><div id="catalog"></div></dialog>
 <script>
-const U='https://bflptqejltvwfjhixwpj.supabase.co',K='sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO',T='mrg_mercado_contextos_app',db=supabase.createClient(U,K),el=id=>document.getElementById(id),text=(id,v)=>el(id).textContent=v,rows=new Map();let ctx=[],selected=sessionStorage.getItem('mrg_contexto_reconstruido')||'',refreshing=false,pending=false,debounceTimer=null,pollTimer=null,marketChannel=null;const bool=v=>v===true,num=x=>x===null||x===undefined||x===''?NaN:Number(x),parse=(v,d={})=>{if(v&&typeof v==='object')return v;try{return JSON.parse(v||'')}catch{return d}},fmt=x=>{if(!x)return'—';let d=new Date(x);return isNaN(d)?'—':d.toLocaleString('pt-BR')},price=x=>Number.isFinite(num(x))?num(x).toLocaleString('pt-BR',{minimumFractionDigits:5,maximumFractionDigits:6}):'—',pct=x=>Number.isFinite(num(x))?num(x).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%':'—',label=c=>`${c.label||c.symbol||'Ativo'} · ${c.modality==='BINARIA'?'Binária':'Blitz'} · ${c.market||'—'}`;
+const U='https://bflptqejltvwfjhixwpj.supabase.co',K='sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO',T='mrg_mercado_contextos_app',db=supabase.createClient(U,K),el=id=>document.getElementById(id),text=(id,v)=>el(id).textContent=v,rows=new Map();let ctx=[],selected=sessionStorage.getItem('mrg_contexto_reconstruido')||'',refreshing=false,pending=false,debounceTimer=null,pollTimer=null,marketChannel=null;const bool=v=>v===true||v===1||String(v).toLowerCase()==='true'||String(v)==='1',num=x=>x===null||x===undefined||x===''?NaN:Number(x),parse=(v,d={})=>{if(v&&typeof v==='object')return v;try{return JSON.parse(v||'')}catch{return d}},fmt=x=>{if(!x)return'—';let d=new Date(x);return isNaN(d)?'—':d.toLocaleString('pt-BR')},price=x=>Number.isFinite(num(x))?num(x).toLocaleString('pt-BR',{minimumFractionDigits:5,maximumFractionDigits:6}):'—',pct=x=>Number.isFinite(num(x))?num(x).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%':'—',label=c=>`${c.label||c.symbol||'Ativo'} · ${c.modality==='BINARIA'?'Binária':'Blitz'} · ${c.market||'—'}`;
 function fresh(c){return c.is_fresh===true&&Number.isFinite(Number(c.price))&&String(c.source_status||'').toLowerCase()==='online'}
 function norm(c){
   const r=parse(c.recent20),sig=parse(c.raw_signal),ana=parse(c.raw_analysis);
@@ -78,7 +137,7 @@ function render(){
   text('timing',c.entryAt?'Entrada: '+fmt(c.entryAt)+' · Vencimento: '+fmt(c.expiry):c.validUntil?'Oportunidade válida até: '+fmt(c.validUntil):'');text('reason',c.reason||'');
   const s=el('signal');s.className='signal wait';
   if(!live){text('signal','AGUARDAR');text('follow','Aguardando preço vivo/conexão.')}else if(c.operational===true&&buy){text('signal','COMPRAR AGORA');s.className='signal up';text('follow',c.reason||'Compra em acompanhamento')}else if(c.operational===true&&sell){text('signal','VENDER AGORA');s.className='signal down';text('follow',c.reason||'Venda em acompanhamento')}else{text('signal','AGUARDAR');text('follow',c.reason||'Analisando o mercado.')}
-  document.querySelector('.essential').classList.toggle('entry-buy',s.textContent==='COMPRAR AGORA');document.querySelector('.essential').classList.toggle('entry-sell',s.textContent==='VENDER AGORA');
+  const isBuyNow=s.textContent==='COMPRAR AGORA',isSellNow=s.textContent==='VENDER AGORA';const essential=document.querySelector('.essential'),panel=document.querySelector('.panel');essential.classList.toggle('entry-buy',isBuyNow);essential.classList.toggle('entry-sell',isSellNow);panel?.classList.toggle('state-buy',isBuyNow);panel?.classList.toggle('state-sell',isSellNow);document.body.classList.toggle('state-buy',isBuyNow);document.body.classList.toggle('state-sell',isSellNow);
   text('historyAsset',label(c));text('stats',Number.isFinite(Number(c.history_accuracy_percent))?pct(c.history_accuracy_percent)+' · '+c.historyHits+' acertos · '+c.historyErrors+' erros · '+c.historyTies+' empates':'Sem resultados concluídos');
   const h=el('history');h.replaceChildren();if(!c.history.length)h.textContent='Nenhum sinal registrado neste contexto.';c.history.slice(0,20).forEach(x=>{const r=document.createElement('div');r.className='row';r.innerHTML='<strong>'+(x.direction||x.direcao||'—')+' · '+(x.result||x.resultado||'EM ACOMPANHAMENTO')+'</strong><div class="muted">'+fmt(x.entry_at||x.entrada_em)+' → '+fmt(x.expiry_at||x.expires_at||x.expira_em)+' · Entrada '+price(x.entry_price)+' · Final '+price(x.result_price)+'</div>';h.append(r)});if(el('catalogModal').open)catalog()
 }
@@ -121,7 +180,7 @@ function configurarResumoTelefone(){
   itens[3]?.classList.add('label-price');
   itens[6]?.classList.add('label-signal');
   itens[10]?.classList.add('operation-grid');
-  [1,2,5,8,9,11,12,13].forEach(i=>itens[i]?.classList.add('mobile-landscape-secondary'));
+  [1,2,5,8,11,13].forEach(i=>itens[i]?.classList.add('mobile-landscape-secondary'));
   const botao=document.createElement('button');
   botao.type='button';botao.className='mobile-details';botao.textContent='Mais dados';
   document.querySelector('.tools').append(botao);
