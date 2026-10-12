@@ -238,7 +238,7 @@ button.sec{background:#333;color:#fff}button.sair{background:#7a2020;color:#fff}
 .top-app-mobile{border:1px solid #173a2b;border-radius:12px;padding:9px;background:#050a07}
 .mobile-status,.card{box-shadow:0 8px 28px rgba(0,0,0,.20)}
 .mobile-live{border-color:#00f08a}.rosas-mini{border-color:#ff3fae}
-.p3-nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 8px}
+.p3-nav{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 8px}
 .p3-nav button{margin:0;background:#07100c;color:#fff;border:1px solid #00f08a;font-size:12px;min-height:52px}
 .p3-nav button:last-child{border-color:#20c8ff}
 .p3-nav small{display:block;font-size:8px;color:#8fa69a;margin-top:3px;letter-spacing:.5px}
@@ -627,6 +627,7 @@ body{
 <div class="p3-nav">
 <button type="button" onclick="navegarPaginaMRG(1)">▣ PÁGINA 1 — ESTUDOS<small>CONTEÚDO E APRENDIZADO</small></button>
 <button type="button" onclick="navegarPaginaMRG(2)">◆ PÁGINA 2 — ANALISTA<small>ANÁLISES EM TEMPO REAL</small></button>
+<button type="button" id="btnP4Mercado" hidden onclick="navegarPaginaMRG(4)">◈ PRO+ MERCADO<small>ANÁLISES DO MERCADO</small></button>
 </div><div id="p3NavMsg" class="p3-nav-msg"></div>
 <button type="button" class="sair" onclick="sair()">SAIR</button>
 </div>
@@ -648,10 +649,15 @@ async function navegarPaginaMRG(pagina){
  try{
   const {data,error}=await db.rpc("obter_acesso_mrg"); if(error)throw error;
   const c=normalizarContratoMRG(data);
-  const permitido=pagina===1?c.pagina_1===true:c.pagina_2===true;
+  const campo=pagina===1?"pagina_1":pagina===2?"pagina_2":"pagina_4";
+  const permitido=c[campo]===true;
   if(!permitido){if(msg)msg.textContent=`Página ${pagina} não liberada para este acesso.`;return}
-  window.location.href=pagina===1?"/p1.html":"/p2.html";
+  window.location.href=pagina===1?"/p1.html":pagina===2?"/p2.html":"/p4.html";
  }catch(e){if(msg)msg.textContent="Não foi possível validar o acesso agora."}
+}
+function atualizarNavegacaoP3(contrato){
+ const botao=document.getElementById("btnP4Mercado");
+ if(botao)botao.hidden=!(contrato&&contrato.pagina_4===true);
 }
 
 let painelAtivo=false,telaAtual="login";
@@ -1276,6 +1282,8 @@ async function verificarAcesso(redirecionarSemSessao=false){
       :"Página 3 PRO não liberada para o estado atual da conta.");
     return;
   }
+
+  atualizarNavegacaoP3(contratoAcesso);
 
   const entrandoNoApp=telaAtual!=="app";
 
