@@ -1012,7 +1012,7 @@ function renderizarUsuarios(lista){
     const btnReativar=(u.cadastro_inativo===true||u.free_encerrado_definitivo===true)
       ?`<button class="pequeno free" onclick="reativarCadastroInativoFree('${u.id}')">REATIVAR FREE</button>`
       :"";
-    return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeNivelAcesso(u)}</div>${extraFree}<div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="linha"><b>PRO+ Mercado:</b> ${statusP4Usuario(u)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button>${(u.bloqueio_administrativo===true || String(u.nivel_acesso||"").toUpperCase()==="BLOQUEADO")
+    return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeNivelAcesso(u)}</div>${extraFree}<div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="linha"><b>PRO+ Mercado:</b> ${statusP4Usuario(u)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button><button class="pequeno hist" onclick="abrirTesteP4('${u.id}')">TESTE P4</button>${(u.bloqueio_administrativo===true || String(u.nivel_acesso||"").toUpperCase()==="BLOQUEADO")
 ?`<button class="pequeno free" onclick="desbloquearUsuario('${u.id}')">DESBLOQUEAR</button>`
 :`<button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button>`}${btnReativar}</div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${u.id}','${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`;
   }).join("");
@@ -1021,13 +1021,34 @@ function toggleBusca(){const c=$("campoBusca");if(!c.style.display||c.style.disp
 function filtrarUsuarios(){const q=$("campoBusca").value.toLowerCase().trim();let lista=window.USUARIOS_CACHE.filter(u=>categoriaUsuario(u)===window.CATEGORIA_USUARIO);if(q)lista=lista.filter(u=>[u.nome,u.email,u.telefone,statusFinanceiroReal(u)].some(v=>String(v||"").toLowerCase().includes(q)));renderizarUsuarios(lista)}
 async function registrarHistorico(x){const{error}=await db.from("historico_financeiro").insert({perfil_id:x.perfil_id,nome:x.nome,email:x.email,acao:x.acao,valor:Number(x.total||0),valor_total:Number(x.total||0),valor_mensalidade:Number(x.mensalidade||0),valor_inscricao:Number(x.inscricao||0),data_pagamento:x.data||null,validade_inicio:x.inicio||null,validade_fim:x.fim||null,observacao:x.obs||null,criado_em:agoraISO()});if(error)throw error}
 function statusP4Usuario(u){
-  const ativo=u.pro_mais_mercado_ativo===true;
-  const fim=u.pro_mais_mercado_fim;
-  const valido=ativo&&fim&&!Number.isNaN(new Date(fim).getTime())&&new Date(fim).getTime()>Date.now();
-  const pro=nivelAcessoReal(u)==="PRO_ATIVO"&&u.bloqueio_administrativo!==true;
-  return valido&&pro
-    ?`<span class="badge liberado">PRO+ ATIVO</span> · Até ${formatarDataHoraBR(fim)}`
-    :`<span class="badge financeiro-pendente">SEM P4</span>${fim?` · Última validade: ${formatarDataHoraBR(fim)}`:""}`;
+  const agora=Date.now();
+  const pago=u.pro_mais_mercado_ativo===true&&u.pro_mais_mercado_fim&&new Date(u.pro_mais_mercado_fim).getTime()>agora;
+  const teste=u.p4_teste_ativo===true&&u.p4_teste_fim&&new Date(u.p4_teste_fim).getTime()>agora;
+  const nivel=nivelAcessoReal(u);
+  const p3=nivel==="PRO_ATIVO"||nivel==="PRO_CARENCIA";
+  const disponivel=p3&&u.bloqueio_administrativo!==true;
+  const partes=[];
+  if(pago)partes.push(`PRO+ pago até ${formatarDataHoraBR(u.pro_mais_mercado_fim)}`);
+  if(teste)partes.push(`Teste até ${formatarDataHoraBR(u.p4_teste_fim)}`);
+  if(!partes.length)return `<span class="badge financeiro-pendente">SEM P4</span>`;
+  return `<span class="badge ${disponivel?"liberado":"financeiro-pendente"}">${disponivel?"P4 LIBERADA":"P4 DEPENDE DA P3"}</span> · ${partes.join(" · ")}`;
+}
+async function abrirTesteP4(id){
+  const u=usuario(id);if(!u)return;
+  const atual=u.p4_teste_ativo===true&&u.p4_teste_fim&&new Date(u.p4_teste_fim).getTime()>Date.now();
+  const detalhe=atual?`\nTeste atual até: ${formatarDataHoraBR(u.p4_teste_fim)}\nDigite 0 para cancelar o teste.`:"";
+  const entrada=prompt(`TESTE P4 — ${u.nome}\n\nDigite o número de dias (1 a 365).\nSem cobrança e sem alterar o PRO.${detalhe}`,atual?"":"3");
+  if(entrada===null)return;
+  const valor=String(entrada).trim();
+  if(!/^(0|[1-9]\d*)$/.test(valor)||Number(valor)>365){alert("Digite um número inteiro entre 0 e 365. Zero cancela o teste.");return}
+  const dias=Number(valor);
+  if(!confirm(dias===0?`Cancelar o TESTE P4 de ${u.nome}?\nO PRO não será alterado.`:`Liberar TESTE P4 por ${dias} dia(s) para ${u.nome}?\nSem cobrança. A validade do PRO não será alterada.`))return;
+  try{
+    const {data,error}=await db.rpc("admin_mrg_definir_teste_p4",{p_perfil_id:id,p_dias:dias});
+    if(error)throw error;
+    await recarregarMantendoBusca();
+    alert(dias===0?"Teste P4 cancelado. PRO preservado.":`Teste P4 autorizado por ${dias} dia(s). Até: ${formatarDataHoraBR(data?.teste_fim)}. O acesso depende da P3.`);
+  }catch(e){alert("Não foi possível alterar o teste P4: "+String(e.message||e))}
 }
 function atualizarPreviaPlanoP4(){
   const p=$("pagoPlanoP4")?.value;
