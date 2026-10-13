@@ -153,9 +153,40 @@ body.state-sell header{background:linear-gradient(90deg,#0b1220 0%,#35101b 62%,#
 #assetList{height:calc(100% - 160px)}
 @media(max-width:850px){#mrgClock{font-size:11px;padding:4px 5px}}
 @media(max-width:850px) and (orientation:landscape){#mrgClock{font-size:10px;padding:2px 4px}}
+
+/* P4 V3: somente posicionamento de relogio e acompanhamento. */
+.best-choice-line{display:flex;align-items:center;gap:10px;background:#152b32;border:1px solid #328c80;border-radius:8px;margin-top:8px;padding:3px 10px;min-width:0}
+.best-choice-line .best-choice{flex:1;min-width:0;margin:0;padding:5px 0;background:transparent;border:0;border-radius:0}
+.best-choice-line #mrgClock{flex-shrink:0;background:transparent;border:0;border-radius:0;padding:0;color:#53fa66;font-size:clamp(18px,2vw,26px);letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.signal-tracking-line{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start;margin-top:2px}
+.signal-tracking-line .signal-left{min-width:0}
+.signal-tracking-line .signal-left .signal{margin:3px 0}
+.signal-tracking-line .signal-left .follow{margin:2px 0}
+.signal-tracking-line .signal-right{min-width:0;padding:2px 0 2px 10px;border-left:2px solid #328c80}
+.signal-tracking-line .signal-right #timing{display:block!important;margin:0!important;font-size:12px;line-height:1.35;white-space:normal;overflow-wrap:anywhere;text-overflow:clip;overflow:visible}
+.signal-tracking-line .signal-right .tracking-label{font-size:10px;color:#b6c5da;font-weight:700;margin-bottom:3px}
+@media(max-width:850px){
+ .best-choice-line{margin-top:2px;padding:2px 7px;gap:5px}
+ .best-choice-line .best-choice{padding:2px 0}
+ .best-choice-line #mrgClock{font-size:clamp(17px,4.2vw,23px);padding:0}
+ .signal-tracking-line{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px;margin-top:1px}
+ .signal-tracking-line .signal-left .signal{font-size:23px;line-height:1.02}
+ .signal-tracking-line .signal-left .follow{font-size:12px}
+ .signal-tracking-line .signal-right{padding-left:6px}
+ .signal-tracking-line .signal-right #timing{font-size:10px;line-height:1.15}
+ .signal-tracking-line .signal-right .tracking-label{font-size:8px;margin-bottom:2px}
+}
+@media(max-width:850px) and (orientation:landscape){
+ .best-choice-line{grid-column:1/5;grid-row:auto;min-width:0}
+ .signal-tracking-line{grid-column:1/5;grid-row:3;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:6px}
+ .signal-tracking-line .signal-left .signal{font-size:15px}
+ .signal-tracking-line .signal-left .follow{font-size:9px}
+ .signal-tracking-line .signal-right #timing{grid-column:auto;grid-row:auto;font-size:9px;white-space:normal;overflow:visible;text-overflow:clip}
+ .signal-tracking-line .signal-right .tracking-label{font-size:8px}
+}
 </style>
-<header><h1>MRG MERCADO</h1><div class="head-actions"><time id="mrgClock" aria-label="Horário do dispositivo">--:--:--</time><span id="status">Validando acesso…</span><button id="backP3" class="back-p3" hidden>← P3</button></div></header>
-<main id="app" hidden><div class="iq"><iframe title="IQ Option" src="https://iqoption.com/traderoom"></iframe></div><aside class="panel"><section class="essential"><div id="asset" class="asset">Nenhum ativo selecionado</div><div class="muted" id="instruction">Abaixo, toque em Ativos para escolher.</div><button type="button" id="bestChoice" class="best-choice" hidden><span class="best-title" id="bestTitle">MELHOR ASSERTIVIDADE AGORA</span><strong id="bestAsset">—</strong><small id="bestDetail">Clique para alterar somente o painel MRG</small></button><div class="muted" style="margin-top:10px">PREÇO AGORA</div><div class="price" id="price">—</div><div id="updated" class="muted">Sem atualização confirmada</div><div class="muted" style="margin-top:10px">SINAL</div><div id="signal" class="signal wait">AGUARDAR</div><div class="muted">ACOMPANHAMENTO</div><div id="follow" class="follow">Aguardando seleção do usuário</div><div class="grid"><div><div class="muted">DURAÇÃO DA ANÁLISE</div><div id="horizon" class="detail">—</div></div><div><div class="muted">PREÇO DE ENTRADA</div><div id="entry" class="detail">—</div></div></div><div class="metrics"><div class="grid"><div><div class="muted">CONVICÇÃO ATUAL DO MOTOR</div><div id="confidence" class="metric">—</div><div class="bar"><span id="confidenceBar" style="width:0"></span></div></div><div><div class="muted">ACERTOS DO HISTÓRICO</div><div id="accuracy" class="metric">—</div><div id="sample" class="muted">Sem resultados</div></div></div><div class="grid"><div><div class="muted">PROJEÇÃO DE ALTA</div><div id="upProb" class="detail">—</div></div><div><div class="muted">PROJEÇÃO DE BAIXA</div><div id="downProb" class="detail">—</div></div></div><div id="memory" class="muted" style="margin-top:8px"></div><div class="muted">Convicção é um indicador do motor, não garantia de acerto.</div></div><div id="timing" class="muted" style="margin-top:8px"></div><div id="reason" class="muted"></div></section><div class="tools"><button id="choose">Ativos</button><button id="recent">Últimos 10 sinais</button><button id="all">Todos os ativos MRG</button></div></aside></main>
+<header><h1>MRG MERCADO</h1><div class="head-actions"><span id="status">Validando acesso…</span><button id="backP3" class="back-p3" hidden>← P3</button></div></header>
+<main id="app" hidden><div class="iq"><iframe title="IQ Option" src="https://iqoption.com/traderoom"></iframe></div><aside class="panel"><section class="essential"><div id="asset" class="asset">Nenhum ativo selecionado</div><div class="muted" id="instruction">Abaixo, toque em Ativos para escolher.</div><button type="button" id="bestChoice" class="best-choice" hidden><span class="best-title" id="bestTitle">MELHOR ASSERTIVIDADE AGORA</span><strong id="bestAsset">—</strong><small id="bestDetail">Clique para alterar somente o painel MRG</small></button><time id="mrgClock" aria-label="Horário do dispositivo">--:--:--</time><div class="muted" style="margin-top:10px">PREÇO AGORA</div><div class="price" id="price">—</div><div id="updated" class="muted">Sem atualização confirmada</div><div class="muted" style="margin-top:10px">SINAL</div><div id="signal" class="signal wait">AGUARDAR</div><div class="muted">ACOMPANHAMENTO</div><div id="follow" class="follow">Aguardando seleção do usuário</div><div class="grid"><div><div class="muted">DURAÇÃO DA ANÁLISE</div><div id="horizon" class="detail">—</div></div><div><div class="muted">PREÇO DE ENTRADA</div><div id="entry" class="detail">—</div></div></div><div class="metrics"><div class="grid"><div><div class="muted">CONVICÇÃO ATUAL DO MOTOR</div><div id="confidence" class="metric">—</div><div class="bar"><span id="confidenceBar" style="width:0"></span></div></div><div><div class="muted">ACERTOS DO HISTÓRICO</div><div id="accuracy" class="metric">—</div><div id="sample" class="muted">Sem resultados</div></div></div><div class="grid"><div><div class="muted">PROJEÇÃO DE ALTA</div><div id="upProb" class="detail">—</div></div><div><div class="muted">PROJEÇÃO DE BAIXA</div><div id="downProb" class="detail">—</div></div></div><div id="memory" class="muted" style="margin-top:8px"></div><div class="muted">Convicção é um indicador do motor, não garantia de acerto.</div></div><div id="timing" class="muted" style="margin-top:8px"></div><div id="reason" class="muted"></div></section><div class="tools"><button id="choose">Ativos</button><button id="recent">Últimos 10 sinais</button><button id="all">Todos os ativos MRG</button></div></aside></main>
 <section class="gate" id="gate"><h2>PRO+ Mercado</h2><p id="gateText">Validando o acesso ao MRG Mercado…</p><button id="goLogin" hidden>Entrar</button></section>
 <dialog id="picker"><div class="head"><h2>Escolha um ativo</h2><button data-close="picker">Fechar</button></div><p class="muted">Blitz primeiro · Binária abaixo. Ativos disponíveis, ordenados pela assertividade dos últimos 10 sinais concluídos. Fora de operação não podem ser selecionados.</p><input id="assetSearch" type="search" autocomplete="off" placeholder="Buscar ativo (USD, BRL, Bitcoin...)" aria-label="Buscar ativo"><div id="assetList"></div></dialog><dialog id="historyModal"><div class="head"><h2>Últimos 10 sinais</h2><button data-close="historyModal">Fechar</button></div><div id="historyAsset" class="asset"></div><p id="stats" class="muted"></p><div id="history"></div><p class="muted">Resultados do estudo por preço observado; não são liquidações oficiais da IQ.</p></dialog><dialog id="catalogModal"><div class="head"><h2>Todos os ativos MRG</h2><button data-close="catalogModal">Fechar</button></div><div id="catalog"></div></dialog>
 <script>
@@ -267,6 +298,32 @@ function configurarResumoTelefone(){
   botao.onclick=()=>{const copia=caixa.cloneNode(true);copia.classList.add('detail-copy');copia.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));copia.querySelectorAll('.mobile-landscape-secondary').forEach(n=>n.classList.remove('mobile-landscape-secondary'));const destino=janela.querySelector('.mobile-details-body');destino.replaceChildren(copia);janela.showModal()};
 }
 configurarResumoTelefone();
+
+/* Reposicionamento de elementos existentes: preserva ids, eventos, dados e renderizacao. */
+function posicionarPainelP4(){
+  const caixa=document.querySelector('.essential'),best=el('bestChoice'),clock=el('mrgClock');
+  if(!caixa||!best||!clock)return;
+  const faixa=document.createElement('div');faixa.className='best-choice-line';
+  best.parentNode.insertBefore(faixa,best);faixa.append(best,clock);
+  const sinal=el('signal'),acompanha=el('follow'),timing=el('timing');
+  if(!sinal||!acompanha||!timing)return;
+  const esquerda=document.createElement('div');esquerda.className='signal-left';
+  const direita=document.createElement('div');direita.className='signal-right';
+  const linha=document.createElement('div');linha.className='signal-tracking-line';
+  const labelSinal=sinal.previousElementSibling;
+  const labelAcompanha=acompanha.previousElementSibling;
+  if(!labelSinal||!labelAcompanha)return;
+  labelSinal.parentNode.insertBefore(linha,labelSinal);
+  linha.append(esquerda,direita);
+  esquerda.append(labelSinal,sinal,labelAcompanha,acompanha);
+  const titulo=document.createElement('div');titulo.className='tracking-label';titulo.textContent='ENTRADA / VENCIMENTO';
+  direita.append(titulo,timing);
+  // O painel de assertividade pode ficar sem candidato; o relogio continua visivel.
+  const observar=new MutationObserver(()=>{faixa.classList.toggle('sem-melhor-ativo',best.hidden)});
+  observar.observe(best,{attributes:true,attributeFilter:['hidden']});
+  faixa.classList.toggle('sem-melhor-ativo',best.hidden);
+}
+posicionarPainelP4();
 function atualizarRelogioMRG(){const clock=el('mrgClock');if(clock)clock.textContent=new Date().toLocaleTimeString('pt-BR',{hour12:false});}
 atualizarRelogioMRG();setInterval(atualizarRelogioMRG,1000);
 </script></html>
