@@ -317,7 +317,13 @@ select{
 </div>
 
 <div id="modalHistorico" class="modal-fundo escondido" onclick="fecharHistorico()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">HISTÓRICO FINANCEIRO</div><div id="conteudoHistorico" class="vazio">Carregando histórico...</div><button class="btn-fechar" onclick="fecharHistorico()">FECHAR</button></div></div>
-<div id="modalPago" class="modal-fundo escondido" onclick="fecharModalPago()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">REGISTRAR PAGAMENTO</div><div id="pagoUsuario" class="nome"></div><input id="pagoPerfilId" type="hidden"><div class="duas-colunas"><div><div class="linha"><b>Mensalidade:</b></div><input id="pagoMensalidade" type="number" min="0" step="0.01"></div><div><div class="linha"><b>Inscrição/reinscrição:</b></div><input id="pagoInscricao" type="number" min="0" step="0.01" value="0"></div></div><div class="linha"><b>Total recebido:</b></div><input id="pagoTotal" type="number" min="0" step="0.01"><div class="duas-colunas"><div><div class="linha"><b>Data:</b></div><input id="pagoData" type="date"></div><div><div class="linha"><b>Validade:</b></div><input id="pagoValidade" type="date"></div></div><div class="linha"><b>Observação:</b></div><textarea id="pagoObservacao"></textarea><div class="aviso-modal">Validade definida pelo ADM. Carência PRO automática: 2 dias, controlada pelo Supabase.</div><button class="pago" onclick="salvarPagamento()">SALVAR PAGAMENTO</button><button class="btn-fechar" onclick="fecharModalPago()">CANCELAR</button></div></div>
+<div id="modalPago" class="modal-fundo escondido" onclick="fecharModalPago()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">REGISTRAR PAGAMENTO</div><div id="pagoUsuario" class="nome"></div><input id="pagoPerfilId" type="hidden"><div class="duas-colunas"><div><div class="linha"><b>Mensalidade:</b></div><input id="pagoMensalidade" type="number" min="0" step="0.01"></div><div><div class="linha"><b>Inscrição/reinscrição:</b></div><input id="pagoInscricao" type="number" min="0" step="0.01" value="0"></div></div><div class="linha"><b>Total recebido:</b></div><input id="pagoTotal" type="number" min="0" step="0.01"><div class="duas-colunas"><div><div class="linha"><b>Data:</b></div><input id="pagoData" type="date"></div><div><div class="linha"><b>Validade:</b></div><input id="pagoValidade" type="date"></div></div><div class="linha"><b>Plano deste pagamento:</b></div>
+<select id="pagoPlanoP4" onchange="atualizarPreviaPlanoP4()">
+<option value="PRO">PRO NORMAL — P1, P2 e P3</option>
+<option value="PRO_MAIS">PRO+ MERCADO — P1, P2, P3 e P4 (30 dias)</option>
+</select>
+<div id="pagoPlanoP4Status" class="aviso-modal">PRO normal. A P4 não será renovada.</div>
+<div class="linha"><b>Observação:</b></div><textarea id="pagoObservacao"></textarea><div class="aviso-modal">Validade PRO definida pelo ADM; carência PRO de 2 dias. PRO+ Mercado: 30 dias a partir do registro do pagamento, sem carência. O valor total recebido deve incluir o adicional PRO+ quando selecionado.</div><button class="pago" onclick="salvarPagamento()">SALVAR PAGAMENTO</button><button class="btn-fechar" onclick="fecharModalPago()">CANCELAR</button></div></div>
 <div id="modalFree" class="modal-fundo escondido" onclick="fecharModalFree()">
   <div class="modal-caixa" onclick="event.stopPropagation()">
     <div class="titulo">LIBERAR CICLO FREE</div>
@@ -1006,7 +1012,7 @@ function renderizarUsuarios(lista){
     const btnReativar=(u.cadastro_inativo===true||u.free_encerrado_definitivo===true)
       ?`<button class="pequeno free" onclick="reativarCadastroInativoFree('${u.id}')">REATIVAR FREE</button>`
       :"";
-    return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeNivelAcesso(u)}</div>${extraFree}<div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button>${(u.bloqueio_administrativo===true || String(u.nivel_acesso||"").toUpperCase()==="BLOQUEADO")
+    return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeNivelAcesso(u)}</div>${extraFree}<div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="linha"><b>PRO+ Mercado:</b> ${statusP4Usuario(u)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button>${(u.bloqueio_administrativo===true || String(u.nivel_acesso||"").toUpperCase()==="BLOQUEADO")
 ?`<button class="pequeno free" onclick="desbloquearUsuario('${u.id}')">DESBLOQUEAR</button>`
 :`<button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button>`}${btnReativar}</div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${u.id}','${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`;
   }).join("");
@@ -1014,29 +1020,54 @@ function renderizarUsuarios(lista){
 function toggleBusca(){const c=$("campoBusca");if(!c.style.display||c.style.display==="none"){c.style.display="block";c.focus()}else{c.value="";c.style.display="none";renderizarUsuarios(window.USUARIOS_CACHE)}}
 function filtrarUsuarios(){const q=$("campoBusca").value.toLowerCase().trim();let lista=window.USUARIOS_CACHE.filter(u=>categoriaUsuario(u)===window.CATEGORIA_USUARIO);if(q)lista=lista.filter(u=>[u.nome,u.email,u.telefone,statusFinanceiroReal(u)].some(v=>String(v||"").toLowerCase().includes(q)));renderizarUsuarios(lista)}
 async function registrarHistorico(x){const{error}=await db.from("historico_financeiro").insert({perfil_id:x.perfil_id,nome:x.nome,email:x.email,acao:x.acao,valor:Number(x.total||0),valor_total:Number(x.total||0),valor_mensalidade:Number(x.mensalidade||0),valor_inscricao:Number(x.inscricao||0),data_pagamento:x.data||null,validade_inicio:x.inicio||null,validade_fim:x.fim||null,observacao:x.obs||null,criado_em:agoraISO()});if(error)throw error}
-function abrirModalPago(id){const u=usuario(id);if(!u)return;$("pagoPerfilId").value=id;$("pagoUsuario").innerText=`${u.nome} — ${u.email}`;$("pagoMensalidade").value="";$("pagoInscricao").value="0";$("pagoTotal").value="";$("pagoData").value=hojeISO();$("pagoValidade").value=fimMesSeguinte();$("pagoObservacao").value="";$("modalPago").classList.remove("escondido")}
+function statusP4Usuario(u){
+  const ativo=u.pro_mais_mercado_ativo===true;
+  const fim=u.pro_mais_mercado_fim;
+  const valido=ativo&&fim&&!Number.isNaN(new Date(fim).getTime())&&new Date(fim).getTime()>Date.now();
+  const pro=nivelAcessoReal(u)==="PRO_ATIVO"&&u.bloqueio_administrativo!==true;
+  return valido&&pro
+    ?`<span class="badge liberado">PRO+ ATIVO</span> · Até ${formatarDataHoraBR(fim)}`
+    :`<span class="badge financeiro-pendente">SEM P4</span>${fim?` · Última validade: ${formatarDataHoraBR(fim)}`:""}`;
+}
+function atualizarPreviaPlanoP4(){
+  const p=$("pagoPlanoP4")?.value;
+  const status=$("pagoPlanoP4Status");
+  if(status)status.innerText=p==="PRO_MAIS"
+    ?"PRO+ Mercado: libera a P4 por 30 dias a partir da confirmação manual, sem carência. A P3 segue com suas regras normais."
+    :"PRO normal: renova somente P1/P2/P3. Uma P4 já ativa não será antecipadamente cancelada; terminará na própria validade.";
+}
+function abrirModalPago(id){const u=usuario(id);if(!u)return;$("pagoPerfilId").value=id;$("pagoUsuario").innerText=`${u.nome} — ${u.email}`;$("pagoMensalidade").value="";$("pagoInscricao").value="0";$("pagoTotal").value="";$("pagoData").value=hojeISO();$("pagoValidade").value=fimMesSeguinte();$("pagoObservacao").value="";$("pagoPlanoP4").value="PRO";atualizarPreviaPlanoP4();$("modalPago").classList.remove("escondido")}
 function fecharModalPago(){$("modalPago").classList.add("escondido")}
 function atualizarTotal(){const v=Number($("pagoMensalidade").value||0)+Number($("pagoInscricao").value||0);$("pagoTotal").value=v.toFixed(2)}
 $("pagoMensalidade").addEventListener("input",atualizarTotal);$("pagoInscricao").addEventListener("input",atualizarTotal);
 async function salvarPagamento(){
   const id=$("pagoPerfilId").value,u=usuario(id),mensalidade=Number($("pagoMensalidade").value||0),inscricao=Number($("pagoInscricao").value||0),total=Number($("pagoTotal").value||0),data=$("pagoData").value,fim=$("pagoValidade").value,obs=$("pagoObservacao").value.trim();
+  const proMais=$("pagoPlanoP4").value==="PRO_MAIS";
   if(!u||total<=0||!data||!fim){alert("Informe valor, data e validade.");return}
-  if(!confirm("Confirmar este pagamento manual e liberar o contrato PRO conforme a validade informada?"))return;
-  const{data:resultado,error}=await db.rpc("admin_mrg_registrar_pagamento_manual",{
-    p_perfil_id:id,
-    p_valor_mensalidade:mensalidade,
-    p_valor_inscricao:inscricao,
-    p_valor_total:total,
-    p_data_pagamento:data,
-    p_validade_fim:fim,
-    p_observacao:obs||null
-  });
-  if(error){alert(error.message);return}
-  fecharModalPago();
-  await recarregarMantendoBusca();
-  const r=resultado||{};
-  alert(`Pagamento salvo. Estado de acesso: ${r.nivel_acesso||"atualizado"}.`);
+  const descricao=proMais?"PRO+ MERCADO (P4 por 30 dias, sem carência)":"PRO NORMAL (sem nova validade P4)";
+  if(!confirm(`Confirmar pagamento manual de ${moeda(total)}?\n\nPlano: ${descricao}\nCliente: ${u.nome}\nValidade PRO: ${formatarDataBR(fim)}\n\nA operação será registrada de uma só vez no Supabase.`))return;
+  const botao=document.querySelector('#modalPago button.pago');
+  if(botao){botao.disabled=true;botao.innerText="REGISTRANDO..."}
+  try{
+    const{data:resultado,error}=await db.rpc("admin_mrg_registrar_pagamento_manual_com_p4",{
+      p_perfil_id:id,
+      p_valor_mensalidade:mensalidade,
+      p_valor_inscricao:inscricao,
+      p_valor_total:total,
+      p_data_pagamento:data,
+      p_validade_fim:fim,
+      p_observacao:obs||null,
+      p_pro_mais_mercado:proMais
+    });
+    if(error)throw error;
+    fecharModalPago();
+    await recarregarMantendoBusca();
+    const r=resultado||{};
+    alert(`Pagamento registrado. Plano: ${proMais?"PRO+ Mercado":"PRO"}. ${proMais?"P4 liberada por 30 dias, sem carência.":"P4 não renovada."} Estado: ${r.nivel_acesso||"atualizado"}.`);
+  }catch(e){alert("Pagamento NÃO confirmado pelo ADM: "+String(e.message||e)+". Confira o histórico antes de tentar novamente.")}
+  finally{if(botao){botao.disabled=false;botao.innerText="SALVAR PAGAMENTO"}}
 }
+
 function abrirModalFree(id){
   const u=usuario(id);if(!u)return;
   $("freePerfilId").value=id;
