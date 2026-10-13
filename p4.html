@@ -264,7 +264,7 @@ function render(){
   text('memory','Velas fechadas na análise: '+c.candles+' / '+c.memoryMax+' · '+(c.analysisStatus==='AQUECENDO_MEMORIA'?'Aquecendo: mínimo de 80 velas':'Histórico de estudo por preço observado'));
   text('timing',c.entryAt?'Entrada: '+fmt(c.entryAt)+' · Vencimento: '+fmt(c.expiry):c.validUntil?'Oportunidade válida até: '+fmt(c.validUntil):'');text('reason',c.reason||'');
   const s=el('signal');s.className='signal wait';
-  if(!live){text('signal','AGUARDAR');text('follow','Aguardando preço vivo/conexão.')}else if(c.operational===true&&buy){text('signal','COMPRAR AGORA');s.className='signal up';text('follow',c.reason||'Compra em acompanhamento')}else if(c.operational===true&&sell){text('signal','VENDER AGORA');s.className='signal down';text('follow',c.reason||'Venda em acompanhamento')}else{text('signal','AGUARDAR');text('follow',c.reason||'Analisando o mercado.')}
+  if(!live){text('signal','AGUARDAR');text('follow','Aguardando preço vivo/conexão.')}else if(c.operational===true&&buy){text('signal','COMPRAR AGORA');s.className='signal up';text('follow',c.reason||'Compra em acompanhamento')}else if(c.operational===true&&sell){text('signal','VENDER AGORA');s.className='signal down';text('follow',c.reason||'Venda em acompanhamento')}else{text('signal','AGUARDAR');text('follow','ESTUDANDO POSSÍVEL ENTRADA')}
   const ladoEmCurso=acompanharMRG(c);
   const f=el('follow');f.classList.remove('follow-buy','follow-sell');
   if(live&&ladoEmCurso){
