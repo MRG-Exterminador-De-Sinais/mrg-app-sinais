@@ -185,7 +185,7 @@ body.state-sell header{background:linear-gradient(90deg,#0b1220 0%,#35101b 62%,#
  .signal-tracking-line .signal-right .tracking-label{font-size:8px}
 }
 
-/* P4 V4: cor da direcao apenas durante acompanhamento vigente. */
+/* V6: acompanhamento direcional, preservando a estrutura visual V3. */
 #follow.follow-buy{color:#63dbac!important;font-weight:750}
 #follow.follow-sell{color:#ff8585!important;font-weight:750}
 </style>
@@ -234,6 +234,26 @@ function drawPicker(){
   }
   if(!found){const empty=document.createElement('p');empty.className='muted';empty.textContent='Nenhum ativo disponível corresponde à busca.';host.append(empty)}
 }
+/* Uma direcao so pertence ao acompanhamento quando ligada a entrada vigente. */
+function ladoMRG(v){const s=String(v??'').trim().toUpperCase();return ['ALTA','BUY','COMPRA','CALL','UP'].includes(s)?'BUY':['BAIXA','SELL','VENDA','PUT','DOWN'].includes(s)?'SELL':''}
+function tempoMRG(v){const n=Date.parse(v||'');return Number.isFinite(n)?n:NaN}
+const operacoesMRG=new Map();
+function acompanharMRG(c){
+  const inicio=tempoMRG(c.entryAt),fim=tempoMRG(c.expiry),agora=Date.now();
+  if(!Number.isFinite(inicio)||!Number.isFinite(fim)||inicio>agora||fim<=agora||fim<=inicio){operacoesMRG.delete(c.key);return ''}
+  const identidade=c.key+'|'+inicio+'|'+fim;
+  let lado='';
+  // Preferencia por historico vinculado a MESMA entrada, inclusive quando ja nao e operacional.
+  for(const item of c.history||[]){const t=tempoMRG(item.entry_at??item.entrada_em??item.entryAt);if(Number.isFinite(t)&&Math.abs(t-inicio)<=2000){lado=ladoMRG(item.direction??item.direcao??item.side??item.tipo);if(lado)break}}
+  // Captura somente o sinal operacional recebido com esta entrada.
+  if(!lado&&c.operational===true)lado=ladoMRG(c.direction);
+  if(!lado&&operacoesMRG.get(identidade))lado=operacoesMRG.get(identidade);
+  // Preserva por sessao para uma atualizacao ou recarregamento da pagina.
+  const chave='mrg_acompanhamento_v6_'+c.key;
+  if(!lado){try{const salvo=JSON.parse(sessionStorage.getItem(chave)||'null');if(salvo?.inicio===inicio&&salvo?.fim===fim)lado=ladoMRG(salvo.lado)}catch{}}
+  if(lado){operacoesMRG.set(identidade,lado);try{sessionStorage.setItem(chave,JSON.stringify({inicio,fim,lado}))}catch{}}
+  return lado;
+}
 function render(){
   const c=ctx.find(x=>x.key===selected),b=best();drawPicker();
   el('bestChoice').hidden=!b;
@@ -247,17 +267,13 @@ function render(){
   text('timing',c.entryAt?'Entrada: '+fmt(c.entryAt)+' · Vencimento: '+fmt(c.expiry):c.validUntil?'Oportunidade válida até: '+fmt(c.validUntil):'');text('reason',c.reason||'');
   const s=el('signal');s.className='signal wait';
   if(!live){text('signal','AGUARDAR');text('follow','Aguardando preço vivo/conexão.')}else if(c.operational===true&&buy){text('signal','COMPRAR AGORA');s.className='signal up';text('follow',c.reason||'Compra em acompanhamento')}else if(c.operational===true&&sell){text('signal','VENDER AGORA');s.className='signal down';text('follow',c.reason||'Venda em acompanhamento')}else{text('signal','AGUARDAR');text('follow',c.reason||'Analisando o mercado.')}
-  // Somente apresentacao: enquanto houver uma entrada com direcao conhecida e vencimento futuro,
-  // explicitar o lado em acompanhamento mesmo quando o motor ja voltou para AGUARDAR.
-  // Nao cria sinais, nao altera dados e nao prolonga o acompanhamento apos o vencimento.
-  const inicioMs=Date.parse(c.entryAt||''),fimMs=Date.parse(c.expiry||''),agoraMs=Date.now();
-  const acompanhando=live&&Number.isFinite(inicioMs)&&Number.isFinite(fimMs)&&inicioMs<=agoraMs&&agoraMs<fimMs&&(buy||sell);
+  const ladoEmCurso=acompanharMRG(c);
   const f=el('follow');f.classList.remove('follow-buy','follow-sell');
-  if(acompanhando){
-    text('follow',buy?'COMPRA EM ACOMPANHAMENTO':'VENDA EM ACOMPANHAMENTO');
-    f.classList.add(buy?'follow-buy':'follow-sell');
+  if(live&&ladoEmCurso){
+    text('follow',ladoEmCurso==='BUY'?'COMPRA EM ACOMPANHAMENTO':'VENDA EM ACOMPANHAMENTO');
+    f.classList.add(ladoEmCurso==='BUY'?'follow-buy':'follow-sell');
   }
-  const isBuyNow=s.textContent==='COMPRAR AGORA',isSellNow=s.textContent==='VENDER AGORA';const essential=document.querySelector('.essential'),panel=document.querySelector('.panel');essential.classList.toggle('entry-buy',isBuyNow);essential.classList.toggle('entry-sell',isSellNow);panel?.classList.toggle('state-buy',isBuyNow);panel?.classList.toggle('state-sell',isSellNow);document.body.classList.toggle('state-buy',isBuyNow);document.body.classList.toggle('state-sell',isSellNow);
+  const isBuyNow=s.textContent==='COMPRAR AGORA'||(live&&ladoEmCurso==='BUY'),isSellNow=s.textContent==='VENDER AGORA'||(live&&ladoEmCurso==='SELL');const essential=document.querySelector('.essential'),panel=document.querySelector('.panel');essential.classList.toggle('entry-buy',isBuyNow);essential.classList.toggle('entry-sell',isSellNow);panel?.classList.toggle('state-buy',isBuyNow);panel?.classList.toggle('state-sell',isSellNow);document.body.classList.toggle('state-buy',isBuyNow);document.body.classList.toggle('state-sell',isSellNow);
   text('historyAsset',label(c));text('stats',Number.isFinite(Number(c.history_accuracy_percent))?pct(c.history_accuracy_percent)+' · '+c.historyHits+' acertos · '+c.historyErrors+' erros · '+c.historyTies+' empates':'Sem resultados concluídos');
   const h=el('history');h.replaceChildren();if(!c.history.length)h.textContent='Nenhum sinal registrado neste contexto.';c.history.filter(x=>{const v=String(x.result??x.resultado??'').toUpperCase();return !['','EM ACOMPANHAMENTO','PENDENTE','ABERTO','OPEN','PENDING'].includes(v)}).slice(0,10).forEach(x=>{const r=document.createElement('div');r.className='row';r.innerHTML='<strong>'+(x.direction||x.direcao||'—')+' · '+(x.result||x.resultado||'EM ACOMPANHAMENTO')+'</strong><div class="muted">'+fmt(x.entry_at||x.entrada_em)+' → '+fmt(x.expiry_at||x.expires_at||x.expira_em)+' · Entrada '+price(x.entry_price)+' · Final '+price(x.result_price)+'</div>';h.append(r)});if(el('catalogModal').open)catalog()
 }
