@@ -257,11 +257,17 @@ function render(){
   el('bestChoice').hidden=!b;
   if(b){const atual=b.key===selected;text('bestTitle',atual?'ATIVO ATUAL COM MELHOR ASSERTIVIDADE':'MELHOR ASSERTIVIDADE AGORA');text('bestAsset',label(b)+' · '+pct(ultimosDez(b).rate));text('bestDetail',atual?'Últimos 10 sinais concluídos: '+ultimosDez(b).wins+' acertos e '+ultimosDez(b).losses+' erros':'Clique para alterar somente o painel MRG');el('bestChoice').dataset.key=b.key}
   if(!c){text('asset','Nenhum ativo selecionado');text('instruction','Abaixo, toque em Ativos para escolher.');text('follow','Aguardando seleção do usuário');text('price','—');text('updated','Sem contexto selecionado');return}
-  // O publicador determina a entrada autorizada em display_status.
-  // direction isoladamente pode persistir durante o acompanhamento e nao e comando novo.
-  const live=c.fresh,estadoPublicado=String(c.display_status??'').trim().toUpperCase();
-  const ladoEntrada=ladoMRG(estadoPublicado);
-  const buy=ladoEntrada==='BUY',sell=ladoEntrada==='SELL';
+  // Janela visual estrita: apenas 10 segundos desde a entrada real registrada.
+  // Nunca reiniciar o contador ao atualizar, recarregar ou trocar de dispositivo.
+  const live=c.fresh,agoraEntrada=Date.now(),inicioEntrada=tempoMRG(c.entryAt),fimEntrada=tempoMRG(c.expiry);
+  const janelaEntrada=live&&Number.isFinite(inicioEntrada)&&Number.isFinite(fimEntrada)
+    &&fimEntrada>inicioEntrada&&agoraEntrada>=inicioEntrada
+    &&agoraEntrada<Math.min(inicioEntrada+10000,fimEntrada);
+  const ladoPublicado=ladoMRG(c.display_status);
+  const ladoRegistrado=acompanharMRG(c);
+  // Exige comando atual E direcao da operacao vigente; se faltarem, nao inventar entrada.
+  const buy=janelaEntrada&&ladoPublicado==='BUY'&&ladoRegistrado==='BUY';
+  const sell=janelaEntrada&&ladoPublicado==='SELL'&&ladoRegistrado==='SELL';
   text('asset','Operação em '+label(c));text('instruction','Na IQ, mantenha o mesmo ativo, modalidade e duração.');text('price',live?price(c.price):'—');text('updated',live?'Atualizado: '+fmt(c.tick_at):'Preço atrasado ou indisponível');
   text('horizon',c.horizon?c.horizon+' min':'—');text('entry',price(c.entry));text('confidence',live?pct(c.confidence):'—');el('confidenceBar').style.width=live&&Number.isFinite(c.confidence)?Math.max(0,Math.min(100,c.confidence))+'%':'0%';
   text('accuracy',pct(c.history_accuracy_percent));text('sample',c.history_count?c.history_count+' resultados · '+c.historyHits+' acertos · '+c.historyErrors+' erros · '+c.historyTies+' empates':'Sem resultados');text('upProb',live?pct(c.up):'—');text('downProb',live?pct(c.down):'—');
@@ -292,6 +298,8 @@ async function carregar(){
 function iniciarAtualizacao(){
   marketChannel=db.channel('mrg-mercado-p4-lote').on('postgres_changes',{event:'*',schema:'public',table:T},()=>programarLeitura(90)).subscribe();
   pollTimer=setInterval(()=>programarLeitura(0),2000);
+  // Desliga o destaque aos 10 s mesmo que nao chegue nova atualizacao.
+  setInterval(()=>{const c=ctx.find(x=>x.key===selected);if(c&&Number.isFinite(tempoMRG(c.entryAt))&&Date.now()-tempoMRG(c.entryAt)<12000)render()},1000);
 }
 async function iniciar(){
   const{data:{session}}=await db.auth.getSession();if(!session?.user){text('gateText','Entre com sua conta MRG para acessar o PRO+ Mercado.');el('goLogin').hidden=false;return}
