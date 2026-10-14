@@ -237,7 +237,7 @@ function drawPicker(){
 /* Direcao determinada exclusivamente pelos dados compartilhados da operacao vigente.
    Nao usar sessionStorage nem memoria local para a direcao: dispositivos devem
    interpretar o mesmo registro, sem estados persistidos diferentes. */
-function ladoMRG(v){const s=String(v??'').trim().toUpperCase();return ['ALTA','BUY','COMPRA','CALL','UP'].includes(s)?'BUY':['BAIXA','SELL','VENDA','PUT','DOWN'].includes(s)?'SELL':''}
+function ladoMRG(v){const s=String(v??'').trim().toUpperCase();return ['ALTA','BUY','COMPRA','COMPRAR','CALL','UP'].includes(s)?'BUY':['BAIXA','SELL','VENDA','VENDER','PUT','DOWN'].includes(s)?'SELL':''}
 function tempoMRG(v){const n=Date.parse(v||'');return Number.isFinite(n)?n:NaN}
 function acompanharMRG(c){
   const inicio=tempoMRG(c.entryAt),fim=tempoMRG(c.expiry),agora=Date.now();
@@ -257,14 +257,18 @@ function render(){
   el('bestChoice').hidden=!b;
   if(b){const atual=b.key===selected;text('bestTitle',atual?'ATIVO ATUAL COM MELHOR ASSERTIVIDADE':'MELHOR ASSERTIVIDADE AGORA');text('bestAsset',label(b)+' · '+pct(ultimosDez(b).rate));text('bestDetail',atual?'Últimos 10 sinais concluídos: '+ultimosDez(b).wins+' acertos e '+ultimosDez(b).losses+' erros':'Clique para alterar somente o painel MRG');el('bestChoice').dataset.key=b.key}
   if(!c){text('asset','Nenhum ativo selecionado');text('instruction','Abaixo, toque em Ativos para escolher.');text('follow','Aguardando seleção do usuário');text('price','—');text('updated','Sem contexto selecionado');return}
-  const live=c.fresh,buy=['ALTA','BUY','COMPRA'].includes(c.direction),sell=['BAIXA','SELL','VENDA'].includes(c.direction);
+  // O publicador determina a entrada autorizada em display_status.
+  // direction isoladamente pode persistir durante o acompanhamento e nao e comando novo.
+  const live=c.fresh,estadoPublicado=String(c.display_status??'').trim().toUpperCase();
+  const ladoEntrada=ladoMRG(estadoPublicado);
+  const buy=ladoEntrada==='BUY',sell=ladoEntrada==='SELL';
   text('asset','Operação em '+label(c));text('instruction','Na IQ, mantenha o mesmo ativo, modalidade e duração.');text('price',live?price(c.price):'—');text('updated',live?'Atualizado: '+fmt(c.tick_at):'Preço atrasado ou indisponível');
   text('horizon',c.horizon?c.horizon+' min':'—');text('entry',price(c.entry));text('confidence',live?pct(c.confidence):'—');el('confidenceBar').style.width=live&&Number.isFinite(c.confidence)?Math.max(0,Math.min(100,c.confidence))+'%':'0%';
   text('accuracy',pct(c.history_accuracy_percent));text('sample',c.history_count?c.history_count+' resultados · '+c.historyHits+' acertos · '+c.historyErrors+' erros · '+c.historyTies+' empates':'Sem resultados');text('upProb',live?pct(c.up):'—');text('downProb',live?pct(c.down):'—');
   text('memory','Velas fechadas na análise: '+c.candles+' / '+c.memoryMax+' · '+(c.analysisStatus==='AQUECENDO_MEMORIA'?'Aquecendo: mínimo de 80 velas':'Histórico de estudo por preço observado'));
   text('timing',c.entryAt?'Entrada: '+fmt(c.entryAt)+' · Vencimento: '+fmt(c.expiry):c.validUntil?'Oportunidade válida até: '+fmt(c.validUntil):'');text('reason',c.reason||'');
   const s=el('signal');s.className='signal wait';
-  if(!live){text('signal','AGUARDAR');text('follow','Aguardando preço vivo/conexão.')}else if(c.operational===true&&buy){text('signal','COMPRAR AGORA');s.className='signal up';text('follow',c.reason||'Compra em acompanhamento')}else if(c.operational===true&&sell){text('signal','VENDER AGORA');s.className='signal down';text('follow',c.reason||'Venda em acompanhamento')}else{text('signal','AGUARDAR');text('follow','ESTUDANDO POSSÍVEL ENTRADA')}
+  if(!live){text('signal','AGUARDAR');text('follow','Aguardando preço vivo/conexão.')}else if(buy){text('signal','COMPRAR AGORA');s.className='signal up';text('follow',c.reason||'Compra em acompanhamento')}else if(sell){text('signal','VENDER AGORA');s.className='signal down';text('follow',c.reason||'Venda em acompanhamento')}else{text('signal','AGUARDAR');text('follow','ESTUDANDO POSSÍVEL ENTRADA')}
   const ladoEmCurso=acompanharMRG(c);
   const f=el('follow');f.classList.remove('follow-buy','follow-sell');
   if(live&&ladoEmCurso){
