@@ -1012,7 +1012,7 @@ function renderizarUsuarios(lista){
     const btnReativar=(u.cadastro_inativo===true||u.free_encerrado_definitivo===true)
       ?`<button class="pequeno free" onclick="reativarCadastroInativoFree('${u.id}')">REATIVAR FREE</button>`
       :"";
-    return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeNivelAcesso(u)}</div>${extraFree}<div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="linha"><b>PRO+ Mercado:</b> ${statusP4Usuario(u)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button><button class="pequeno hist" onclick="abrirTesteP4('${u.id}')">TESTE P4</button>${(u.bloqueio_administrativo===true || String(u.nivel_acesso||"").toUpperCase()==="BLOQUEADO")
+    return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeNivelAcesso(u)}</div>${extraFree}<div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="linha"><b>PRO+ Mercado:</b> ${statusP4Usuario(u)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button><button class="pequeno ${testeP4Vigente(u)?"bloquear":"hist"}" onclick="abrirTesteP4('${u.id}')">${testeP4Vigente(u)?"🔴 GERENCIAR / DESATIVAR TESTE P4":"🟢 ATIVAR TESTE P4"}</button>${(u.bloqueio_administrativo===true || String(u.nivel_acesso||"").toUpperCase()==="BLOQUEADO")
 ?`<button class="pequeno free" onclick="desbloquearUsuario('${u.id}')">DESBLOQUEAR</button>`
 :`<button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button>`}${btnReativar}</div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${u.id}','${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`;
   }).join("");
@@ -1020,18 +1020,28 @@ function renderizarUsuarios(lista){
 function toggleBusca(){const c=$("campoBusca");if(!c.style.display||c.style.display==="none"){c.style.display="block";c.focus()}else{c.value="";c.style.display="none";renderizarUsuarios(window.USUARIOS_CACHE)}}
 function filtrarUsuarios(){const q=$("campoBusca").value.toLowerCase().trim();let lista=window.USUARIOS_CACHE.filter(u=>categoriaUsuario(u)===window.CATEGORIA_USUARIO);if(q)lista=lista.filter(u=>[u.nome,u.email,u.telefone,statusFinanceiroReal(u)].some(v=>String(v||"").toLowerCase().includes(q)));renderizarUsuarios(lista)}
 async function registrarHistorico(x){const{error}=await db.from("historico_financeiro").insert({perfil_id:x.perfil_id,nome:x.nome,email:x.email,acao:x.acao,valor:Number(x.total||0),valor_total:Number(x.total||0),valor_mensalidade:Number(x.mensalidade||0),valor_inscricao:Number(x.inscricao||0),data_pagamento:x.data||null,validade_inicio:x.inicio||null,validade_fim:x.fim||null,observacao:x.obs||null,criado_em:agoraISO()});if(error)throw error}
+// Exibição da P4 no ADM: consulta somente os dados já presentes em USUARIOS_CACHE.
+// Não altera RPCs, permissões, planos ou comandos existentes.
+function testeP4Vigente(u){
+  return u.p4_teste_ativo===true && !!u.p4_teste_fim && new Date(u.p4_teste_fim).getTime()>Date.now();
+}
 function statusP4Usuario(u){
   const agora=Date.now();
-  const pago=u.pro_mais_mercado_ativo===true&&u.pro_mais_mercado_fim&&new Date(u.pro_mais_mercado_fim).getTime()>agora;
-  const teste=u.p4_teste_ativo===true&&u.p4_teste_fim&&new Date(u.p4_teste_fim).getTime()>agora;
+  const pago=u.pro_mais_mercado_ativo===true && !!u.pro_mais_mercado_fim && new Date(u.pro_mais_mercado_fim).getTime()>agora;
+  const teste=testeP4Vigente(u);
   const nivel=nivelAcessoReal(u);
-  const p3=nivel==="PRO_ATIVO"||nivel==="PRO_CARENCIA";
-  const disponivel=p3&&u.bloqueio_administrativo!==true;
+  const p3=(nivel==="PRO_ATIVO"||nivel==="PRO_CARENCIA") && u.bloqueio_administrativo!==true;
+  const pagoHabilitado=pago && nivel==="PRO_ATIVO" && p3;
+  const testeHabilitado=teste && p3;
   const partes=[];
-  if(pago)partes.push(`PRO+ pago até ${formatarDataHoraBR(u.pro_mais_mercado_fim)}`);
-  if(teste)partes.push(`Teste até ${formatarDataHoraBR(u.p4_teste_fim)}`);
-  if(!partes.length)return `<span class="badge financeiro-pendente">SEM P4</span>`;
-  return `<span class="badge ${disponivel?"liberado":"financeiro-pendente"}">${disponivel?"P4 LIBERADA":"P4 DEPENDE DA P3"}</span> · ${partes.join(" · ")}`;
+  if(pago)partes.push(`PAGO até ${formatarDataHoraBR(u.pro_mais_mercado_fim)}`);
+  else if(u.pro_mais_mercado_ativo===true && u.pro_mais_mercado_fim)partes.push(`Pago vencido em ${formatarDataHoraBR(u.pro_mais_mercado_fim)}`);
+  if(teste)partes.push(`TESTE até ${formatarDataHoraBR(u.p4_teste_fim)}`);
+  else if(u.p4_teste_ativo===true && u.p4_teste_fim)partes.push(`Teste vencido em ${formatarDataHoraBR(u.p4_teste_fim)}`);
+  if(!partes.length)partes.push("Sem plano P4 ou teste vigente");
+  const liberada=pagoHabilitado||testeHabilitado;
+  const situacao=liberada?"P4 LIBERADA":(pago||teste?"P4 DEPENDE DA P3 / REGRAS DE ACESSO":"P4 NÃO ATIVA");
+  return `<span class="badge ${liberada?"liberado":"financeiro-pendente"}">${situacao}</span><div class="free-info-mini">${partes.join(" · ")}</div>`;
 }
 async function abrirTesteP4(id){
   const u=usuario(id);if(!u)return;
