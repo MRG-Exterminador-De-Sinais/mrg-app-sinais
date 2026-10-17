@@ -1716,6 +1716,59 @@ function classeCorFeed50(vela){
   const n=Number(String((vela&&(vela.multiplicador_num??vela.multiplicador))||0).replace(/x/ig,"").replace(",","."));
   return n>=10?"rosa":n>=2?"roxo":"azul";
 }
+/* MRG DEDUPE ROUND 2026-10-17: identidade real primeiro; sem inventar rodada. */
+function mrgRoundNumerico(v){
+  const s=numeroRodadaVela(v);
+  return /^\d+$/.test(s)?BigInt(s):null;
+}
+function mrgVelaMomento(v){
+  const s=String(valorPrimeiro(v,["data_hora","timestamp","criado_em","hora","horario"],"")||"");
+  const d=dataRegistroComparavel(s);
+  return d?d.getTime():null;
+}
+function mrgVelaMult(v){
+  const n=Number(String(valorPrimeiro(v,["multiplicador_num","multiplicador","mult","valor","x"],"")).replace(/x/ig,"").replace(",","."));
+  return Number.isFinite(n)?Math.round(n*100)/100:null;
+}
+function mrgVelaProvisoria(v){
+  const k=String(v?.chave??v?.key??"").trim();
+  if(k)return `K:${k}`;
+  const t=String(valorPrimeiro(v,["data_hora","timestamp","criado_em","hora","horario"],"")).trim();
+  const m=mrgVelaMult(v);
+  return `P:${t}|${m===null?"":m.toFixed(2)}`;
+}
+function mrgConciliarVelas(lista){
+  const identificadas=new Map(), provis=new Map();
+  for(const v of lista){
+    if(!v||typeof v!=="object")continue;
+    const round=mrgRoundNumerico(v);
+    if(round!==null){
+      const id=round.toString(),ant=identificadas.get(id);
+      if(!ant||Object.keys(v).length>Object.keys(ant).length)identificadas.set(id,v);
+    }else{
+      const k=mrgVelaProvisoria(v);
+      if(!provis.has(k))provis.set(k,v);
+    }
+  }
+  const nums=[...identificadas.values()];
+  const pend=[...provis.values()].filter(v=>{
+    const tm=mrgVelaMomento(v),m=mrgVelaMult(v);
+    if(tm===null||m===null)return true;
+    const cand=nums.filter(x=>mrgVelaMult(x)===m&&mrgVelaMomento(x)!==null&&Math.abs(mrgVelaMomento(x)-tm)<=4000);
+    return cand.length!==1;
+  });
+  // Ordenação de rounds é estritamente numérica. Velas provisórias usam o horário
+  // existente; nenhuma recebe round estimado ou preenche lacunas artificiais.
+  return [...nums,...pend].sort((a,b)=>{
+    const ra=mrgRoundNumerico(a),rb=mrgRoundNumerico(b);
+    if(ra!==null&&rb!==null)return ra===rb?0:ra>rb?-1:1;
+    const ta=mrgVelaMomento(a),tb=mrgVelaMomento(b);
+    if(ta!==null&&tb!==null&&ta!==tb)return tb-ta;
+    if(ra!==null&&rb===null)return -1;
+    if(rb!==null&&ra===null)return 1;
+    return 0;
+  });
+}
 let FEED50_CARREGANDO=false;
 let FEED50_PENDENTE=false;
 let FEED50_ULTIMA_CHAVE="";
@@ -1728,7 +1781,7 @@ async function carregarFeed50Velas(){
     const{data,error}=await db.from("ultimas_velas_app").select("velas_json,status,total,atualizado_em").eq("id",1).single();
     if(error||!data||!data.velas_json){alvo.innerHTML="<div class='vazio' style='grid-column:1/-1'>Aguardando últimas 50 velas...</div>";return}
     let pacote=data.velas_json;if(typeof pacote==="string")pacote=JSON.parse(pacote);
-    const velas=Array.isArray(pacote?.velas)?pacote.velas.slice(-50).reverse():[];
+    const velas=Array.isArray(pacote?.velas)?mrgConciliarVelas(pacote.velas).slice(0,50):[];
     if(!velas.length){alvo.innerHTML="<div class='vazio' style='grid-column:1/-1'>Aguardando últimas 50 velas...</div>";return}
     VELAS_AO_VIVO_RECENTES=velas.map(v=>{
       const bruto=valorPrimeiro(v,["data_hora","timestamp","criado_em","hora","horario"],"");
@@ -2032,7 +2085,7 @@ async function p3CarregarFeed24h(reset=true,silencioso=false){
     const{data,error}=await p3ConsultaFeed24(offset);
     if(error)throw error;
     const lote=Array.isArray(data)?data:[];
-    if(reset){P3_FEED24=lote;P3_FEED24_OFFSET=lote.length}else{P3_FEED24=P3_FEED24.concat(lote);P3_FEED24_OFFSET=P3_FEED24.length}
+    if(reset){P3_FEED24=mrgConciliarVelas(lote);P3_FEED24_OFFSET=lote.length}else{P3_FEED24=mrgConciliarVelas(P3_FEED24.concat(lote));P3_FEED24_OFFSET+=lote.length}
     P3_FEED24_FIM=lote.length<P3_PAGINA24;
     p3RenderFeed24h();
   }catch(e){
@@ -2082,8 +2135,9 @@ async function p3AtualizarTopoFeed24h(){
     const chave=v=>String(v?.id??`${v?.data_hora||""}|${v?.hora||""}|${v?.multiplicador||""}`);
     const vistos=new Set(recentes.map(chave));
     const limite=Math.max(P3_FEED24.length,P3_PAGINA24);
-    P3_FEED24=[...recentes,...P3_FEED24.filter(v=>!vistos.has(chave(v)))].slice(0,limite);
-    P3_FEED24_OFFSET=P3_FEED24.length;
+    P3_FEED24=mrgConciliarVelas([...recentes,...P3_FEED24.filter(v=>!vistos.has(chave(v)))]).slice(0,limite);
+    /* OFFSET é a posição no banco, não a quantidade após deduplicação. */
+    P3_FEED24_OFFSET=Math.max(P3_FEED24_OFFSET,recentes.length);
     p3RenderFeed24h();
   }catch(e){console.error("P3 atualização do topo do histórico:",e)}
   finally{P3_FEED24_CARREGANDO=false}
