@@ -302,7 +302,9 @@ async function irPagina(n){
   try{await obterContrato();aplicarPermissoes()}catch(e){alert("Não foi possível validar seu acesso agora.");return}
   const campo=n===1?"pagina_1":"pagina_3";
   if(!boolContrato(campo)){alert(`Página ${n} indisponível para o estado atual da conta.`);return}
-  window.location.href=n===1?"/p1.html":"/";
+  const destinos={1:"/p1.html",3:"/"};
+  const modoSplit=new URLSearchParams(window.location.search).get("modo")==="split";
+  window.location.href=modoSplit?destinos[n]+"?modo=split":destinos[n];
 }
 function mostrarLogin(msg="",nivel="",sessaoAtiva=false){painelAtivo=false;atualizarAcessoCabecalhoP2("",nivel,sessaoAtiva);el("appBox").classList.add("escondido");el("loginBox").classList.remove("escondido");if(msg)el("loginMsg").textContent=msg}
 async function sair(){painelAtivo=false;await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
