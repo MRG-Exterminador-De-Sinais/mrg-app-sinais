@@ -107,6 +107,14 @@ select{
 .categorias-usuarios button.ativo{background:#00ff88;color:#000}
 .contador-cat{display:block;font-size:16px;font-weight:900;margin-bottom:2px}
 @media(max-width:600px){.menu-adm{grid-template-columns:1fr 1fr}.categorias-usuarios{grid-template-columns:1fr 1fr}.categorias-usuarios button:last-child{grid-column:1/-1}}
+/* Chaves globais independentes: PC e Android */
+.plataformas-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.plataforma-box{background:#202020;border:1px solid #444;border-radius:12px;padding:12px}
+.plataforma-box h3{margin:0 0 8px;font-size:16px;color:#fff}
+.plataforma-box textarea{min-height:75px;font-size:13px}
+.plataforma-estado{font-size:13px;font-weight:bold;margin:7px 0}
+.plataforma-ajuda{font-size:12px;color:#aaa;line-height:1.45}
+@media(max-width:600px){.plataformas-grid{grid-template-columns:1fr}}
 </style>
 
 <style>
@@ -307,6 +315,30 @@ select{
 
 <section id="secaoOperacional" class="secao-adm escondido">
   <div class="card">
+    <div class="titulo">CHAVES MESTRAS — PC E ANDROID</div>
+    <div class="linha">Desligamento global independente por plataforma. Não altera usuários, planos, P1/P2/P3/P4 ou Web/Vercel.</div>
+    <div id="plataformasAviso" class="status-controle">Carregando controles das plataformas...</div>
+    <div class="plataformas-grid">
+      <div class="plataforma-box">
+        <h3>💻 PC / ELECTRON</h3>
+        <div id="estadoPlataformaPc" class="plataforma-estado">Não consultado</div>
+        <button id="btnPlataformaPc" disabled onclick="alternarPlataformaAdm('pc')">CARREGANDO...</button>
+        <div class="linha" style="margin-top:9px">Mensagem quando o PC estiver bloqueado:</div>
+        <textarea id="mensagemPlataformaPc" placeholder="Mensagem para o PC"></textarea>
+        <button id="salvarMensagemPc" class="hist" disabled onclick="salvarMensagemPlataformaAdm('pc')">SALVAR MENSAGEM PC</button>
+      </div>
+      <div class="plataforma-box">
+        <h3>📱 ANDROID</h3>
+        <div id="estadoPlataformaAndroid" class="plataforma-estado">Não consultado</div>
+        <button id="btnPlataformaAndroid" disabled onclick="alternarPlataformaAdm('android')">CARREGANDO...</button>
+        <div class="linha" style="margin-top:9px">Mensagem quando o Android estiver bloqueado:</div>
+        <textarea id="mensagemPlataformaAndroid" placeholder="Mensagem para o Android"></textarea>
+        <button id="salvarMensagemAndroid" class="hist" disabled onclick="salvarMensagemPlataformaAdm('android')">SALVAR MENSAGEM ANDROID</button>
+      </div>
+    </div>
+    <button class="hist" onclick="carregarPlataformasAdm()">ATUALIZAR ESTADOS PC / ANDROID</button>
+  </div>
+  <div class="card">
     <div class="titulo">CONTROLE OPERACIONAL — MANUTENÇÃO GLOBAL MRG</div>
     <div class="linha">Durante a manutenção, somente os recursos de análise avançada ficam indisponíveis. Página 1 permanece disponível e, no PC/Android, o Aviator das páginas 2 e 3 permanece aberto.</div>
     <div id="statusManutencaoGlobal" class="status-controle">Carregando estado da manutenção...</div>
@@ -504,6 +536,7 @@ function mostrarSecaoAdm(nome){
   });
   if(nome==="conteudos"){carregarContratosAdm();carregarConteudosAdm();}
   if(nome==="contato"){carregarContatoAdm();}
+  if(nome==="operacional"){carregarPlataformasAdm();}
 }
 
 function categoriaUsuario(u){
@@ -606,7 +639,7 @@ async function salvarContatoAdm(){
 }
 
 async function entrar(){const email=$("loginEmail").value.trim(),password=$("loginSenha").value.trim();if(!email||!password){$("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}if(email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){$("loginMsg").innerHTML="<span class='erro'>Este e-mail não é administrador.</span>";return}const{error}=await db.auth.signInWithPassword({email,password});if(error){$("loginMsg").innerHTML="<span class='erro'>Login inválido ou e-mail não confirmado.</span>";return}verificarAdmin()}
-async function verificarAdmin(){const{data}=await db.auth.getSession();const u=data?.session?.user;if(!u){$("loginBox").classList.remove("escondido");$("adminBox").classList.add("escondido");return}if(String(u.email).toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await db.auth.signOut();return}$("loginBox").classList.add("escondido");$("adminBox").classList.remove("escondido");$("adminEmail").innerText=u.email;await carregarUsuarios();await carregarEstadoManutencao();await carregarModelosFinanceiros();await carregarAvisosAdmin();await carregarNovosCadastros();await carregarContatoAdm()}
+async function verificarAdmin(){const{data}=await db.auth.getSession();const u=data?.session?.user;if(!u){$("loginBox").classList.remove("escondido");$("adminBox").classList.add("escondido");return}if(String(u.email).toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await db.auth.signOut();return}$("loginBox").classList.add("escondido");$("adminBox").classList.remove("escondido");$("adminEmail").innerText=u.email;await carregarUsuarios();await carregarEstadoManutencao();await carregarModelosFinanceiros();await carregarAvisosAdmin();await carregarNovosCadastros();await carregarContatoAdm();await carregarPlataformasAdm()}
 async function carregarControleEnvio(){const{data,error}=await db.from("controle_envio").select("*").eq("id",1).single();if(error||!data){$("statusControleEnvio").innerText="Erro ao carregar controle operacional.";return}window.CONTROLE_ENVIO=data;$("mensagemControleEnvio").value=data.mensagem||"";atualizarBotoesControle()}
 function atualizarBotoesControle(){const c=window.CONTROLE_ENVIO,s=c.snarpy_ativo===true,h=c.hyper_ativo===true,t=s&&h;[["btnSnarpy",s,"SNARPY"],["btnHyper",h,"HYPER"],["btnTodos",t,"TODOS"]].forEach(([id,on,n])=>{const b=$(id);b.innerText=(on?"🟢 ":"🔴 ")+n;b.className="btn-toggle "+(on?"ativo":"pausado")});$("statusControleEnvio").innerText=t?"Envio de novos sinais liberado.":!s&&!h?"Novos sinais pausados para SNARPY e HYPER.":!s?"Novos sinais SNARPY pausados. HYPER liberado.":"Novos sinais HYPER pausados. SNARPY liberado."}
 async function salvarControleEnvio(s,h,m=null){const p={snarpy_ativo:s,hyper_ativo:h,atualizado_em:agoraISO()};if(m!==null)p.mensagem=m;const{error}=await db.from("controle_envio").update(p).eq("id",1);if(error){alert(error.message);return false}Object.assign(window.CONTROLE_ENVIO,p);atualizarBotoesControle();return true}
@@ -1339,6 +1372,77 @@ async function despublicarConteudoAdm(id){
   if(!confirm("Despublicar este conteúdo?"))return;
   const{error}=await db.rpc("admin_mrg_despublicar_conteudo",{p_id:Number(id)});
   if(error){alert(error.message);return} await carregarConteudosAdm();
+}
+
+// Controles globais: somente RPCs específicas; não altera lógica de login, PRO ou P4.
+window.PLATAFORMAS_ADM=null;
+window.PLATAFORMAS_OCUPADO=false;
+const CAMPOS_PLATAFORMA={
+  pc:{flag:"pc_ativo",msg:"mensagem_pc_bloqueado",botao:"btnPlataformaPc",salvar:"salvarMensagemPc",estado:"estadoPlataformaPc",entrada:"mensagemPlataformaPc",nome:"PC/Electron"},
+  android:{flag:"android_ativo",msg:"mensagem_android_bloqueado",botao:"btnPlataformaAndroid",salvar:"salvarMensagemAndroid",estado:"estadoPlataformaAndroid",entrada:"mensagemPlataformaAndroid",nome:"Android"}
+};
+function renderizarPlataformasAdm(atualizarMensagens=true){
+  const c=window.PLATAFORMAS_ADM;
+  for(const [plataforma,campos] of Object.entries(CAMPOS_PLATAFORMA)){
+    const botao=$(campos.botao),salvar=$(campos.salvar),estado=$(campos.estado),entrada=$(campos.entrada);
+    const pronto=!!c && typeof c[campos.flag]==="boolean";
+    botao.disabled=salvar.disabled=!pronto||window.PLATAFORMAS_OCUPADO;
+    if(!pronto){botao.innerText="INDISPONÍVEL";estado.innerText="Não foi possível consultar o estado";continue;}
+    const ativo=c[campos.flag]===true;
+    estado.innerText=ativo?"🟢 PLATAFORMA ATIVA":"🔴 PLATAFORMA DESATIVADA";
+    botao.innerText=ativo?"🔴 DESATIVAR "+campos.nome.toUpperCase():"🟢 ATIVAR "+campos.nome.toUpperCase();
+    botao.className=ativo?"bloquear":"pago";
+    if(atualizarMensagens)entrada.value=c[campos.msg]||"";
+  }
+}
+async function carregarPlataformasAdm(){
+  const aviso=$("plataformasAviso");
+  if(!aviso)return;
+  aviso.innerText="Consultando estados no Supabase...";
+  try{
+    const {data,error}=await db.rpc("mrg_estado_plataformas");
+    if(error)throw error;
+    if(!data||typeof data.pc_ativo!=="boolean"||typeof data.android_ativo!=="boolean")throw new Error("Resposta incompleta da função mrg_estado_plataformas.");
+    window.PLATAFORMAS_ADM=data;
+    renderizarPlataformasAdm(true);
+    aviso.innerText="PC e Android independentes. A Web/Vercel não é afetada.";
+  }catch(e){
+    window.PLATAFORMAS_ADM=null;
+    renderizarPlataformasAdm(false);
+    aviso.innerText="Não foi possível consultar as chaves: "+String(e.message||e);
+  }
+}
+async function definirPlataformaAdm(plataforma,ativo,mensagem){
+  const campos=CAMPOS_PLATAFORMA[plataforma];
+  if(!campos||!window.PLATAFORMAS_ADM||window.PLATAFORMAS_OCUPADO)return;
+  window.PLATAFORMAS_OCUPADO=true;
+  renderizarPlataformasAdm(false);
+  const aviso=$("plataformasAviso");
+  aviso.innerText="Salvando "+campos.nome+"...";
+  try{
+    const {data,error}=await db.rpc("admin_mrg_definir_plataforma",{p_plataforma:plataforma,p_ativo:ativo,p_mensagem:mensagem});
+    if(error)throw error;
+    if(!data||typeof data.pc_ativo!=="boolean"||typeof data.android_ativo!=="boolean")throw new Error("Resposta incompleta após salvar.");
+    window.PLATAFORMAS_ADM=data;
+    aviso.innerText="Configuração de "+campos.nome+" salva. Outras plataformas preservadas.";
+  }catch(e){
+    aviso.innerText="ERRO: "+String(e.message||e)+". Nenhuma mudança visual confirmada.";
+  }finally{
+    window.PLATAFORMAS_OCUPADO=false;
+    renderizarPlataformasAdm(true);
+  }
+}
+async function alternarPlataformaAdm(plataforma){
+  const c=window.PLATAFORMAS_ADM,campos=CAMPOS_PLATAFORMA[plataforma];
+  if(!c||!campos||window.PLATAFORMAS_OCUPADO)return;
+  const novo=!c[campos.flag];
+  if(!confirm((novo?"ATIVAR ":"DESATIVAR ")+campos.nome+" para todos os usuários?\nA outra plataforma e a Web/Vercel não serão alteradas."))return;
+  await definirPlataformaAdm(plataforma,novo,$(campos.entrada).value.trim());
+}
+async function salvarMensagemPlataformaAdm(plataforma){
+  const c=window.PLATAFORMAS_ADM,campos=CAMPOS_PLATAFORMA[plataforma];
+  if(!c||!campos||window.PLATAFORMAS_OCUPADO)return;
+  await definirPlataformaAdm(plataforma,c[campos.flag],$(campos.entrada).value.trim());
 }
 
 async function sair(){await db.auth.signOut();$("adminBox").classList.add("escondido");$("loginBox").classList.remove("escondido");$("loginMsg").innerText="Sessão encerrada."}
