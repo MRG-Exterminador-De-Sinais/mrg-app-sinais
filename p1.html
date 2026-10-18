@@ -316,9 +316,14 @@ async function irPagina(n){
     :valorBool(contrato,["pagina_3"]);
   if(!ok){alert(n===2?"Página 2 não disponível para o estado atual da conta.":"Página 3 PRO não disponível para o estado atual da conta.");return}
   const destinos={2:"/p2.html",3:"/"};
-  const novaAba=window.open(destinos[n], '_blank', 'noopener,noreferrer');
+  const modoSplit=new URLSearchParams(window.location.search).get("modo")==="split";
+  const destino=modoSplit?destinos[n]+"?modo=split":destinos[n];
+  /* No Dual Screen, a navegação permanece na metade superior.
+     Fora do modo Split, o comportamento original em nova aba é preservado. */
+  if(modoSplit){window.location.href=destino;return}
+  const novaAba=window.open(destino, '_blank', 'noopener,noreferrer');
   if(!novaAba){
-    window.top.location.href=destinos[n];
+    window.top.location.href=destino;
   }
 }
 
