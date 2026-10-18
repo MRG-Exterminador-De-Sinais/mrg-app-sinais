@@ -396,7 +396,9 @@ async function iniciar(){
 el('assetSearch').addEventListener('input',drawPicker);el('choose').onclick=()=>{el('assetSearch').value='';drawPicker();el('picker').showModal()};el('recent').onclick=()=>el('historyModal').showModal();el('all').onclick=()=>{catalog();el('catalogModal').showModal()};el('bestChoice').onclick=()=>{selected=el('bestChoice').dataset.key||selected;sessionStorage.setItem('mrg_contexto_reconstruido',selected);render()};el('backP3').onclick=async()=>{try{const a=await acesso();if(a.pagina_3)location.href=document.documentElement.classList.contains('modo-split')?'/?modo=split':'/';else text('status','Página 3 não liberada.')}catch{text('status','Não foi possível validar o retorno agora.')}};el('goLogin').onclick=()=>location.href=document.documentElement.classList.contains('modo-split')?'/?modo=split':'/';document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>el(b.dataset.close).close());window.addEventListener('visibilitychange',()=>{if(!document.hidden)programarLeitura(0)});iniciar();
 function configurarFallbackIQNoIphone(){
   const isiPhone=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  if(!isiPhone)return;
+  /* No aplicativo de tela dividida, a IQ já está aberta na segunda janela.
+     O aviso de fallback só pertence ao Safari/iPhone usado sem modo split. */
+  if(!isiPhone||document.documentElement.classList.contains('modo-split'))return;
   const area=document.querySelector('.iq');
   if(!area)return;
   const aviso=document.createElement('section');
