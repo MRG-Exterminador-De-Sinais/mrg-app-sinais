@@ -12,6 +12,12 @@
 <title>MRG Sinais Alto Padrão</title>
 <link rel="manifest" href="/manifest.json"> 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+/* Modo visual isolado para o aplicativo Split Screen. */
+if(new URLSearchParams(location.search).get("modo")==="split"){
+  document.documentElement.classList.add("modo-split");
+}
+</script>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;width:100%;max-width:100%;overflow-x:hidden;background:#060606;color:#fff;font-family:Arial,sans-serif}
@@ -504,6 +510,59 @@ body{
   .mobile-live #leituraCompacta{font-size:10px}
 }
 
+/* ===== TESTE ISOLADO · P3 COMPACTA PARA SPLIT SCREEN NO IPHONE =====
+   Ativado somente por /?modo=split. A pagina normal permanece inalterada. */
+html.modo-split,html.modo-split body{min-height:100%;height:auto}
+html.modo-split body{border-width:1px;overflow-x:hidden}
+html.modo-split .container{width:100%;max-width:none;padding:3px 4px 5px}
+html.modo-split .header,
+html.modo-split .pwa-hint,
+html.modo-split .usuario-topo,
+html.modo-split .mrg-responsible-warning,
+html.modo-split #leituraCard,
+html.modo-split #resumoFechados,
+html.modo-split .resumo-fechados,
+html.modo-split .hist24-card,
+html.modo-split #historicoRecenteRecolhivel,
+html.modo-split #appBox>.sair{display:none!important}
+html.modo-split #appBox{padding:0;margin:0}
+html.modo-split #appBox:before{box-shadow:inset 0 0 0 1px var(--mrg-analista-cor),inset 0 0 12px var(--mrg-analista-glow)}
+html.modo-split .top-app-mobile{min-height:0;margin:0 0 3px;padding:2px 3px;display:flex;justify-content:flex-end}
+html.modo-split .top-acoes{width:100%;display:grid;grid-template-columns:1fr auto;gap:3px}
+html.modo-split .push-duplo{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+html.modo-split .top-acoes button{min-height:23px;padding:2px 4px;font-size:7px;line-height:1}
+html.modo-split .mini-analista{margin:2px 0 3px;padding:4px 5px;border-radius:7px;box-shadow:0 0 8px var(--mrg-analista-glow)}
+html.modo-split .mini-analista-top{gap:4px}
+html.modo-split .mini-analista-titulo{font-size:7px;letter-spacing:.35px}
+html.modo-split .mini-analista-abrir{display:none}
+html.modo-split .analista-h-linha-principal{grid-template-columns:.72fr 1.15fr .9fr 1.15fr;gap:3px;margin-top:3px}
+html.modo-split .analista-h-box{padding:3px 2px;border-radius:5px}
+html.modo-split .analista-h-box small,
+html.modo-split .analista-h-linha-secundaria small{font-size:5px;letter-spacing:.15px;margin-bottom:1px}
+html.modo-split .analista-h-box strong{font-size:8px;line-height:1}
+html.modo-split .analista-h-destaque strong{font-size:10px}
+html.modo-split .analista-h-box em{font-size:5px;margin-top:1px}
+html.modo-split .analista-h-linha-secundaria{gap:3px;margin-top:3px}
+html.modo-split .analista-h-linha-secundaria>div{padding:2px 3px}
+html.modo-split .analista-h-linha-secundaria strong{font-size:7px;line-height:1}
+html.modo-split .mobile-status{grid-template-columns:minmax(0,1fr) 48px 48px;gap:3px;margin:2px 0 3px}
+html.modo-split .mobile-live,
+html.modo-split .rosas-mini,
+html.modo-split .minuto-bom-mini{min-height:29px;padding:3px;border-radius:6px}
+html.modo-split .mobile-live .tag,
+html.modo-split .minuto-bom-mini span{font-size:5px}
+html.modo-split .mobile-live #leituraCompacta{font-size:8px;line-height:1.05}
+html.modo-split .rosas-mini,
+html.modo-split .minuto-bom-mini strong{font-size:10px}
+html.modo-split #sinaisAtivosCard{display:block!important;margin:2px 0 3px;padding:5px;border-radius:7px;max-height:150px;overflow:auto}
+html.modo-split #sinaisAtivosCard .titulo{font-size:7px;margin-bottom:3px}
+html.modo-split #sinaisAtivosCard #ativos{font-size:8px;line-height:1.1}
+html.modo-split .p3-nav{display:grid;grid-template-columns:1fr;margin:2px 0 0;gap:2px;position:sticky;bottom:0;z-index:20;background:#020504;padding:2px 0}
+html.modo-split .p3-nav button:not(#btnP4Mercado){display:none!important}
+html.modo-split .p3-nav button{min-height:24px;padding:3px;font-size:8px}
+html.modo-split .p3-nav button small{display:none}
+html.modo-split .p3-nav-msg{font-size:7px;min-height:0}
+
 </style>
 </head>
 <body>
@@ -573,7 +632,7 @@ body{
 <div id="modalRosasDetalhes" class="modal-projecoes escondido" onclick="fecharDetalhesRosas()"><div class="modal-caixa rosa" onclick="event.stopPropagation()"><div id="tituloDetalhesRosas" class="titulo">🌹 DETALHES DAS ROSAS</div><div id="conteudoDetalhesRosas" class="lista-detalhes"><div class="vazio">Carregando detalhes...</div></div><button type="button" class="sec" onclick="fecharDetalhesRosas()">VOLTAR</button></div></div>
 <div id="modalMinutoBom" class="modal-projecoes escondido" onclick="fecharMinutoBom()"><div class="modal-caixa rosa" onclick="event.stopPropagation()"><div class="titulo">🌹 MINUTOS MAIS FAVORÁVEIS</div><div class="modal-subtitulo">Ranking com 10 rosas selecionadas</div><div id="conteudoMinutoBom" class="ranking-minutos"><div class="vazio">Aguardando velas rosas...</div></div><button type="button" class="sec" onclick="fecharMinutoBom()">FECHAR</button></div></div>
 <div id="leituraCard" class="card leitura"><div class="titulo">ÚLTIMOS RESULTADOS AO VIVO</div><div id="leitura"><div class="vazio">Aguardando resultados...</div></div></div>
-<div class="card"><div class="titulo">SINAIS ATIVOS</div><div id="ativos">Carregando sinais...</div></div>
+<div class="card" id="sinaisAtivosCard"><div class="titulo">SINAIS ATIVOS</div><div id="ativos">Carregando sinais...</div></div>
 <div class="card resumo-fechados"><div class="titulo">RESUMO DOS ÚLTIMOS 5 FECHADOS</div><div id="resumoFechados" class="vazio">Aguardando histórico...</div></div>
 <div class="card hist24-card">
   <div class="titulo">HISTÓRICO AO VIVO · ÚLTIMAS 25 HORAS</div>
@@ -652,7 +711,8 @@ async function navegarPaginaMRG(pagina){
   const campo=pagina===1?"pagina_1":pagina===2?"pagina_2":"pagina_4";
   const permitido=c[campo]===true;
   if(!permitido){if(msg)msg.textContent=`Página ${pagina} não liberada para este acesso.`;return}
-  window.location.href=pagina===1?"/p1.html":pagina===2?"/p2.html":"/p4.html";
+  const destino=pagina===1?"/p1.html":pagina===2?"/p2.html":"/p4.html";
+  window.location.href=document.documentElement.classList.contains("modo-split")?destino+"?modo=split":destino;
  }catch(e){if(msg)msg.textContent="Não foi possível validar o acesso agora."}
 }
 function atualizarNavegacaoP3(contrato){
@@ -1228,7 +1288,7 @@ async function criarConta(){
     document.getElementById("cadMsg").innerHTML="<span class='erro'>Não foi possível criar o cadastro agora. Tente novamente em alguns minutos.</span>";
   }
 }
-async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}try{await registrarSessaoAppAtual()}catch(e){console.error(e);await db.auth.signOut({scope:"local"});document.getElementById("loginMsg").innerHTML="<span class='erro'>Não foi possível registrar este aparelho como sessão atual.</span>";return}try{await sincronizarPushNoLogin()}catch(e){console.error("Falha ao definir o aparelho atual para Push:",e)}window.location.replace("/p1.html")}
+async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}try{await registrarSessaoAppAtual()}catch(e){console.error(e);await db.auth.signOut({scope:"local"});document.getElementById("loginMsg").innerHTML="<span class='erro'>Não foi possível registrar este aparelho como sessão atual.</span>";return}try{await sincronizarPushNoLogin()}catch(e){console.error("Falha ao definir o aparelho atual para Push:",e)}window.location.replace(document.documentElement.classList.contains("modo-split")?"/?modo=split":"/p1.html")}
 async function recuperarSenha(){const email=document.getElementById("recEmail").value.trim();if(!email){document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";return}const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});document.getElementById("recMsg").innerHTML=error?"<span class='erro'>"+error.message+"</span>":"Link de recuperação enviado. Verifique seu e-mail."}
 async function salvarNovaSenha(){const senha=document.getElementById("novaSenha").value.trim();if(!senha){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";return}const{error}=await db.auth.updateUser({password:senha});if(error){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000)}
 async function verificarAcesso(redirecionarSemSessao=false){
