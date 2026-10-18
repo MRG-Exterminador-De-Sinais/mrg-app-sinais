@@ -531,6 +531,12 @@ html.modo-split .top-app-mobile{min-height:0;margin:0 0 3px;padding:2px 3px;disp
 html.modo-split .top-acoes{width:100%;display:grid;grid-template-columns:1fr auto;gap:3px}
 html.modo-split .push-duplo{display:grid;grid-template-columns:1fr 1fr;gap:3px}
 html.modo-split .top-acoes button{min-height:23px;padding:2px 4px;font-size:7px;line-height:1}
+/* O navegador interno do aplicativo Split Screen nao oferece Web Push.
+   Somente neste modo, oculta os controles incompativeis e aproveita o
+   espaco para Projecoes. A pagina normal e os botoes normais nao mudam. */
+html.modo-split .push-duplo{display:none!important}
+html.modo-split .top-acoes{grid-template-columns:1fr}
+html.modo-split .top-acoes .btn-projecoes{display:block!important;width:100%;min-height:27px;font-size:9px}
 html.modo-split .mini-analista{margin:2px 0 3px;padding:4px 5px;border-radius:7px;box-shadow:0 0 8px var(--mrg-analista-glow)}
 html.modo-split .mini-analista-top{gap:4px}
 html.modo-split .mini-analista-titulo{font-size:7px;letter-spacing:.35px}
