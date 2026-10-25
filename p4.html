@@ -194,7 +194,11 @@ body.state-sell header{background:linear-gradient(90deg,#0b1220 0%,#35101b 62%,#
 <section class="gate" id="gate"><h2>PRO+ Mercado</h2><p id="gateText">Validando o acesso ao MRG Mercado…</p><button id="goLogin" hidden>Entrar</button></section>
 <dialog id="picker"><div class="head"><h2>Escolha um ativo</h2><button data-close="picker">Fechar</button></div><p class="muted">Blitz primeiro · Binária abaixo. Ativos disponíveis, ordenados pela assertividade dos últimos 10 sinais concluídos. Fora de operação não podem ser selecionados.</p><input id="assetSearch" type="search" autocomplete="off" placeholder="Buscar ativo (USD, BRL, Bitcoin...)" aria-label="Buscar ativo"><div id="assetList"></div></dialog><dialog id="historyModal"><div class="head"><h2>Últimos 10 sinais</h2><button data-close="historyModal">Fechar</button></div><div id="historyAsset" class="asset"></div><p id="stats" class="muted"></p><div id="history"></div><p class="muted">Resultados do estudo por preço observado; não são liquidações oficiais da IQ.</p></dialog><dialog id="catalogModal"><div class="head"><h2>Todos os ativos MRG</h2><button data-close="catalogModal">Fechar</button></div><div id="catalog"></div></dialog>
 <script>
-const U='https://bflptqejltvwfjhixwpj.supabase.co',K='sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO',T='mrg_mercado_contextos_app',db=supabase.createClient(U,K),el=id=>document.getElementById(id),text=(id,v)=>el(id).textContent=v,rows=new Map();let ctx=[],selected=sessionStorage.getItem('mrg_contexto_reconstruido')||'',refreshing=false,pending=false,debounceTimer=null,pollTimer=null,marketChannel=null;const bool=v=>v===true||v===1||String(v).toLowerCase()==='true'||String(v)==='1',num=x=>x===null||x===undefined||x===''?NaN:Number(x),parse=(v,d={})=>{if(v&&typeof v==='object')return v;try{return JSON.parse(v||'')}catch{return d}},fmt=x=>{if(!x)return'—';let d=new Date(x);return isNaN(d)?'—':d.toLocaleString('pt-BR')},price=x=>Number.isFinite(num(x))?num(x).toLocaleString('pt-BR',{minimumFractionDigits:5,maximumFractionDigits:6}):'—',pct=x=>Number.isFinite(num(x))?num(x).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%':'—',label=c=>`${c.label||c.symbol||'Ativo'} · ${c.modality==='BINARIA'?'Binária':'Blitz'} · ${c.market||'—'}`;
+const U='https://bflptqejltvwfjhixwpj.supabase.co',K='sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO',T='mrg_mercado_contextos_app',db=supabase.createClient(U,K),el=id=>document.getElementById(id),text=(id,v)=>el(id).textContent=v,rows=new Map();
+const MRG_SESSION_TOKEN_KEY='mrg_session_token_unica';let MRG_SESSAO_CHECANDO=false;
+async function mrgValidarSessaoP4(email){const token=localStorage.getItem(MRG_SESSION_TOKEN_KEY)||'';if(!email||!token)return false;const{data,error}=await db.from('sessoes_ativas').select('session_token,ativo').eq('email',email).maybeSingle();if(error){console.warn('[MRG WEB P4] Falha temporária ao validar sessão única:',error);return null}if(!data||data.ativo!==true||data.session_token!==token)return false;db.from('sessoes_ativas').update({ultimo_ping:new Date().toISOString()}).eq('email',email).eq('session_token',token).then(()=>{}).catch(()=>{});return true}
+async function mrgDerrubarSessaoP4(){localStorage.removeItem(MRG_SESSION_TOKEN_KEY);try{await db.auth.signOut({scope:'local'})}catch(e){}location.replace('/?sessao=substituida')}
+let ctx=[],selected=sessionStorage.getItem('mrg_contexto_reconstruido')||'',refreshing=false,pending=false,debounceTimer=null,pollTimer=null,marketChannel=null;const bool=v=>v===true||v===1||String(v).toLowerCase()==='true'||String(v)==='1',num=x=>x===null||x===undefined||x===''?NaN:Number(x),parse=(v,d={})=>{if(v&&typeof v==='object')return v;try{return JSON.parse(v||'')}catch{return d}},fmt=x=>{if(!x)return'—';let d=new Date(x);return isNaN(d)?'—':d.toLocaleString('pt-BR')},price=x=>Number.isFinite(num(x))?num(x).toLocaleString('pt-BR',{minimumFractionDigits:5,maximumFractionDigits:6}):'—',pct=x=>Number.isFinite(num(x))?num(x).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%':'—',label=c=>`${c.label||c.symbol||'Ativo'} · ${c.modality==='BINARIA'?'Binária':'Blitz'} · ${c.market||'—'}`;
 function fresh(c){return c.is_fresh===true&&Number.isFinite(Number(c.price))&&String(c.source_status||'').toLowerCase()==='online'}
 function norm(c){
   const r=parse(c.recent20),sig=parse(c.raw_signal),ana=parse(c.raw_analysis);
@@ -303,6 +307,7 @@ function iniciarAtualizacao(){
 }
 async function iniciar(){
   const{data:{session}}=await db.auth.getSession();if(!session?.user){text('gateText','Entre com sua conta MRG para acessar o PRO+ Mercado.');el('goLogin').hidden=false;return}
+  const sessaoOk=await mrgValidarSessaoP4(session.user.email);if(sessaoOk===false){await mrgDerrubarSessaoP4();return}
   try{const a=await acesso();if(!bool(a.pagina_4)){voltar(a);return}}catch{text('gateText','Não foi possível validar seu acesso central agora.');return}
   el('gate').hidden=true;el('app').hidden=false;el('backP3').hidden=false;await carregar();iniciarAtualizacao()
 }
@@ -319,6 +324,7 @@ function configurarFallbackIQNoIphone(){
   area.append(aviso);
   document.documentElement.classList.add('ios-iq-fallback');
 }
+setInterval(async()=>{if(MRG_SESSAO_CHECANDO)return;MRG_SESSAO_CHECANDO=true;try{const{data:{session}}=await db.auth.getSession();if(session?.user){const ok=await mrgValidarSessaoP4(session.user.email);if(ok===false){await mrgDerrubarSessaoP4();return}}}finally{MRG_SESSAO_CHECANDO=false}},3000);
 configurarFallbackIQNoIphone();
 function configurarResumoTelefone(){
   const caixa=document.querySelector('.essential');
