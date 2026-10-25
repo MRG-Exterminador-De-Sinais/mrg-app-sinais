@@ -183,6 +183,15 @@ const SUPABASE_URL="https://bflptqejltvwfjhixwpj.supabase.co";
 const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
+const MRG_SESSION_TOKEN_KEY="mrg_session_token_unica";
+let MRG_SESSAO_CHECANDO=false;
+function mrgNovoTokenSessao(){try{if(window.crypto&&crypto.randomUUID)return crypto.randomUUID()}catch(e){}return "web-"+Date.now()+"-"+Math.random().toString(36).slice(2)+"-"+Math.random().toString(36).slice(2)}
+function mrgTokenSessaoAtual(){return localStorage.getItem(MRG_SESSION_TOKEN_KEY)||""}
+async function mrgRegistrarSessaoUnica(email){const token=mrgNovoTokenSessao();const payload={email,session_token:token,device_id:"WEB-"+token.slice(0,24),plataforma:"WEB",ativo:true,ultimo_login:new Date().toISOString(),ultimo_ping:new Date().toISOString()};const{error}=await db.from("sessoes_ativas").upsert(payload,{onConflict:"email"});if(error)throw error;localStorage.setItem(MRG_SESSION_TOKEN_KEY,token);return token}
+async function mrgValidarSessaoUnica(email){const token=mrgTokenSessaoAtual();if(!email||!token)return false;const{data,error}=await db.from("sessoes_ativas").select("session_token,ativo").eq("email",email).maybeSingle();if(error){console.warn("[MRG WEB] Falha temporária ao validar sessão única:",error);return null}if(!data||data.ativo!==true||data.session_token!==token)return false;db.from("sessoes_ativas").update({ultimo_ping:new Date().toISOString()}).eq("email",email).eq("session_token",token).then(()=>{}).catch(()=>{});return true}
+async function mrgEncerrarRegistroSessao(){try{const{data}=await db.auth.getSession();const email=data?.session?.user?.email;const token=mrgTokenSessaoAtual();if(email&&token)await db.from("sessoes_ativas").update({ativo:false,ultimo_ping:new Date().toISOString()}).eq("email",email).eq("session_token",token)}catch(e){}localStorage.removeItem(MRG_SESSION_TOKEN_KEY)}
+
+
 let contrato=null;
 const el=id=>document.getElementById(id);
 
@@ -219,9 +228,10 @@ async function entrar(){
   el("loginMsg").textContent="Validando...";
   const {error}=await db.auth.signInWithPassword({email,password});
   if(error){el("loginMsg").textContent="Login ou senha inválidos.";return}
+  try{await mrgRegistrarSessaoUnica(email)}catch(e){console.error(e);await db.auth.signOut({scope:"local"});el("loginMsg").textContent="Não foi possível registrar a sessão única deste aparelho.";return}
   await iniciarApp();
 }
-async function sair(){fecharModal();await db.auth.signOut({scope:"local"});contrato=null;el("appBox").classList.add("escondido");atualizarStatusCabecalhoP1();el("loginBox").classList.remove("escondido")}
+async function sair(){fecharModal();await mrgEncerrarRegistroSessao();await db.auth.signOut({scope:"local"});contrato=null;el("appBox").classList.add("escondido");atualizarStatusCabecalhoP1();el("loginBox").classList.remove("escondido")}
 
 function normalizarContrato(data){
   if(Array.isArray(data)) data=data[0]||{};
@@ -270,6 +280,8 @@ async function iniciarApp(){
   const {data:s}=await db.auth.getSession();
   const user=s?.session?.user;
   if(!user)return;
+  const sessaoOk=await mrgValidarSessaoUnica(user.email);
+  if(sessaoOk===false){localStorage.removeItem(MRG_SESSION_TOKEN_KEY);await db.auth.signOut({scope:"local"});el("appBox").classList.add("escondido");el("loginBox").classList.remove("escondido");el("loginMsg").textContent="Esta conta foi aberta em outro aparelho. Faça login novamente.";atualizarStatusCabecalhoP1();return}
   try{
     await obterContrato();
   }catch(e){
@@ -340,6 +352,7 @@ document.addEventListener("visibilitychange",async()=>{if(document.visibilitySta
 atualizarStatusCabecalhoP1();
 atualizarRelogioCabecalhoP1();
 setInterval(atualizarRelogioCabecalhoP1,1000);
+setInterval(async()=>{if(MRG_SESSAO_CHECANDO)return;MRG_SESSAO_CHECANDO=true;try{const{data}=await db.auth.getSession();const user=data?.session?.user;if(user){const ok=await mrgValidarSessaoUnica(user.email);if(ok===false){localStorage.removeItem(MRG_SESSION_TOKEN_KEY);await db.auth.signOut({scope:"local"});contrato=null;el("appBox").classList.add("escondido");el("loginBox").classList.remove("escondido");el("loginMsg").textContent="Esta conta foi aberta em outro aparelho. Faça login novamente.";atualizarStatusCabecalhoP1()}}}finally{MRG_SESSAO_CHECANDO=false}},3000);
 (async()=>{const {data}=await db.auth.getSession();if(data?.session)await iniciarApp()})();
 </script>
 </body>
