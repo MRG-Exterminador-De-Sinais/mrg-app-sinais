@@ -703,7 +703,7 @@ const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const SITE_URL=window.location.origin;
 const PUSH_TABLE="push_assinaturas";
 const PUSH_FUNCTION="enviar-push-sinal";
-const APP_SESSION_KEY="mrg_app_session_id";
+const APP_SESSION_KEY="mrg_session_token_unica";
 
 const VAPID_PUBLIC_KEY="BI96HF-7c3gZQ1K3EPsco9IBQ39Yqaz3adgvyCLArpUrGXrMjAqYDTtm4wCDEWzIyxi6eSgbPOFT7D-iwccN4HM";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -1196,58 +1196,11 @@ async function confirmarAvisoAtual(){
   }
 }
 
-function gerarIdSessaoApp(){
-  if(window.crypto&&typeof window.crypto.randomUUID==="function")return window.crypto.randomUUID();
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
-}
+function gerarIdSessaoApp(){if(window.crypto&&typeof window.crypto.randomUUID==="function")return window.crypto.randomUUID();return `web-${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`}
 function obterIdSessaoApp(){return localStorage.getItem(APP_SESSION_KEY)||""}
-function criarNovaSessaoApp(){
-  const sessionId=gerarIdSessaoApp();
-  localStorage.setItem(APP_SESSION_KEY,sessionId);
-  return sessionId;
-}
-async function registrarSessaoAppAtual(){
-  const sessionId=criarNovaSessaoApp();
-  const{error}=await db.rpc("registrar_sessao_app_atual",{p_session_id:sessionId});
-  if(error){
-    localStorage.removeItem(APP_SESSION_KEY);
-    throw error;
-  }
-  return sessionId;
-}
-async function sessaoAppContinuaAtual(){
-  const sessionId=obterIdSessaoApp();
-  if(!sessionId)return false;
-  const{data,error}=await db.rpc("sessao_app_eh_atual",{p_session_id:sessionId});
-  if(error){
-    console.error("Falha ao validar sessão exclusiva:",error);
-    return true;
-  }
-  return data===true;
-}
-async function encerrarSessaoPorOutroAparelho(){
-  painelAtivo=false;
-
-  // Desativa imediatamente o Push deste aparelho antes de remover a sessão local.
-  try{
-    if(pushDisponivel()){
-      const assinatura=await obterAssinaturaPush();
-      if(assinatura){
-        const{error}=await db.rpc("desativar_push_deste_aparelho",{
-          p_endpoint:assinatura.endpoint
-        });
-        if(error)console.error("Falha ao desativar Push do aparelho anterior:",error);
-      }
-    }
-  }catch(e){
-    console.error("Falha ao localizar/desativar Push do aparelho anterior:",e);
-  }
-
-  localStorage.removeItem(APP_SESSION_KEY);
-  await db.auth.signOut({scope:"local"});
-  atualizarBotaoNotificacoes(false);
-  mostrarLogin("Esta conta foi aberta em outro aparelho. O acesso e as notificações deste dispositivo foram desativados.");
-}
+async function registrarSessaoAppAtual(){const{data:sessionData}=await db.auth.getSession();const email=sessionData?.session?.user?.email||"";if(!email)throw new Error("Usuário sem sessão para registrar sessão única.");const sessionId=gerarIdSessaoApp();const payload={email,session_token:sessionId,device_id:"WEB-"+sessionId.slice(0,24),plataforma:"WEB",ativo:true,ultimo_login:new Date().toISOString(),ultimo_ping:new Date().toISOString()};const{error}=await db.from("sessoes_ativas").upsert(payload,{onConflict:"email"});if(error){localStorage.removeItem(APP_SESSION_KEY);throw error}localStorage.setItem(APP_SESSION_KEY,sessionId);return sessionId}
+async function sessaoAppContinuaAtual(){const sessionId=obterIdSessaoApp();if(!sessionId)return false;const{data:sessionData}=await db.auth.getSession();const email=sessionData?.session?.user?.email||"";if(!email)return false;const{data,error}=await db.from("sessoes_ativas").select("session_token,ativo").eq("email",email).maybeSingle();if(error){console.error("Falha temporária ao validar sessão exclusiva:",error);return true}if(!data||data.ativo!==true||data.session_token!==sessionId)return false;db.from("sessoes_ativas").update({ultimo_ping:new Date().toISOString()}).eq("email",email).eq("session_token",sessionId).then(()=>{}).catch(()=>{});return true}
+async function encerrarSessaoPorOutroAparelho(){painelAtivo=false;try{if(pushDisponivel()){const assinatura=await obterAssinaturaPush();if(assinatura){const{error}=await db.rpc("desativar_push_deste_aparelho",{p_endpoint:assinatura.endpoint});if(error)console.error("Falha ao desativar Push do aparelho anterior:",error)}}}catch(e){console.error("Falha ao localizar/desativar Push do aparelho anterior:",e)}localStorage.removeItem(APP_SESSION_KEY);await db.auth.signOut({scope:"local"});atualizarBotaoNotificacoes(false);mostrarLogin("Esta conta foi aberta em outro aparelho. O acesso e as notificações deste dispositivo foram desativados.")}
 
 function esconderTudo(){["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>document.getElementById(id).classList.add("escondido"))}
 function mostrarLogin(msg=""){painelAtivo=false;STATUS_FINANCEIRO_LOGIN=null;FINANCEIRO=financeiroVazio();FINANCEIRO_RETORNO_EXTERNO=false;limparEstadoCentralAvisos();telaAtual="login";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg}
@@ -1368,7 +1321,7 @@ async function verificarAcesso(redirecionarSemSessao=false){
   }
   p3AtualizarCabecalhoAcesso(contratoAcesso.nivel_acesso,true);
 }
-async function sair(){painelAtivo=false;limparEstadoCentralAvisos();localStorage.removeItem(APP_SESSION_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
+async function sair(){painelAtivo=false;limparEstadoCentralAvisos();try{const{data:s}=await db.auth.getSession();const email=s?.session?.user?.email||"";const token=obterIdSessaoApp();if(email&&token)await db.from("sessoes_ativas").update({ativo:false,ultimo_ping:new Date().toISOString()}).eq("email",email).eq("session_token",token)}catch(e){}localStorage.removeItem(APP_SESSION_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
 function alvoNumero(alvo){return Number(String(alvo||"").replace("x","").replace("X","").trim())||0}
 function horarioValor(h){if(!h)return 999999;const p=String(h).split(":").map(Number);return(p[0]||0)*3600+(p[1]||0)*60+(p[2]||0)}
 function ehAtivo(item){return item.ativo===true}
@@ -1889,7 +1842,7 @@ if(FINANCEIRO.bloquearSinais){
 const{data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Serviço temporariamente indisponível</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Serviço temporariamente indisponível</div>";return}let ativos=(data||[]).filter(ehAtivo),historico=(data||[]).filter(item=>!ehAtivo(item));ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo)});ativos=ativos.slice(0,3);historico=historico.slice(0,20);atualizarResumoFechados(historico);let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";const aviso=avisoOperacionalHTML();document.getElementById("ativos").innerHTML=ativos.length?`${aviso}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:(aviso?aviso:"<div class='vazio'>Nenhum sinal ativo no momento</div>");document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`<div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>"}
 registrarServiceWorker();
 db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY")mostrarNovaSenha()});if(window.location.hash.includes("type=recovery"))mostrarNovaSenha();else verificarAcesso(true);
-setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},10000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarFeed50Velas,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);setInterval(carregarAvisos,30000);setInterval(verificarFinanceiroPeriodico,FINANCEIRO_INTERVALO_MS);
+setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},3000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarFeed50Velas,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);setInterval(carregarAvisos,30000);setInterval(verificarFinanceiroPeriodico,FINANCEIRO_INTERVALO_MS);
 
 
 /* ===== P3 V2 · ANALISTA SOMENTE VISUAL (SEM PUSH) ===== */
