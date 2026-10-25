@@ -237,6 +237,15 @@ body{background:radial-gradient(circle at 50% 0,#092016 0,#060807 28%,#030403 70
 const SUPABASE_URL="https://bflptqejltvwfjhixwpj.supabase.co";
 const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const MRG_SESSION_TOKEN_KEY="mrg_session_token_unica";
+let MRG_SESSAO_CHECANDO=false;
+function mrgNovoTokenSessao(){try{if(window.crypto&&crypto.randomUUID)return crypto.randomUUID()}catch(e){}return "web-"+Date.now()+"-"+Math.random().toString(36).slice(2)+"-"+Math.random().toString(36).slice(2)}
+function mrgTokenSessaoAtual(){return localStorage.getItem(MRG_SESSION_TOKEN_KEY)||""}
+async function mrgRegistrarSessaoUnica(email){const token=mrgNovoTokenSessao();const payload={email,session_token:token,device_id:"WEB-"+token.slice(0,24),plataforma:"WEB",ativo:true,ultimo_login:new Date().toISOString(),ultimo_ping:new Date().toISOString()};const{error}=await db.from("sessoes_ativas").upsert(payload,{onConflict:"email"});if(error)throw error;localStorage.setItem(MRG_SESSION_TOKEN_KEY,token);return token}
+async function mrgValidarSessaoUnica(email){const token=mrgTokenSessaoAtual();if(!email||!token)return false;const{data,error}=await db.from("sessoes_ativas").select("session_token,ativo").eq("email",email).maybeSingle();if(error){console.warn("[MRG WEB] Falha temporária ao validar sessão única:",error);return null}if(!data||data.ativo!==true||data.session_token!==token)return false;db.from("sessoes_ativas").update({ultimo_ping:new Date().toISOString()}).eq("email",email).eq("session_token",token).then(()=>{}).catch(()=>{});return true}
+async function mrgEncerrarRegistroSessao(){try{const{data}=await db.auth.getSession();const email=data?.session?.user?.email;const token=mrgTokenSessaoAtual();if(email&&token)await db.from("sessoes_ativas").update({ativo:false,ultimo_ping:new Date().toISOString()}).eq("email",email).eq("session_token",token)}catch(e){}localStorage.removeItem(MRG_SESSION_TOKEN_KEY)}
+
 let painelAtivo=false, FEED=[], contrato=null;
 const PAGINA=50;
 let feedOffset=0, feedFim=false, feedCarregando=false;
@@ -272,6 +281,7 @@ async function entrar(){
   el("loginMsg").textContent="Validando acesso...";
   const{data,error}=await db.auth.signInWithPassword({email,password:senha});
   if(error){el("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos.</span>";return}
+  try{await mrgRegistrarSessaoUnica(email)}catch(e){console.error(e);await db.auth.signOut({scope:"local"});el("loginMsg").innerHTML="<span class='erro'>Não foi possível registrar a sessão única deste aparelho.</span>";return}
   await verificarAcesso();
 }
 async function obterContrato(){
@@ -290,6 +300,8 @@ function aplicarPermissoes(){
 async function verificarAcesso(){
   const{data:s}=await db.auth.getSession();const user=s?.session?.user;
   if(!user){mostrarLogin();return}
+  const sessaoOk=await mrgValidarSessaoUnica(user.email);
+  if(sessaoOk===false){localStorage.removeItem(MRG_SESSION_TOKEN_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Esta conta foi aberta em outro aparelho. Faça login novamente.");return}
   try{await obterContrato()}catch(e){mostrarLogin("Não foi possível consultar o contrato central de acesso.");return}
   if(!boolContrato("pagina_2")){mostrarLogin(String(contrato?.nivel_acesso||"").toUpperCase()==="BLOQUEADO"?"Acesso bloqueado pelo administrador.":"Página 2 indisponível para o estado atual da conta.",contrato?.nivel_acesso,true);return}
   el("usuarioEmail").textContent=user.email||"";
@@ -305,7 +317,7 @@ async function irPagina(n){
   window.location.href=n===1?"/p1.html":"/";
 }
 function mostrarLogin(msg="",nivel="",sessaoAtiva=false){painelAtivo=false;atualizarAcessoCabecalhoP2("",nivel,sessaoAtiva);el("appBox").classList.add("escondido");el("loginBox").classList.remove("escondido");if(msg)el("loginMsg").textContent=msg}
-async function sair(){painelAtivo=false;await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
+async function sair(){painelAtivo=false;await mrgEncerrarRegistroSessao();await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
 async function carregarSnapshot(){
   if(!painelAtivo)return;
   try{
@@ -469,6 +481,7 @@ setInterval(()=>{el("relogio").textContent=new Date().toLocaleTimeString("pt-BR"
 setInterval(carregarSnapshot,1000);
 setInterval(atualizarTopoFeed,2000);
 document.addEventListener("visibilitychange",async()=>{if(document.visibilityState==="visible"&&painelAtivo){try{await obterContrato();if(!boolContrato("pagina_2")){painelAtivo=false;el("appBox").classList.add("escondido");mostrarLogin("Acesso à Página 2 não está disponível.");return}aplicarPermissoes()}catch(e){}}});
+setInterval(async()=>{if(!painelAtivo||MRG_SESSAO_CHECANDO)return;MRG_SESSAO_CHECANDO=true;try{const{data}=await db.auth.getSession();const user=data?.session?.user;if(user){const ok=await mrgValidarSessaoUnica(user.email);if(ok===false){painelAtivo=false;localStorage.removeItem(MRG_SESSION_TOKEN_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Esta conta foi aberta em outro aparelho. Faça login novamente.")}}}finally{MRG_SESSAO_CHECANDO=false}},3000);
 (async()=>{const{data}=await db.auth.getSession();if(data?.session)await verificarAcesso()})();
 </script>
 </body>
