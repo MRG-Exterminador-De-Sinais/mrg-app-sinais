@@ -1596,13 +1596,13 @@ function montarTextoListaFuturaLimpo(textoOriginal, indicacao){
 
   const linhas=[
     "MRG EXTERMINADOR 1WIN",
-    "MINUTOS PROVÁVEIS DE ROSA",
+    "MINUTOS MAIS PROVÁVEIS DE ROSA",
     ""
   ];
 
   sinais.forEach((s,i)=>{
     linhas.push(`${s.n}. ROSA PROVÁVEL ÀS ${s.hora}`);
-    linhas.push(`   faixa: ${s.faixa} | confiança: ${s.confianca} | score: ${s.score}`);
+    linhas.push(`   faixa: ${s.faixa}\n   confiança: ${s.confianca}\n   score: ${s.score}`);
     if(i===4){
       linhas.push("");
       linhas.push("MRG EXTERMINADOR DE SINAIS");
