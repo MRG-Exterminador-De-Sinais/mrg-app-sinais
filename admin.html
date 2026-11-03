@@ -138,6 +138,16 @@ select{
 .badge.cadastro-inativo{background:#3c3c3c;color:#ddd}
 </style>
 
+
+<style>
+/* MRG ADM 3.0 - Listas Futuras: mantém o padrão visual do ADM atual. */
+.lista-futura-status{background:#202020;border:1px solid #444;border-radius:12px;padding:12px;margin:10px 0;text-align:center}
+.lista-futura-estado{font-weight:900;color:#00ff88;font-size:15px}
+.lista-futura-detalhe{font-size:12px;color:#aaa;line-height:1.45;margin-top:5px}
+#btnListaFutura.aguardando{background:#555;color:#ddd;cursor:default}
+#btnListaFutura.resultado{background:#ffaa00;color:#000}
+</style>
+
 </head>
 <body>
 <div class="container">
@@ -154,6 +164,7 @@ select{
   <button id="menuConteudos" onclick="mostrarSecaoAdm('conteudos')">📚 CONTRATOS / CONTEÚDOS</button>
   <button id="menuContato" onclick="mostrarSecaoAdm('contato')">📱 CONTATO ADM</button>
   <button id="menuOperacional" onclick="mostrarSecaoAdm('operacional')">⚙️ OPERACIONAL</button>
+  <button id="menuListasFuturas" onclick="mostrarSecaoAdm('listasfuturas')">📋 LISTAS FUTURAS</button>
   <button class="bloquear" onclick="sair()">SAIR</button>
 </div>
 
@@ -346,6 +357,27 @@ select{
     <button class="bloquear" onclick="cancelarManutencaoGlobal()">CANCELAR MANUTENÇÃO PROGRAMADA</button>
   </div>
 </section>
+
+<section id="secaoListasFuturas" class="secao-adm escondido">
+  <div class="card">
+    <div class="titulo">LISTAS FUTURAS — AVIATOR 1WIN</div>
+    <div class="linha">Copia a Projeção Futura disponível no instante do clique e acompanha somente aqueles 10 horários pelas velas que continuam chegando ao sistema.</div>
+    <div class="lista-futura-status">
+      <div id="listaFuturaEstado" class="lista-futura-estado">CARREGANDO...</div>
+      <div id="listaFuturaDetalhe" class="lista-futura-detalhe">Consultando estado do acompanhamento.</div>
+    </div>
+    <button id="btnListaFutura" disabled onclick="acaoListaFuturaAdm()">CARREGANDO...</button>
+    <div id="listaFuturaMsg" class="msg"></div>
+  </div>
+
+  <div class="card">
+    <div class="titulo">MODIFICAR CÓDIGO DE INDICAÇÃO</div>
+    <div class="linha">O valor salvo entra automaticamente no rodapé das próximas listas copiadas.</div>
+    <input id="indicacaoListaFutura" type="text" autocomplete="off" placeholder="Cole aqui o código ou link de indicação">
+    <button class="hist" onclick="salvarIndicacaoListaFuturaAdm()">SALVAR CÓDIGO DE INDICAÇÃO</button>
+    <div id="indicacaoListaFuturaMsg" class="msg"></div>
+  </div>
+</section>
 </div>
 
 <div id="modalHistorico" class="modal-fundo escondido" onclick="fecharHistorico()"><div class="modal-caixa" onclick="event.stopPropagation()"><div class="titulo">HISTÓRICO FINANCEIRO</div><div id="conteudoHistorico" class="vazio">Carregando histórico...</div><button class="btn-fechar" onclick="fecharHistorico()">FECHAR</button></div></div>
@@ -529,7 +561,7 @@ function badgeLiberado(v){return v?"<span class='badge liberado'>LIBERADO</span>
 function badgeFinanceiro(st){if(st==="PAGO")return"<span class='badge financeiro-pago'>PAGO</span>";if(st==="FREE")return"<span class='badge financeiro-free'>FREE</span>";if(st==="ATRASADO")return"<span class='badge financeiro-atrasado'>CARÊNCIA</span>";if(st==="BLOQUEADO")return"<span class='badge bloqueado'>BLOQUEADO</span>";return"<span class='badge financeiro-pendente'>PENDENTE</span>"}
 
 function mostrarSecaoAdm(nome){
-  ["Resumo","Clientes","Financeiro","Avisos","Conteudos","Contato","Operacional"].forEach(n=>{
+  ["Resumo","Clientes","Financeiro","Avisos","Conteudos","Contato","Operacional","ListasFuturas"].forEach(n=>{
     const sec=$("secao"+n),btn=$("menu"+n);
     if(sec)sec.classList.toggle("escondido",n.toLowerCase()!==nome);
     if(btn)btn.classList.toggle("ativo",n.toLowerCase()===nome);
@@ -537,6 +569,7 @@ function mostrarSecaoAdm(nome){
   if(nome==="conteudos"){carregarContratosAdm();carregarConteudosAdm();}
   if(nome==="contato"){carregarContatoAdm();}
   if(nome==="operacional"){carregarPlataformasAdm();}
+  if(nome==="listasfuturas"){carregarListaFuturaAdm(false);}
 }
 
 function categoriaUsuario(u){
@@ -639,7 +672,7 @@ async function salvarContatoAdm(){
 }
 
 async function entrar(){const email=$("loginEmail").value.trim(),password=$("loginSenha").value.trim();if(!email||!password){$("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}if(email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){$("loginMsg").innerHTML="<span class='erro'>Este e-mail não é administrador.</span>";return}const{error}=await db.auth.signInWithPassword({email,password});if(error){$("loginMsg").innerHTML="<span class='erro'>Login inválido ou e-mail não confirmado.</span>";return}verificarAdmin()}
-async function verificarAdmin(){const{data}=await db.auth.getSession();const u=data?.session?.user;if(!u){$("loginBox").classList.remove("escondido");$("adminBox").classList.add("escondido");return}if(String(u.email).toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await db.auth.signOut();return}$("loginBox").classList.add("escondido");$("adminBox").classList.remove("escondido");$("adminEmail").innerText=u.email;await carregarUsuarios();await carregarEstadoManutencao();await carregarModelosFinanceiros();await carregarAvisosAdmin();await carregarNovosCadastros();await carregarContatoAdm();await carregarPlataformasAdm()}
+async function verificarAdmin(){const{data}=await db.auth.getSession();const u=data?.session?.user;if(!u){$("loginBox").classList.remove("escondido");$("adminBox").classList.add("escondido");return}if(String(u.email).toLowerCase()!==ADMIN_EMAIL.toLowerCase()){await db.auth.signOut();return}$("loginBox").classList.add("escondido");$("adminBox").classList.remove("escondido");$("adminEmail").innerText=u.email;await carregarUsuarios();await carregarEstadoManutencao();await carregarModelosFinanceiros();await carregarAvisosAdmin();await carregarNovosCadastros();await carregarContatoAdm();await carregarPlataformasAdm();try{await carregarListaFuturaAdm(true)}catch(e){console.warn("Listas Futuras ainda não disponíveis:",e)}}
 async function carregarControleEnvio(){const{data,error}=await db.from("controle_envio").select("*").eq("id",1).single();if(error||!data){$("statusControleEnvio").innerText="Erro ao carregar controle operacional.";return}window.CONTROLE_ENVIO=data;$("mensagemControleEnvio").value=data.mensagem||"";atualizarBotoesControle()}
 function atualizarBotoesControle(){const c=window.CONTROLE_ENVIO,s=c.snarpy_ativo===true,h=c.hyper_ativo===true,t=s&&h;[["btnSnarpy",s,"SNARPY"],["btnHyper",h,"HYPER"],["btnTodos",t,"TODOS"]].forEach(([id,on,n])=>{const b=$(id);b.innerText=(on?"🟢 ":"🔴 ")+n;b.className="btn-toggle "+(on?"ativo":"pausado")});$("statusControleEnvio").innerText=t?"Envio de novos sinais liberado.":!s&&!h?"Novos sinais pausados para SNARPY e HYPER.":!s?"Novos sinais SNARPY pausados. HYPER liberado.":"Novos sinais HYPER pausados. SNARPY liberado."}
 async function salvarControleEnvio(s,h,m=null){const p={snarpy_ativo:s,hyper_ativo:h,atualizado_em:agoraISO()};if(m!==null)p.mensagem=m;const{error}=await db.from("controle_envio").update(p).eq("id",1);if(error){alert(error.message);return false}Object.assign(window.CONTROLE_ENVIO,p);atualizarBotoesControle();return true}
@@ -1444,6 +1477,121 @@ async function salvarMensagemPlataformaAdm(plataforma){
   if(!c||!campos||window.PLATAFORMAS_OCUPADO)return;
   await definirPlataformaAdm(plataforma,c[campos.flag],$(campos.entrada).value.trim());
 }
+
+// MRG ADM 3.0 - LISTAS FUTURAS / AVIATOR 1WIN
+window.LISTA_FUTURA_ESTADO=null;
+window.LISTA_FUTURA_OCUPADO=false;
+
+function listaFuturaFormatarData(v){
+  if(!v)return"";
+  const d=new Date(v);
+  return Number.isNaN(d.getTime())?"":d.toLocaleString("pt-BR");
+}
+
+async function copiarTextoDiretoAdm(texto){
+  texto=String(texto||"");
+  if(!texto)return false;
+  try{
+    if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(texto);return true;}
+  }catch(e){console.warn("Clipboard API indisponível:",e)}
+  try{
+    const ta=document.createElement("textarea");
+    ta.value=texto;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";ta.style.pointerEvents="none";
+    document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,ta.value.length);
+    const ok=document.execCommand("copy");document.body.removeChild(ta);return !!ok;
+  }catch(e){console.warn("Cópia alternativa indisponível:",e);return false}
+}
+
+function renderListaFuturaAdm(){
+  const e=window.LISTA_FUTURA_ESTADO||{};
+  const btn=$("btnListaFutura"),estado=$("listaFuturaEstado"),det=$("listaFuturaDetalhe");
+  if(!btn||!estado||!det)return;
+  btn.className="";
+  btn.disabled=window.LISTA_FUTURA_OCUPADO;
+  if(e.status==="ACOMPANHANDO"){
+    estado.innerText="ACOMPANHANDO";
+    det.innerText=`Lista #${e.lista_id||"-"} · ${Number(e.sinais_resolvidos||0)}/${Number(e.sinais_total||10)} horários concluídos${e.criada_em?" · copiada em "+listaFuturaFormatarData(e.criada_em):""}`;
+    btn.innerText="AGUARDANDO";btn.className="aguardando";btn.disabled=true;
+  }else if(e.status==="RESULTADO_PRONTO"){
+    estado.innerText="RESULTADO PRONTO";
+    det.innerText=`Lista #${e.lista_id||"-"} concluída${e.concluida_em?" em "+listaFuturaFormatarData(e.concluida_em):""}`;
+    btn.innerText="COPIAR RESULTADO ANTERIOR";btn.className="resultado";btn.disabled=window.LISTA_FUTURA_OCUPADO;
+  }else{
+    estado.innerText="PRONTO PARA COPIAR";
+    det.innerText="A Projeção Futura continua atualizando normalmente. O acompanhamento começa somente no clique.";
+    btn.innerText="COPIAR LISTA";btn.disabled=window.LISTA_FUTURA_OCUPADO;
+  }
+  const inp=$("indicacaoListaFutura");
+  if(inp&&document.activeElement!==inp&&typeof e.indicacao==="string")inp.value=e.indicacao;
+}
+
+async function carregarListaFuturaAdm(silencioso=false){
+  const msg=$("listaFuturaMsg");
+  if(!silencioso&&msg)msg.innerText="Atualizando...";
+  const{data,error}=await db.rpc("admin_mrg_lista_futura_estado");
+  if(error){
+    if(msg)msg.innerHTML=`<span class="erro">${escHtml(error.message)}</span>`;
+    throw error;
+  }
+  window.LISTA_FUTURA_ESTADO=data||{status:"LIVRE",indicacao:""};
+  if(msg)msg.innerText="";
+  renderListaFuturaAdm();
+  return window.LISTA_FUTURA_ESTADO;
+}
+
+async function salvarIndicacaoListaFuturaAdm(){
+  const valor=$("indicacaoListaFutura").value.trim(),msg=$("indicacaoListaFuturaMsg");
+  if(!valor){msg.innerHTML='<span class="erro">Informe o código/link de indicação.</span>';return}
+  msg.innerText="Salvando...";
+  const{data,error}=await db.rpc("admin_mrg_salvar_indicacao_lista_futura",{p_indicacao:valor});
+  if(error){msg.innerHTML=`<span class="erro">${escHtml(error.message)}</span>`;return}
+  msg.innerText="Código de indicação salvo para as próximas listas.";
+  if(!window.LISTA_FUTURA_ESTADO)window.LISTA_FUTURA_ESTADO={status:"LIVRE"};
+  window.LISTA_FUTURA_ESTADO.indicacao=data?.indicacao||valor;
+  renderListaFuturaAdm();
+}
+
+async function acaoListaFuturaAdm(){
+  if(window.LISTA_FUTURA_OCUPADO)return;
+  const atual=window.LISTA_FUTURA_ESTADO||{};
+  if(atual.status==="ACOMPANHANDO")return;
+  window.LISTA_FUTURA_OCUPADO=true;renderListaFuturaAdm();
+  const msg=$("listaFuturaMsg");
+  try{
+    if(atual.status==="RESULTADO_PRONTO"){
+      const texto=String(atual.resultado_texto||"");
+      if(!texto)throw new Error("O resultado foi marcado como pronto, mas o texto não foi retornado.");
+      const copiou=await copiarTextoDiretoAdm(texto);
+      if(!copiou)throw new Error("O navegador não permitiu copiar o resultado para a área de transferência.");
+      const{error}=await db.rpc("admin_mrg_marcar_resultado_lista_futura_copiado",{p_lista_id:Number(atual.lista_id)});
+      if(error)throw error;
+      msg.innerText="Resultado copiado.";
+      await carregarListaFuturaAdm(true);
+      return;
+    }
+
+    const{data,error}=await db.rpc("admin_mrg_copiar_lista_futura");
+    if(error)throw error;
+    const texto=String(data?.texto_lista||"");
+    const copiou=await copiarTextoDiretoAdm(texto);
+    if(!copiou){
+      msg.innerHTML='<span class="erro">A lista entrou em acompanhamento, mas o navegador bloqueou a cópia. Recarregue a página e use HTTPS para permitir o clipboard.</span>';
+    }else{
+      msg.innerText="Lista copiada. Acompanhamento iniciado.";
+    }
+    await carregarListaFuturaAdm(true);
+  }catch(e){
+    if(msg)msg.innerHTML=`<span class="erro">${escHtml(e.message||e)}</span>`;
+    try{await carregarListaFuturaAdm(true)}catch(_e){}
+  }finally{
+    window.LISTA_FUTURA_OCUPADO=false;renderListaFuturaAdm();
+  }
+}
+
+setInterval(()=>{
+  const sec=$("secaoListasFuturas");
+  if(sec&&!sec.classList.contains("escondido"))carregarListaFuturaAdm(true).catch(()=>{});
+},5000);
 
 async function sair(){await db.auth.signOut();$("adminBox").classList.add("escondido");$("loginBox").classList.remove("escondido");$("loginMsg").innerText="Sessão encerrada."}
 limparFormularioAviso();
