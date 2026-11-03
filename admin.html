@@ -1551,6 +1551,49 @@ async function salvarIndicacaoListaFuturaAdm(){
   renderListaFuturaAdm();
 }
 
+function montarTextoListaFuturaLimpo(textoOriginal, indicacao){
+  const bruto=String(textoOriginal||"").replace(/\r/g,"").trim();
+  if(!bruto)return"";
+
+  const titulo="MINUTOS MAIS PROVAVEIS DE ROSA";
+  const tituloAcentuado="MINUTOS MAIS PROVÁVEIS DE ROSA";
+  let inicio=bruto.indexOf(titulo);
+  if(inicio<0)inicio=bruto.indexOf(tituloAcentuado);
+  if(inicio<0)return bruto;
+
+  let trecho=bruto.slice(inicio);
+  const cortes=[
+    "\n============================================================\nLEITURA DE PAG",
+    "\nLEITURA DE PAG",
+    "\n============================================================\nRESUMO OPERACIONAL",
+    "\nRESUMO OPERACIONAL",
+    "\nA analise pesada sera refeita",
+    "\nA análise pesada será refeita"
+  ];
+  let fim=trecho.length;
+  for(const c of cortes){
+    const i=trecho.indexOf(c);
+    if(i>=0&&i<fim)fim=i;
+  }
+  trecho=trecho.slice(0,fim);
+
+  trecho=trecho
+    .replace(/^MINUTOS MAIS PROVAVEIS DE ROSA\s*\n[-=]+\s*\n?/i,"MINUTOS MAIS PROVÁVEIS DE ROSA\n\n")
+    .replace(/^MINUTOS MAIS PROVÁVEIS DE ROSA\s*\n[-=]+\s*\n?/i,"MINUTOS MAIS PROVÁVEIS DE ROSA\n\n")
+    .replace(/\n[-=]{5,}\s*$/g,"")
+    .trim();
+
+  const ind=String(indicacao||"").trim();
+  if(ind){
+    const jaTem=trecho.includes(ind);
+    if(!jaTem){
+      const rotulo=/^https?:\/\//i.test(ind)?"Link de cadastro:":"Código de indicação:";
+      trecho+=`\n\n${rotulo} ${ind}`;
+    }
+  }
+  return trecho.trim();
+}
+
 async function acaoListaFuturaAdm(){
   if(window.LISTA_FUTURA_OCUPADO)return;
   const atual=window.LISTA_FUTURA_ESTADO||{};
@@ -1572,7 +1615,9 @@ async function acaoListaFuturaAdm(){
 
     const{data,error}=await db.rpc("admin_mrg_copiar_lista_futura");
     if(error)throw error;
-    const texto=String(data?.texto_lista||"");
+    const textoCompleto=String(data?.texto_lista||"");
+    const indicacao=String((window.LISTA_FUTURA_ESTADO||{}).indicacao||$("indicacaoListaFutura")?.value||"").trim();
+    const texto=montarTextoListaFuturaLimpo(textoCompleto,indicacao);
     const copiou=await copiarTextoDiretoAdm(texto);
     if(!copiou){
       msg.innerHTML='<span class="erro">A lista entrou em acompanhamento, mas o navegador bloqueou a cópia. Recarregue a página e use HTTPS para permitir o clipboard.</span>';
