@@ -1555,10 +1555,10 @@ function montarTextoListaFuturaLimpo(textoOriginal, indicacao){
   const bruto=String(textoOriginal||"").replace(/\r/g,"").trim();
   if(!bruto)return"";
 
-  const titulo="MINUTOS MAIS PROVAVEIS DE ROSA";
-  const tituloAcentuado="MINUTOS MAIS PROVÁVEIS DE ROSA";
-  let inicio=bruto.indexOf(titulo);
-  if(inicio<0)inicio=bruto.indexOf(tituloAcentuado);
+  const tituloSemAcento="MINUTOS MAIS PROVAVEIS DE ROSA";
+  const tituloComAcento="MINUTOS MAIS PROVÁVEIS DE ROSA";
+  let inicio=bruto.indexOf(tituloSemAcento);
+  if(inicio<0)inicio=bruto.indexOf(tituloComAcento);
   if(inicio<0)return bruto;
 
   let trecho=bruto.slice(inicio);
@@ -1577,21 +1577,51 @@ function montarTextoListaFuturaLimpo(textoOriginal, indicacao){
   }
   trecho=trecho.slice(0,fim);
 
-  trecho=trecho
-    .replace(/^MINUTOS MAIS PROVAVEIS DE ROSA\s*\n[-=]+\s*\n?/i,"MINUTOS MAIS PROVÁVEIS DE ROSA\n\n")
-    .replace(/^MINUTOS MAIS PROVÁVEIS DE ROSA\s*\n[-=]+\s*\n?/i,"MINUTOS MAIS PROVÁVEIS DE ROSA\n\n")
-    .replace(/\n[-=]{5,}\s*$/g,"")
-    .trim();
+  const regexSinal=/(\d+)\)\s*ROSA\s+PROV(?:A|Á)VEL\s+(?:AS|ÀS)\s*(\d{2}:\d{2})[\s\S]*?faixa:\s*([^\n]+)[\s\S]*?confianca:\s*([^\n]+)[\s\S]*?score:\s*([0-9.,]+)/gi;
+  const sinais=[];
+  let m;
+  while((m=regexSinal.exec(trecho))!==null&&sinais.length<10){
+    sinais.push({
+      n:sinais.length+1,
+      hora:m[2].trim(),
+      faixa:m[3].trim(),
+      confianca:m[4].trim(),
+      score:m[5].trim()
+    });
+  }
+
+  if(sinais.length!==10){
+    throw new Error(`A Projeção Futura retornou ${sinais.length} sinais válidos. A cópia exige exatamente 10.`);
+  }
+
+  const linhas=[
+    "MRG EXTERMINADOR 1WIN",
+    "MINUTOS PROVÁVEIS DE ROSA",
+    ""
+  ];
+
+  sinais.forEach((s,i)=>{
+    linhas.push(`${s.n}. ROSA PROVÁVEL ÀS ${s.hora}`);
+    linhas.push(`   faixa: ${s.faixa} | confiança: ${s.confianca} | score: ${s.score}`);
+    if(i===4){
+      linhas.push("");
+      linhas.push("MRG EXTERMINADOR DE SINAIS");
+      linhas.push("");
+    }
+  });
+
+  linhas.push("");
+  linhas.push("Probabilidades, não certezas de entrada.");
+  linhas.push("Eu vou tentar 10x nas 3 casas antes e nas 3 casas após o minuto. Se o mercado inverter, não entro.");
 
   const ind=String(indicacao||"").trim();
   if(ind){
-    const jaTem=trecho.includes(ind);
-    if(!jaTem){
-      const rotulo=/^https?:\/\//i.test(ind)?"Link de cadastro:":"Código de indicação:";
-      trecho+=`\n\n${rotulo} ${ind}`;
-    }
+    linhas.push("");
+    const rotulo=/^https?:\/\//i.test(ind)?"Link de cadastro:":"Código de indicação:";
+    linhas.push(`${rotulo} ${ind}`);
   }
-  return trecho.trim();
+
+  return linhas.join("\n").trim();
 }
 
 async function acaoListaFuturaAdm(){
