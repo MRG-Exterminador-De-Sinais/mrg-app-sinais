@@ -1511,7 +1511,7 @@ function renderListaFuturaAdm(){
   if(e.status==="ACOMPANHANDO"){
     estado.innerText="ACOMPANHANDO";
     det.innerText=`Lista #${e.lista_id||"-"} · ${Number(e.sinais_resolvidos||0)}/${Number(e.sinais_total||10)} horários concluídos${e.criada_em?" · copiada em "+listaFuturaFormatarData(e.criada_em):""}`;
-    btn.innerText="AGUARDANDO";btn.className="aguardando";btn.disabled=true;
+    btn.innerText="ABORTAR E COPIAR PARCIAL";btn.className="bloquear";btn.disabled=window.LISTA_FUTURA_OCUPADO;
   }else if(e.status==="RESULTADO_PRONTO"){
     estado.innerText="RESULTADO PRONTO";
     det.innerText=`Lista #${e.lista_id||"-"} concluída${e.concluida_em?" em "+listaFuturaFormatarData(e.concluida_em):""}`;
@@ -1597,10 +1597,23 @@ function montarTextoListaFuturaLimpo(textoOriginal, indicacao){
 async function acaoListaFuturaAdm(){
   if(window.LISTA_FUTURA_OCUPADO)return;
   const atual=window.LISTA_FUTURA_ESTADO||{};
-  if(atual.status==="ACOMPANHANDO")return;
   window.LISTA_FUTURA_OCUPADO=true;renderListaFuturaAdm();
   const msg=$("listaFuturaMsg");
   try{
+    if(atual.status==="ACOMPANHANDO"){
+      const listaId=Number(atual.lista_id||0);
+      if(!listaId)throw new Error("Lista em acompanhamento sem identificação válida.");
+      const{data,error}=await db.rpc("admin_mrg_abortar_lista_futura",{p_lista_id:listaId});
+      if(error)throw error;
+      if(!data?.ok)throw new Error("O acompanhamento não pôde ser abortado.");
+      const parcial=String(data?.resultado_parcial||"");
+      if(!parcial)throw new Error("O acompanhamento foi encerrado, mas o resultado parcial não foi retornado.");
+      const copiou=await copiarTextoDiretoAdm(parcial);
+      if(!copiou)throw new Error("O acompanhamento foi encerrado, mas o navegador não permitiu copiar o resultado parcial.");
+      msg.innerText="Resultado parcial copiado. Acompanhamento encerrado e nova lista liberada.";
+      await carregarListaFuturaAdm(true);
+      return;
+    }
     if(atual.status==="RESULTADO_PRONTO"){
       const texto=String(atual.resultado_texto||"");
       if(!texto)throw new Error("O resultado foi marcado como pronto, mas o texto não foi retornado.");
