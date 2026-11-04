@@ -1510,11 +1510,11 @@ function renderListaFuturaAdm(){
   btn.disabled=window.LISTA_FUTURA_OCUPADO;
   if(e.status==="ACOMPANHANDO"){
     estado.innerText="ACOMPANHANDO";
-    det.innerText=`Lista #${e.lista_id||"-"} · ${Number(e.sinais_resolvidos||0)}/${Number(e.sinais_total||10)} horários concluídos${e.criada_em?" · copiada em "+listaFuturaFormatarData(e.criada_em):""}`;
+    det.innerText=`Lista #${e.numero_dia!=null?String(e.numero_dia).padStart(2,"0"):"-"} · ${Number(e.sinais_resolvidos||0)}/${Number(e.sinais_total||10)} horários concluídos${e.criada_em?" · copiada em "+listaFuturaFormatarData(e.criada_em):""}`;
     btn.innerText="ABORTAR E COPIAR PARCIAL";btn.className="bloquear";btn.disabled=window.LISTA_FUTURA_OCUPADO;
   }else if(e.status==="RESULTADO_PRONTO"){
     estado.innerText="RESULTADO PRONTO";
-    det.innerText=`Lista #${e.lista_id||"-"} concluída${e.concluida_em?" em "+listaFuturaFormatarData(e.concluida_em):""}`;
+    det.innerText=`Lista #${e.numero_dia!=null?String(e.numero_dia).padStart(2,"0"):"-"} concluída${e.concluida_em?" em "+listaFuturaFormatarData(e.concluida_em):""}`;
     btn.innerText="COPIAR RESULTADO ANTERIOR";btn.className="resultado";btn.disabled=window.LISTA_FUTURA_OCUPADO;
   }else{
     estado.innerText="PRONTO PARA COPIAR";
