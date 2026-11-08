@@ -1080,7 +1080,7 @@ function renderizarUsuarios(lista){
       :"";
     return `<div class="usuario-card"><div class="nome">${n}</div><div class="linha"><b>E-mail:</b> ${e}</div><div class="linha"><b>Telefone:</b> ${t}</div><div class="linha"><b>Acesso:</b> ${badgeNivelAcesso(u)}</div>${extraFree}<div class="linha"><b>Financeiro:</b> ${badgeFinanceiro(st)}</div><div class="linha"><b>Último pagamento:</b> ${formatarDataBR(u.data_ultimo_pagamento)}</div><div class="linha"><b>Validade paga:</b> ${formatarDataBR(u.validade_fim)}</div><div class="linha"><b>Carência até:</b> ${formatarDataBR(u.carencia_ate)}</div><div class="linha"><b>PRO+ Mercado:</b> ${statusP4Usuario(u)}</div><div class="acoes"><button class="pequeno pago" onclick="abrirModalPago('${u.id}')">PAGO</button><button class="pequeno free" onclick="abrirModalFree('${u.id}')">FREE</button><button class="pequeno ${testeP4Vigente(u)?"bloquear":"hist"}" onclick="abrirTesteP4('${u.id}')">${testeP4Vigente(u)?"🔴 GERENCIAR / DESATIVAR TESTE P4":"🟢 ATIVAR TESTE P4"}</button>${(u.bloqueio_administrativo===true || String(u.nivel_acesso||"").toUpperCase()==="BLOQUEADO")
 ?`<button class="pequeno free" onclick="desbloquearUsuario('${u.id}')">DESBLOQUEAR</button>`
-:`<button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button>`}${btnReativar}</div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${u.id}','${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button></div></div>`;
+:`<button class="pequeno bloquear" onclick="bloquearUsuario('${u.id}')">BLOQUEAR</button>`}${btnReativar}</div><div class="acoes"><button class="pequeno whats" onclick="abrirWhatsapp('${esc(t)}','${esc(n)}','${esc(e)}')">WHATSAPP</button><button class="pequeno cobranca" onclick="abrirCobranca('${u.id}','${esc(t)}','${esc(n)}','${esc(e)}')">COBRANÇA</button><button class="pequeno hist" onclick="abrirHistorico('${u.id}','${esc(n)}')">HISTÓRICO</button><button class="pequeno hist" id="mrgRecBtn-${u.id}" type="button" onclick="mrgRecuperarAssociado('${u.id}')">RECUPERAR SENHA</button></div></div>`;
   }).join("");
 }
 function toggleBusca(){const c=$("campoBusca");if(!c.style.display||c.style.display==="none"){c.style.display="block";c.focus()}else{c.value="";c.style.display="none";renderizarUsuarios(window.USUARIOS_CACHE)}}
@@ -1486,6 +1486,57 @@ function listaFuturaFormatarData(v){
   if(!v)return"";
   const d=new Date(v);
   return Number.isNaN(d.getTime())?"":d.toLocaleString("pt-BR");
+}
+
+// MRG ADM 3.0 — recuperação individual de senha, por perfil de associado.
+// 08/11/2026 — Adição isolada: geração exclusiva via Edge Function protegida.
+// Fluxo: GERAR LINK -> COPIAR LINK -> COPIADO (volta a COPIAR LINK).
+// Nenhuma alteração em pagamentos, FREE/PRO, histórico ou login.
+const MRG_REC_LINKS=new Map();
+const MRG_REC_TEMPOS=new Map();
+function mrgRecBotaoTexto(id,texto,ocupado=false){
+  const b=$("mrgRecBtn-"+id);
+  if(b){b.textContent=texto;b.disabled=ocupado;}
+}
+async function mrgRecuperarAssociado(id){
+  const u=usuario(id); if(!u||!u.email){alert("Associado sem e-mail cadastrado.");return;}
+  const agora=Date.now();
+  const existente=MRG_REC_LINKS.get(id);
+  if(existente && agora<existente.expira){
+    const ok=await copiarTextoDiretoAdm(existente.link);
+    if(!ok){
+      window.prompt("O navegador não permitiu copiar automaticamente. Selecione e copie o link:",existente.link);
+      mrgRecBotaoTexto(id,"COPIAR LINK");return;
+    }
+    mrgRecBotaoTexto(id,"✓ COPIADO");
+    clearTimeout(MRG_REC_TEMPOS.get(id));
+    MRG_REC_TEMPOS.set(id,setTimeout(()=>mrgRecBotaoTexto(id,"COPIAR LINK"),2000));
+    return;
+  }
+  const contato=String(u.telefone||"não informado");
+  if(!window.confirm("Gerar link de recuperação de senha para este associado?\n\n"+String(u.nome||"Associado")+"\n"+u.email+"\nTelefone cadastrado: "+contato+"\n\nConfirme a identidade antes de continuar."))return;
+  mrgRecBotaoTexto(id,"GERANDO LINK...",true);
+  try{
+    const {data,error}=await db.auth.getSession();
+    const token=data?.session?.access_token;
+    if(error||!token)throw new Error("Sessão do administrador expirada. Faça login novamente.");
+    const endpoint=SUPABASE_URL+"/functions/v1/mrg-gerar-recuperacao";
+    const resp=await fetch(endpoint,{
+      method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+token},
+      body:JSON.stringify({perfil_id:String(u.id),site_origin:window.location.origin})
+    });
+    const payload=await resp.json().catch(()=>({}));
+    if(!resp.ok||!payload?.link)throw new Error(payload?.error||"A geração não foi concluída. Verifique a Edge Function.");
+    const link=String(payload.link);
+    if(!link.startsWith(window.location.origin+"/recuperar-senha.html#token_hash="))throw new Error("O servidor retornou endereço incompatível com o domínio atual.");
+    // Prazo local conservador, sem afirmar que seja a expiração oficial do Supabase.
+    MRG_REC_LINKS.set(id,{link,expira:Date.now()+5*60*1000});
+    mrgRecBotaoTexto(id,"COPIAR LINK");
+    // Não copiar automaticamente após o fetch: alguns navegadores exigem novo clique do usuário.
+  }catch(e){
+    mrgRecBotaoTexto(id,"RECUPERAR SENHA");
+    alert("Não foi possível gerar o link para "+u.email+".\n"+String(e.message||e));
+  }
 }
 
 async function copiarTextoDiretoAdm(texto){
