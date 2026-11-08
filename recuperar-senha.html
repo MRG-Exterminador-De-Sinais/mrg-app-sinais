@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow,noarchive"><title>MRG • Recuperar senha</title>
+<style>body{background:#07100c;color:#eefbf4;font:16px Arial,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:15px;box-sizing:border-box}main{background:#101d17;border:1px solid #286b4f;border-radius:14px;padding:25px;width:100%;max-width:440px;box-sizing:border-box;box-shadow:0 8px 28px #0008}h1{color:#00ec87;font-size:23px;text-align:center}p{line-height:1.5;color:#bacac0}label{display:block;margin-top:18px;margin-bottom:8px}input{width:100%;padding:13px;box-sizing:border-box;background:#06110b;color:#fff;border:1px solid #38775a;border-radius:7px;font-size:16px}button{display:block;width:100%;margin-top:20px;background:#00e785;color:#04170c;padding:14px;border:0;border-radius:8px;font-weight:800;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}#msg{padding-top:16px;min-height:35px;line-height:1.5}.error{color:#ff8b8b}.ok{color:#53f6ae}small{display:block;margin-top:16px;color:#a7bfb0}a{color:#62eab2}</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body>
+<main><h1>MRG EXTERMINADOR DE SINAIS</h1><p>Redefinição de senha autorizada pelo administrador.</p>
+<div id="form" hidden><label for="nova">Nova senha</label><input id="nova" type="password" autocomplete="new-password" minlength="8" maxlength="72" placeholder="Mínimo de 8 caracteres"><label for="confirma">Confirme a nova senha</label><input id="confirma" type="password" autocomplete="new-password" minlength="8" maxlength="72" placeholder="Repita a senha"><button id="salvar" type="button" onclick="salvarSenha()">SALVAR NOVA SENHA</button></div>
+<div id="msg" role="status" aria-live="polite">Validando o link de recuperação...</div><small>Este link é exclusivo para a conta indicada e não deve ser compartilhado.</small>
+</main><script>
+const SUPABASE_URL="https://bflptqejltvwfjhixwpj.supabase.co";
+const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
+const cliente=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+let validado=false;
+const msg=(s,erro=false)=>{document.getElementById('msg').textContent=s;document.getElementById('msg').className=erro?'error':'ok'};
+(async()=>{try{
+ const hash=window.location.hash.startsWith('#')?window.location.hash.slice(1):'';
+ const p=new URLSearchParams(hash);const token=p.get('token_hash');
+ window.history.replaceState(null,'',window.location.pathname);
+ if(!token||!/^.{20,}$/.test(token)){msg('Link ausente ou inválido. Solicite um novo link ao administrador.',true);return}
+ const {data,error}=await cliente.auth.verifyOtp({token_hash:token,type:'recovery'});
+ if(error||!data?.user){msg('Link inválido, expirado ou já utilizado. Solicite outro ao administrador.',true);return}
+ validado=true;document.getElementById('form').hidden=false;msg('Identidade confirmada. Digite sua nova senha duas vezes.');
+ }catch(e){msg('Não foi possível validar este link. Tente novamente ou solicite outro.',true)}})();
+async function salvarSenha(){if(!validado)return;const a=document.getElementById('nova').value,b=document.getElementById('confirma').value;const btn=document.getElementById('salvar');
+ if(a.length<8){msg('A senha deve ter no mínimo 8 caracteres.',true);return}if(new TextEncoder().encode(a).length>72){msg('A senha é muito longa. Use até 72 bytes.',true);return}if(a!==b){msg('As senhas não conferem.',true);return}
+ btn.disabled=true;msg('Salvando sua nova senha...');
+ try{const {error}=await cliente.auth.updateUser({password:a});if(error)throw error;validado=false;document.getElementById('form').hidden=true;document.getElementById('nova').value='';document.getElementById('confirma').value='';await cliente.auth.signOut({scope:'local'});msg('Senha redefinida com sucesso. Abra o aplicativo MRG e entre com a nova senha.');}
+ catch(e){msg('Erro ao redefinir a senha: '+String(e.message||e),true);btn.disabled=false;}
+}
+</script></body></html>
