@@ -83,6 +83,7 @@ body{background:radial-gradient(circle at 50% 0,#092016 0,#060807 28%,#030403 70
 .nav-pages button{margin:0;min-height:58px;background:#0b120e;color:#fff;border:1px solid #2f5a42;box-shadow:0 0 14px #00ff8820}
 .nav-pages button.pro{border-color:#9b2d78;box-shadow:0 0 14px #ff3da720}
 .nav-pages button.lock{opacity:.42;filter:grayscale(.5)}
+.nav-pages button.escondido{display:none!important}
 .nav-pages small{display:block;color:#8e9d94;margin-top:4px;font-size:9px}
 .access-status{text-align:center;color:#7d8b82;font-size:10px;margin:4px 0 10px}
 @media(max-width:600px){.hip-mercado{grid-template-columns:1fr}.header-identidade{height:150px;background-position:center center;background-size:auto 100%}.nav-pages{grid-template-columns:1fr 1fr}.nav-pages button{font-size:12px;padding:10px 6px}}
@@ -155,15 +156,8 @@ body{background:radial-gradient(circle at 50% 0,#092016 0,#060807 28%,#030403 70
     </div>
   </div>
 
-  <div id="loginBox" class="card">
-    <div class="titulo">ACESSO AO ANALISTA</div>
-    <input id="email" type="email" placeholder="E-mail já cadastrado">
-    <input id="senha" type="password" placeholder="Senha">
-    <button onclick="entrar()">ENTRAR</button>
-    <div id="loginMsg" class="msg">Use o mesmo acesso já autorizado no sistema MRG.</div>
-  </div>
-
-  <div id="appBox" class="escondido">
+  <section id="p2SemAcesso" class="card" role="status" aria-live="polite"><div class="titulo">PÁGINA 2 — ANALISTA</div><p id="p2SemAcessoMsg">Validando acesso pela P1...</p><button type="button" onclick="location.href='/p1.html'">VOLTAR À P1</button></section>
+<div id="appBox" class="escondido">
     <div class="user">Acesso liberado: <span id="usuarioEmail"></span></div>
     <div class="warning">⚠️ MINISTÉRIO DA FAZENDA ADVERTE: APOSTA NÃO É INVESTIMENTO<br>+18 · JOGUE COM RESPONSABILIDADE</div>
 
@@ -227,9 +221,10 @@ body{background:radial-gradient(circle at 50% 0,#092016 0,#060807 28%,#030403 70
     <div class="nav-pages">
       <button id="btnP1" onclick="irPagina(1)">▣ PÁGINA 1 — ESTUDOS<small>CONTEÚDO E APRENDIZADO</small></button>
       <button id="btnP3" class="pro" onclick="irPagina(3)">▼ PÁGINA 3 — PRO<small>RECURSOS PRO</small></button>
+<button id="btnP4" onclick="irPagina(4)" class="escondido">◈ PÁGINA 4 — MERCADO<small>MRG MERCADO IQ</small></button>
     </div>
     <div id="statusAcesso" class="access-status">Acesso protegido e controlado</div>
-    <button class="sair" onclick="sair()">SAIR</button>
+    <button class="sair" onclick="location.href='/p1.html'">VOLTAR À P1</button>
     <div class="rodape">Análise estatística e probabilística · conteúdo informativo</div>
   </div>
 </div>
@@ -240,12 +235,8 @@ const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const MRG_SESSION_TOKEN_KEY="mrg_session_token_unica";
 let MRG_SESSAO_CHECANDO=false;
-function mrgNovoTokenSessao(){try{if(window.crypto&&crypto.randomUUID)return crypto.randomUUID()}catch(e){}return "web-"+Date.now()+"-"+Math.random().toString(36).slice(2)+"-"+Math.random().toString(36).slice(2)}
 function mrgTokenSessaoAtual(){return localStorage.getItem(MRG_SESSION_TOKEN_KEY)||""}
-async function mrgRegistrarSessaoUnica(email){const token=mrgNovoTokenSessao();const payload={email,session_token:token,device_id:"WEB-"+token.slice(0,24),plataforma:"WEB",ativo:true,ultimo_login:new Date().toISOString(),ultimo_ping:new Date().toISOString()};const{error}=await db.from("sessoes_ativas").upsert(payload,{onConflict:"email"});if(error)throw error;localStorage.setItem(MRG_SESSION_TOKEN_KEY,token);return token}
 async function mrgValidarSessaoUnica(email){const token=mrgTokenSessaoAtual();if(!email||!token)return false;const{data,error}=await db.from("sessoes_ativas").select("session_token,ativo").eq("email",email).maybeSingle();if(error){console.warn("[MRG WEB] Falha temporária ao validar sessão única:",error);return null}if(!data||data.ativo!==true||data.session_token!==token)return false;db.from("sessoes_ativas").update({ultimo_ping:new Date().toISOString()}).eq("email",email).eq("session_token",token).then(()=>{}).catch(()=>{});return true}
-async function mrgEncerrarRegistroSessao(){try{const{data}=await db.auth.getSession();const email=data?.session?.user?.email;const token=mrgTokenSessaoAtual();if(email&&token)await db.from("sessoes_ativas").update({ativo:false,ultimo_ping:new Date().toISOString()}).eq("email",email).eq("session_token",token)}catch(e){}localStorage.removeItem(MRG_SESSION_TOKEN_KEY)}
-
 let painelAtivo=false, FEED=[], contrato=null;
 const PAGINA=50;
 let feedOffset=0, feedFim=false, feedCarregando=false;
@@ -275,15 +266,6 @@ function textoHip(h){
   const val=primeiro(h,["confianca","forca","probabilidade","percentual","valor"],"");
   return `${tipo}${val!==""?" · "+pct(val):""}`;
 }
-async function entrar(){
-  const email=el("email").value.trim(),senha=el("senha").value;
-  if(!email||!senha){el("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}
-  el("loginMsg").textContent="Validando acesso...";
-  const{data,error}=await db.auth.signInWithPassword({email,password:senha});
-  if(error){el("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos.</span>";return}
-  try{await mrgRegistrarSessaoUnica(email)}catch(e){console.error(e);await db.auth.signOut({scope:"local"});el("loginMsg").innerHTML="<span class='erro'>Não foi possível registrar a sessão única deste aparelho.</span>";return}
-  await verificarAcesso();
-}
 async function obterContrato(){
   const{data,error}=await db.rpc("obter_acesso_mrg");
   if(error)throw error;
@@ -292,32 +274,50 @@ async function obterContrato(){
 }
 function boolContrato(k){return contrato&&contrato[k]===true}
 function aplicarPermissoes(){
-  const p1=boolContrato("pagina_1"),p3=boolContrato("pagina_3");
-  el("btnP1")?.classList.toggle("lock",!p1);
-  el("btnP3")?.classList.toggle("lock",!p3);
-  if(el("statusAcesso"))el("statusAcesso").textContent=`Acesso atualizado · P1 ${p1?"LIBERADA":"INDISPONÍVEL"} · P3 ${p3?"LIBERADA":"INDISPONÍVEL"}`;
+ for(const [n,id] of [[1,"btnP1"],[3,"btnP3"],[4,"btnP4"]]){
+  el(id)?.classList.toggle("escondido",!boolContrato("pagina_"+n));
+ }
+ if(el("statusAcesso"))el("statusAcesso").textContent="P2 liberada · Acessos conforme administrador";
 }
+let P2_VALIDANDO=false;
 async function verificarAcesso(){
-  const{data:s}=await db.auth.getSession();const user=s?.session?.user;
-  if(!user){mostrarLogin();return}
-  const sessaoOk=await mrgValidarSessaoUnica(user.email);
-  if(sessaoOk===false){localStorage.removeItem(MRG_SESSION_TOKEN_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Esta conta foi aberta em outro aparelho. Faça login novamente.");return}
-  try{await obterContrato()}catch(e){mostrarLogin("Não foi possível consultar o contrato central de acesso.");return}
-  if(!boolContrato("pagina_2")){mostrarLogin(String(contrato?.nivel_acesso||"").toUpperCase()==="BLOQUEADO"?"Acesso bloqueado pelo administrador.":"Página 2 indisponível para o estado atual da conta.",contrato?.nivel_acesso,true);return}
+ if(P2_VALIDANDO)return;
+ P2_VALIDANDO=true;
+ try{
+  const {data:s,error:authError}=await db.auth.getSession();
+  const user=s?.session?.user;
+  if(authError||!user){mostrarBloqueioP2("Entre pela P1.");return}
+  if((await mrgValidarSessaoUnica(user.email))!==true){mostrarBloqueioP2("Sessão não confirmada. Acesse a P1.");return}
+  await obterContrato();
+  if(!boolContrato("pagina_2")){mostrarBloqueioP2("P2 não liberada para esta conta.");return}
+  const first=!painelAtivo;
   el("usuarioEmail").textContent=user.email||"";
-  atualizarAcessoCabecalhoP2(user.email,contrato?.nivel_acesso,true);
-  el("loginBox").classList.add("escondido");el("appBox").classList.remove("escondido");painelAtivo=true;
+  atualizarAcessoCabecalhoP2(user.email,contrato.nivel_acesso,true);
+  el("p2SemAcesso").classList.add("escondido");
+  el("appBox").classList.remove("escondido");
+  painelAtivo=true;
   aplicarPermissoes();
-  await Promise.all([carregarSnapshot(),carregarFeed()]);
+  if(first)await Promise.all([carregarSnapshot(),carregarFeed()]);
+ }catch(e){console.error("[MRG P2] Acesso:",e);mostrarBloqueioP2("Não foi possível validar acesso na P1. Tente novamente.");}
+ finally{P2_VALIDANDO=false}
 }
 async function irPagina(n){
-  try{await obterContrato();aplicarPermissoes()}catch(e){alert("Não foi possível validar seu acesso agora.");return}
-  const campo=n===1?"pagina_1":"pagina_3";
-  if(!boolContrato(campo)){alert(`Página ${n} indisponível para o estado atual da conta.`);return}
-  window.location.href=n===1?"/p1.html":"/";
+ if(![1,3,4].includes(n))return;
+ try{
+  const {data:s}=await db.auth.getSession();
+  if(!s?.session?.user||await mrgValidarSessaoUnica(s.session.user.email)!==true){mostrarBloqueioP2("Acesse pela P1.");return}
+  await obterContrato();aplicarPermissoes();
+  if(!boolContrato("pagina_"+n)){alert("Página "+n+" não liberada.");return}
+  window.location.href=({1:"/p1.html",3:"/p3.html",4:"/p4.html"})[n];
+ }catch(e){console.error("[MRG P2] Navegação:",e);alert("Não foi possível validar a autorização agora.");}
 }
-function mostrarLogin(msg="",nivel="",sessaoAtiva=false){painelAtivo=false;atualizarAcessoCabecalhoP2("",nivel,sessaoAtiva);el("appBox").classList.add("escondido");el("loginBox").classList.remove("escondido");if(msg)el("loginMsg").textContent=msg}
-async function sair(){painelAtivo=false;await mrgEncerrarRegistroSessao();await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
+function mostrarBloqueioP2(msg){
+ painelAtivo=false;
+ el("appBox").classList.add("escondido");
+ el("p2SemAcesso").classList.remove("escondido");
+ el("p2SemAcessoMsg").textContent=msg||"Acesse pela P1.";
+ atualizarAcessoCabecalhoP2();
+}
 async function carregarSnapshot(){
   if(!painelAtivo)return;
   try{
@@ -453,7 +453,7 @@ async function atualizarTopoFeed(){
 function atualizarAcessoCabecalhoP2(email="",nivel="",sessaoAtiva=false){
   const statusEl=document.getElementById("headerAcessoStatusP2");
   const estado=String(nivel||"").toUpperCase();
-  let texto="FAÇA LOGIN",classe="publico";
+  let texto="ACESSO VIA P1",classe="publico";
   if(sessaoAtiva){
     if(estado==="CADASTRADO"){texto="CADASTRADO";classe="cadastrado"}
     else if(["FREE","PRO_VENCIDO_FREE","FREE_REINSCRICAO"].includes(estado)){texto="ACESSO FREE";classe="free"}
@@ -480,9 +480,10 @@ setInterval(atualizarRelogioCabecalhoP2,1000);
 setInterval(()=>{el("relogio").textContent=new Date().toLocaleTimeString("pt-BR")},250);
 setInterval(carregarSnapshot,1000);
 setInterval(atualizarTopoFeed,2000);
-document.addEventListener("visibilitychange",async()=>{if(document.visibilityState==="visible"&&painelAtivo){try{await obterContrato();if(!boolContrato("pagina_2")){painelAtivo=false;el("appBox").classList.add("escondido");mostrarLogin("Acesso à Página 2 não está disponível.");return}aplicarPermissoes()}catch(e){}}});
-setInterval(async()=>{if(!painelAtivo||MRG_SESSAO_CHECANDO)return;MRG_SESSAO_CHECANDO=true;try{const{data}=await db.auth.getSession();const user=data?.session?.user;if(user){const ok=await mrgValidarSessaoUnica(user.email);if(ok===false){painelAtivo=false;localStorage.removeItem(MRG_SESSION_TOKEN_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Esta conta foi aberta em outro aparelho. Faça login novamente.")}}}finally{MRG_SESSAO_CHECANDO=false}},3000);
-(async()=>{const{data}=await db.auth.getSession();if(data?.session)await verificarAcesso()})();
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")void verificarAcesso()});
+setInterval(()=>{if(document.visibilityState==="visible")void verificarAcesso()},5000);
+void verificarAcesso();
+// MRG P2 SOMENTE OPERACIONAL | 15/11/2026 | entrada e liberação pela P1; validação no Supabase.
 </script>
 </body>
 </html>
