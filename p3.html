@@ -570,6 +570,7 @@ html.modo-split .p3-nav button small{display:none}
 html.modo-split .p3-nav-msg{font-size:7px;min-height:0}
 
 </style>
+<style id="mrg-p3-permissoes-hidden">#btnP1Estudos[hidden],#btnP2Analista[hidden],#btnP4Mercado[hidden],#miniAnalista[hidden]{display:none!important}</style>
 </head>
 <body>
 <div class="container">
@@ -596,7 +597,7 @@ html.modo-split .p3-nav-msg{font-size:7px;min-height:0}
   </div>
 </div>
 
-<div id="miniAnalista" class="mini-analista analista-horizontal" onclick="navegarPaginaMRG(2)" title="Abrir Página 2 — Analista">
+<div id="miniAnalista" class="mini-analista analista-horizontal" hidden onclick="navegarPaginaMRG(2)" title="Abrir Página 2 — Analista">
   <div class="mini-analista-top">
     <div class="mini-analista-titulo">MRG ANALISTA DE PROBABILIDADES</div>
     <div class="mini-analista-abrir">ABRIR ANALISTA ›</div>
@@ -690,8 +691,8 @@ html.modo-split .p3-nav-msg{font-size:7px;min-height:0}
   </div>
 </div>
 <div class="p3-nav">
-<button type="button" onclick="navegarPaginaMRG(1)">▣ PÁGINA 1 — ESTUDOS<small>CONTEÚDO E APRENDIZADO</small></button>
-<button type="button" onclick="navegarPaginaMRG(2)">◆ PÁGINA 2 — ANALISTA<small>ANÁLISES EM TEMPO REAL</small></button>
+<button type="button" id="btnP1Estudos" hidden onclick="navegarPaginaMRG(1)">▣ PÁGINA 1 — ESTUDOS<small>CONTEÚDO E APRENDIZADO</small></button>
+<button type="button" id="btnP2Analista" hidden onclick="navegarPaginaMRG(2)">◆ PÁGINA 2 — ANALISTA<small>ANÁLISES EM TEMPO REAL</small></button>
 <button type="button" id="btnP4Mercado" hidden onclick="navegarPaginaMRG(4)">◈ PRO+ MERCADO<small>ANÁLISES DO MERCADO</small></button>
 </div><div id="p3NavMsg" class="p3-nav-msg"></div>
 <button type="button" class="sair" onclick="window.location.href='/p1.html'">VOLTAR P1</button>
@@ -722,8 +723,10 @@ async function navegarPaginaMRG(pagina){
  }catch(e){if(msg)msg.textContent="Não foi possível validar o acesso agora."}
 }
 function atualizarNavegacaoP3(contrato){
- const botao=document.getElementById("btnP4Mercado");
- if(botao)botao.hidden=!(contrato&&contrato.pagina_4===true);
+ for(const [id,campo] of [["btnP1Estudos","pagina_1"],["btnP2Analista","pagina_2"],["btnP4Mercado","pagina_4"],["miniAnalista","pagina_2"]]){
+  const elemento=document.getElementById(id);
+  if(elemento)elemento.hidden=!(contrato&&contrato[campo]===true);
+ }
 }
 
 let painelAtivo=false,telaAtual="login";
@@ -2153,5 +2156,6 @@ setInterval(atualizarRelogioCabecalho,1000);
 
 </script>
 <!-- MRG P3 APENAS OPERACIONAL V1 | 15/11/2026 | sessão e permissões somente consultadas; cadastro/login na P1 -->
+<!-- MRG P3 NAVEGACAO CENTRALIZADA | 15/11/2026 | P1/P2/P4 e atalho Analista de acordo com permissoes via Supabase -->
 </body>
 </html>
