@@ -292,6 +292,9 @@ html.mrg-p4-embutida .mrg-p4-solo-only{display:none!important}
  opacity:.19;transform:none;width:auto;height:auto;
 }
 .essential>*{position:relative;z-index:1}
+
+/* Destaque compacto do acompanhamento: preserva dimensoes do quadro original. */
+.best-choice.mrg-best-acompanhando #bestDetail{font-weight:700;line-height:1.3;color:#eef6ff}
 </style>
 <header><h1>MRG EXTERMINADOR DE SINAIS / MERCADO</h1><div class="head-actions"><button type="button" class="mrg-p4-solo-only" id="mrgP4SomSolo" aria-pressed="false" title="Ativar ou desativar alerta sonoro de COMPRA e VENDA">Som: OFF</button><button type="button" class="mrg-p4-solo-only" id="mrgP4ReloadSolo" title="Atualizar toda a P4: IQ Option e Mercado" aria-label="Atualizar toda a P4">↻</button><span id="status">Validando acesso…</span><button id="backP3" class="back-p3" hidden>← P1</button></div></header>
 <main id="app" hidden><div class="iq"><iframe title="IQ Option" src="https://iqoption.com/traderoom"></iframe></div><aside class="panel"><section class="essential"><div id="asset" class="asset">Nenhum ativo selecionado</div><div class="muted" id="instruction">Abaixo, toque em Ativos para escolher.</div><button type="button" id="bestChoice" class="best-choice" hidden><span class="best-title" id="bestTitle">MELHOR ASSERTIVIDADE AGORA</span><strong id="bestAsset">—</strong><small id="bestDetail">Clique para alterar somente o painel MRG</small></button><time id="mrgClock" aria-label="Horário do dispositivo">--:--:--</time><div class="muted" style="margin-top:10px">PREÇO AGORA</div><div class="price" id="price">—</div><div id="updated" class="muted">Sem atualização confirmada</div><div class="muted" style="margin-top:10px">SINAL</div><div id="signal" class="signal wait">AGUARDAR</div><div class="muted">ACOMPANHAMENTO</div><div id="follow" class="follow">Aguardando seleção do usuário</div><div class="grid"><div><div class="muted">DURAÇÃO DA ANÁLISE</div><div id="horizon" class="detail">—</div></div><div><div class="muted">PREÇO DE ENTRADA</div><div id="entry" class="detail">—</div></div></div><div class="metrics"><div class="grid"><div><div class="muted">CONVICÇÃO ATUAL DO MOTOR</div><div id="confidence" class="metric">—</div><div class="bar"><span id="confidenceBar" style="width:0"></span></div></div><div><div class="muted">ACERTOS DO HISTÓRICO</div><div id="accuracy" class="metric">—</div><div id="sample" class="muted">Sem resultados</div></div></div><div class="grid"><div><div class="muted">PROJEÇÃO DE ALTA</div><div id="upProb" class="detail">—</div></div><div><div class="muted">PROJEÇÃO DE BAIXA</div><div id="downProb" class="detail">—</div></div></div><div id="memory" class="muted" style="margin-top:8px"></div><div class="muted">Convicção é um indicador do motor, não garantia de acerto.</div></div><div id="timing" class="muted" style="margin-top:8px"></div><div id="reason" class="muted"></div></section><div class="tools"><button id="choose">Ativos</button><button id="recent">Últimos 10 sinais</button><button id="all">Todos os ativos MRG</button></div></aside></main>
@@ -390,6 +393,21 @@ function acompanharMRG(c){
    de 10 s determina a validade. Nao reproduz entradas antigas na abertura. */
 const mrgP4AlertasVistos=new Set();
 let mrgP4SomSolo=false,mrgP4AudioSolo=null,mrgP4LeituraInicialConcluida=false;
+
+/* MRG 15/11/2026: aviso do ativo mais assertivo que ja esta em acompanhamento.
+   Somente dados publicados de operacao vigente, independente do ativo selecionado.
+   Nao interfere no gatilho nem no julgamento do motor. */
+function mrgP4MelhorEmAcompanhamento(c){
+  if(!c||c.operational!==true||!c.open||!c.fresh)return null;
+  const entrada=tempoMRG(c.entryAt),vencimento=tempoMRG(c.expiry),agora=Date.now();
+  if(!Number.isFinite(entrada)||!Number.isFinite(vencimento)||vencimento<=entrada||agora<entrada||agora>=vencimento)return null;
+  const lado=acompanharMRG(c);
+  if(lado!=='BUY'&&lado!=='SELL')return null;
+  const minutos=Math.max(1,Math.round((vencimento-entrada)/60000));
+  const ate=new Date(vencimento).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  return {lado,minutos,ate};
+}
+
 function mrgP4IdEntrada(c,lado){return String(c.key)+'|'+String(c.entryAt)+'|'+lado}
 function mrgP4MarcarSinaisAtuais(){
   for(const c of ctx){const lado=mrgEntradaVigenteP4(c);if(lado)mrgP4AlertasVistos.add(mrgP4IdEntrada(c,lado))}
@@ -433,15 +451,19 @@ function render(){
   el('bestChoice').hidden=!b;
   if(b){
     const desempenho=mrgDesempenhoP4(b),direcao=mrgEntradaVigenteP4(b),bc=el('bestChoice');
+    const acompanhamento=mrgP4MelhorEmAcompanhamento(b);
     text('bestTitle','MELHOR ASSERTIVIDADE AGORA');
     text('bestAsset',label(b)+' · '+pct(desempenho.rate)+' '+mrgSetaP4(desempenho));
-    text('bestDetail','Últimos '+Math.min(20,desempenho.total)+' sinais concluídos · clique para selecionar apenas no MRG');
+    text('bestDetail',acompanhamento
+      ? (acompanhamento.lado==='BUY'?'COMPRA':'VENDA')+' EM ACOMPANHAMENTO · duração '+acompanhamento.minutos+' min · até '+acompanhamento.ate+' · sinal já iniciado'
+      : 'Últimos '+Math.min(20,desempenho.total)+' sinais concluídos · clique para selecionar apenas no MRG');
     bc.dataset.key=b.key;
-    bc.classList.toggle('mrg-best-comprar',direcao==='BUY');
-    bc.classList.toggle('mrg-best-vender',direcao==='SELL');
+    bc.classList.toggle('mrg-best-acompanhando',!!acompanhamento);
+    bc.classList.toggle('mrg-best-comprar',(acompanhamento?.lado||direcao)==='BUY');
+    bc.classList.toggle('mrg-best-vender',(acompanhamento?.lado||direcao)==='SELL');
     bc.classList.toggle('mrg-ultimo-win',desempenho.last==='WIN');
     bc.classList.toggle('mrg-ultimo-loss',desempenho.last==='LOSS');
-  }else{el('bestChoice').classList.remove('mrg-best-comprar','mrg-best-vender','mrg-ultimo-win','mrg-ultimo-loss')}
+  }else{el('bestChoice').classList.remove('mrg-best-comprar','mrg-best-vender','mrg-ultimo-win','mrg-ultimo-loss','mrg-best-acompanhando')}
   if(!c){if(b)mrgP4AvisarNovaEntrada(b,mrgEntradaVigenteP4(b));text('asset','Nenhum ativo selecionado');text('mrgOperacaoResumo','—');text('instruction','Abaixo, toque em Ativos para escolher.');text('follow','Aguardando seleção do usuário');text('price','—');text('updated','Sem contexto selecionado');return}
   // Janela visual estrita: apenas 10 segundos desde a entrada real registrada.
   // Nunca reiniciar o contador ao atualizar, recarregar ou trocar de dispositivo.
