@@ -574,15 +574,15 @@ html.modo-split .p3-nav-msg{font-size:7px;min-height:0}
 <body>
 <div class="container">
 <div class="header header-pro-oficial">
-<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><div class="header-marca-central"><div class="header-marca-mrg">MRG</div><div class="header-marca-nome">EXTERMINADOR<br>DE SINAIS</div><div class="header-marca-plataforma">1WIN BET AVIATOR</div><div class="header-marca-lema">CONHECIMENTO · ESTUDO · EVOLUÇÃO</div></div><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHora">--:--:--</div><div class="data" id="headerRelogioData">--</div></div><div class="header-acesso-vivo" aria-live="polite"><div class="header-acesso-status publico" id="headerAcessoStatusP3">FAÇA LOGIN</div></div></div>
+<div class="header-identidade" aria-label="Identidade oficial MRG Exterminador de Sinais"><div class="header-marca-central"><div class="header-marca-mrg">MRG</div><div class="header-marca-nome">EXTERMINADOR<br>DE SINAIS</div><div class="header-marca-plataforma">1WIN BET AVIATOR</div><div class="header-marca-lema">CONHECIMENTO · ESTUDO · EVOLUÇÃO</div></div><div class="header-relogio-vivo" aria-label="Horário atual"><div class="hora" id="headerRelogioHora">--:--:--</div><div class="data" id="headerRelogioData">--</div></div><div class="header-acesso-vivo" aria-live="polite"><div class="header-acesso-status publico" id="headerAcessoStatusP3">VERIFICANDO ACESSO</div></div></div>
 <div class="header-pro-titulo"><div class="linha">1WIN BET AVIATOR</div><div class="sub">MRG SINAIS ALTO PADRÃO</div><div class="linha micro">ANÁLISE · DISCIPLINA · GESTÃO</div></div>
 </div>
 <div class="pwa-hint">Para instalar no iPhone: abra no Safari, toque em <b>Compartilhar</b> e depois <b>Adicionar à Tela de Início</b>.</div>
-<div id="loginBox" class="card"><div class="titulo">ENTRAR</div><input id="loginEmail" type="email" placeholder="E-mail"><input id="loginSenha" type="password" placeholder="Senha"><button type="button" onclick="entrar()">ENTRAR</button><button type="button" class="sec" onclick="mostrarCadastro()">CRIAR CONTA</button><button type="button" class="sec" onclick="mostrarRecuperar()">ESQUECI MINHA SENHA</button><div id="loginMsg" class="msg">Entre com seu e-mail e senha.</div></div>
-<div id="cadastroBox" class="card escondido"><div class="titulo">CRIAR CONTA</div><input id="cadNome" placeholder="Seu nome"><input id="cadEmail" type="email" placeholder="E-mail"><input id="cadTelefone" placeholder="Telefone / WhatsApp"><input id="cadSenha" type="password" placeholder="Criar senha"><button type="button" onclick="criarConta()">CRIAR CONTA</button><button type="button" class="sec" onclick="mostrarLogin()">JÁ TENHO CADASTRO / ENTRAR</button><div id="cadMsg" class="msg">Use um e-mail válido. Ele será usado para recuperar sua senha.</div></div>
-<div id="recuperarBox" class="card escondido"><div class="titulo">RECUPERAR SENHA</div><input id="recEmail" type="email" placeholder="Digite seu e-mail cadastrado"><button type="button" onclick="recuperarSenha()">ENVIAR LINK DE RECUPERAÇÃO</button><button type="button" class="sec" onclick="mostrarLogin()">VOLTAR PARA LOGIN</button><div id="recMsg" class="msg">Você receberá um link no e-mail para criar nova senha.</div></div>
-<div id="novaSenhaBox" class="card escondido"><div class="titulo">CRIAR NOVA SENHA</div><input id="novaSenha" type="password" placeholder="Nova senha"><button type="button" onclick="salvarNovaSenha()">SALVAR NOVA SENHA</button><div id="novaSenhaMsg" class="msg">Digite sua nova senha.</div></div>
-<div id="aguardandoBox" class="card escondido"><div class="titulo">AGUARDANDO LIBERAÇÃO</div><div class="msg">Seu cadastro foi recebido.<br><br>Chame o administrador no WhatsApp do grupo que você participa e envie o e-mail usado no cadastro:<br><br><b id="emailAguardando"></b><br><br>Após a liberação, seu acesso será ativado automaticamente.</div><button type="button" class="sair" onclick="sair()">SAIR</button></div>
+<section id="p3SemAcesso" class="card" role="status" aria-live="polite">
+  <div class="titulo">PÁGINA 3 — ÁREA PRO</div>
+  <p id="p3SemAcessoMsg" class="msg" style="white-space:pre-line">Aguardando validação de acesso pela P1...</p>
+  <button type="button" class="sec" onclick="window.location.href='/p1.html'">VOLTAR À P1</button>
+</section>
 <div id="appBox" class="escondido">
 <div class="top-app-mobile">
   <div class="usuario-topo">Acesso liberado:<br><span id="usuarioEmail"></span></div>
@@ -694,7 +694,7 @@ html.modo-split .p3-nav-msg{font-size:7px;min-height:0}
 <button type="button" onclick="navegarPaginaMRG(2)">◆ PÁGINA 2 — ANALISTA<small>ANÁLISES EM TEMPO REAL</small></button>
 <button type="button" id="btnP4Mercado" hidden onclick="navegarPaginaMRG(4)">◈ PRO+ MERCADO<small>ANÁLISES DO MERCADO</small></button>
 </div><div id="p3NavMsg" class="p3-nav-msg"></div>
-<button type="button" class="sair" onclick="sair()">SAIR</button>
+<button type="button" class="sair" onclick="window.location.href='/p1.html'">VOLTAR P1</button>
 </div>
 </div>
 <script>
@@ -1013,8 +1013,7 @@ async function verificarFinanceiroPeriodico(){
     const msg=[FINANCEIRO.titulo,FINANCEIRO.mensagem]
       .filter(Boolean)
       .join("<br><br>");
-    await sair();
-    mostrarLogin(msg);
+    mostrarBloqueioP3(msg);
   }
 }
 async function retornoAcaoFinanceira(){
@@ -1196,132 +1195,86 @@ async function confirmarAvisoAtual(){
   }
 }
 
-function gerarIdSessaoApp(){if(window.crypto&&typeof window.crypto.randomUUID==="function")return window.crypto.randomUUID();return `web-${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`}
 function obterIdSessaoApp(){return localStorage.getItem(APP_SESSION_KEY)||""}
-async function registrarSessaoAppAtual(){const{data:sessionData}=await db.auth.getSession();const email=sessionData?.session?.user?.email||"";if(!email)throw new Error("Usuário sem sessão para registrar sessão única.");const sessionId=gerarIdSessaoApp();const payload={email,session_token:sessionId,device_id:"WEB-"+sessionId.slice(0,24),plataforma:"WEB",ativo:true,ultimo_login:new Date().toISOString(),ultimo_ping:new Date().toISOString()};const{error}=await db.from("sessoes_ativas").upsert(payload,{onConflict:"email"});if(error){localStorage.removeItem(APP_SESSION_KEY);throw error}localStorage.setItem(APP_SESSION_KEY,sessionId);return sessionId}
-async function sessaoAppContinuaAtual(){const sessionId=obterIdSessaoApp();if(!sessionId)return false;const{data:sessionData}=await db.auth.getSession();const email=sessionData?.session?.user?.email||"";if(!email)return false;const{data,error}=await db.from("sessoes_ativas").select("session_token,ativo").eq("email",email).maybeSingle();if(error){console.error("Falha temporária ao validar sessão exclusiva:",error);return true}if(!data||data.ativo!==true||data.session_token!==sessionId)return false;db.from("sessoes_ativas").update({ultimo_ping:new Date().toISOString()}).eq("email",email).eq("session_token",sessionId).then(()=>{}).catch(()=>{});return true}
-async function encerrarSessaoPorOutroAparelho(){painelAtivo=false;try{if(pushDisponivel()){const assinatura=await obterAssinaturaPush();if(assinatura){const{error}=await db.rpc("desativar_push_deste_aparelho",{p_endpoint:assinatura.endpoint});if(error)console.error("Falha ao desativar Push do aparelho anterior:",error)}}}catch(e){console.error("Falha ao localizar/desativar Push do aparelho anterior:",e)}localStorage.removeItem(APP_SESSION_KEY);await db.auth.signOut({scope:"local"});atualizarBotaoNotificacoes(false);mostrarLogin("Esta conta foi aberta em outro aparelho. O acesso e as notificações deste dispositivo foram desativados.")}
+async function sessaoAppContinuaAtual(){const sessionId=obterIdSessaoApp();if(!sessionId)return false;const{data:sessionData}=await db.auth.getSession();const email=sessionData?.session?.user?.email||"";if(!email)return false;const{data,error}=await db.from("sessoes_ativas").select("session_token,ativo").eq("email",email).maybeSingle();if(error){console.error("Falha temporária ao validar sessão exclusiva:",error);return null}if(!data||data.ativo!==true||data.session_token!==sessionId)return false;db.from("sessoes_ativas").update({ultimo_ping:new Date().toISOString()}).eq("email",email).eq("session_token",sessionId).then(()=>{}).catch(()=>{});return true}
+async function encerrarSessaoPorOutroAparelho(){
+  painelAtivo=false;
+  try{
+    if(pushDisponivel()){
+      const assinatura=await obterAssinaturaPush();
+      if(assinatura){
+        const {error}=await db.rpc("desativar_push_deste_aparelho",{p_endpoint:assinatura.endpoint});
+        if(error)console.warn("[MRG P3] Push antigo:",error);
+      }
+    }
+  }catch(e){console.warn("[MRG P3] Push antigo indisponível:",e)}
+  atualizarBotaoNotificacoes(false);
+  mostrarBloqueioP3("Sessão alterada em outro aparelho. Abra a P1 para entrar novamente.");
+}
 
-function esconderTudo(){["loginBox","cadastroBox","recuperarBox","novaSenhaBox","aguardandoBox","appBox"].forEach(id=>document.getElementById(id).classList.add("escondido"))}
-function mostrarLogin(msg=""){painelAtivo=false;STATUS_FINANCEIRO_LOGIN=null;FINANCEIRO=financeiroVazio();FINANCEIRO_RETORNO_EXTERNO=false;limparEstadoCentralAvisos();telaAtual="login";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("loginBox").classList.remove("escondido");if(msg)document.getElementById("loginMsg").innerHTML=msg}
-function mostrarCadastro(){painelAtivo=false;telaAtual="cadastro";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("cadastroBox").classList.remove("escondido")}
-function mostrarRecuperar(){painelAtivo=false;telaAtual="recuperar";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("recuperarBox").classList.remove("escondido")}
-function mostrarNovaSenha(){painelAtivo=false;telaAtual="novaSenha";p3AtualizarCabecalhoAcesso();esconderTudo();document.getElementById("novaSenhaBox").classList.remove("escondido")}
-function mostrarAguardando(email){painelAtivo=false;telaAtual="aguardando";esconderTudo();document.getElementById("aguardandoBox").classList.remove("escondido");document.getElementById("emailAguardando").innerText=email||""}
+function esconderTudo(){
+  for(const id of ["p3SemAcesso","appBox"]){
+    const el=document.getElementById(id);
+    if(el)el.classList.add("escondido");
+  }
+}
+function mostrarBloqueioP3(mensagem="Acesso PRO não autorizado. Entre pela P1."){
+  painelAtivo=false;
+  telaAtual="acesso_negado";
+  limparEstadoCentralAvisos();
+  esconderTudo();
+  p3AtualizarCabecalhoAcesso();
+  const el=document.getElementById("p3SemAcessoMsg");
+  if(el)el.textContent=String(mensagem||"Acesso não autorizado.").replace(/<br\s*\/?>/gi,"\n").replace(/<[^>]+>/g,"");
+  document.getElementById("p3SemAcesso")?.classList.remove("escondido");
+}
 function mostrarApp(email){telaAtual="app";esconderTudo();document.getElementById("appBox").classList.remove("escondido");document.getElementById("usuarioEmail").innerText=email||"";painelAtivo=true;iniciarCanalEntradasP3();p3IniciarCanalMinutoBom();carregarControleEnvio();carregar();carregarLeitura(true);carregarFeed50Velas();carregarProjecoes();carregarRosas();p3CarregarAnalista();p3CarregarFeed24h(true);p3CarregarMinutosFavoraveis();sincronizarPushNoLogin();carregarAvisos()}
-async function criarConta(){
-  const nome=document.getElementById("cadNome").value.trim(),email=document.getElementById("cadEmail").value.trim(),telefone=document.getElementById("cadTelefone").value.trim(),senha=document.getElementById("cadSenha").value.trim();
-  if(!nome||!email||!telefone||!senha){document.getElementById("cadMsg").innerHTML="<span class='erro'>Preencha nome, e-mail, telefone e senha.</span>";return}
-  document.getElementById("cadMsg").innerHTML="Criando cadastro...";
-
+let P3_VALIDACAO_EM_ANDAMENTO=false;
+async function verificarAcesso(){
+  if(P3_VALIDACAO_EM_ANDAMENTO)return;
+  P3_VALIDACAO_EM_ANDAMENTO=true;
   try{
-    const userAgent=navigator.userAgent||"";
-    let ipDisponivel=null;
-
-    // Navegadores não fornecem o IP público diretamente. O campo permanece
-    // preparado para receber um IP confiável quando houver proxy/Edge Function.
-    const{data:cadastroLiberado,error:erroValidacao}=await db.rpc("validar_novo_cadastro",{
-      p_email:email,
-      p_user_agent:userAgent,
-      p_ip:ipDisponivel
-    });
-
-    if(erroValidacao){
-      console.error("Falha ao validar novo cadastro:",erroValidacao);
-      document.getElementById("cadMsg").innerHTML="<span class='erro'>Não foi possível validar o cadastro agora. Tente novamente em alguns minutos.</span>";
+    const {data:sessionData,error:erroSessao}=await db.auth.getSession();
+    const user=sessionData?.session?.user;
+    if(erroSessao||!user){
+      mostrarBloqueioP3("Acesso exclusivo pela P1. Faça login na página principal antes de entrar na P3.");
       return;
     }
-
-    if(cadastroLiberado!==true){
-      document.getElementById("cadMsg").innerHTML="<span class='erro'>Novos cadastros estão temporariamente bloqueados.<br>Tente novamente em alguns minutos.</span>";
-      return;
-    }
-
-    const{data,error}=await db.auth.signUp({email,password:senha,options:{emailRedirectTo:SITE_URL,data:{nome,telefone}}});
-    if(error){document.getElementById("cadMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}
-    if(data&&data.user){await db.from("perfis").upsert({id:data.user.id,nome,email,telefone,liberado:false})}
-    telaAtual="cadastro";
-    document.getElementById("cadMsg").innerHTML="Cadastro criado. Confirme seu e-mail. Depois volte aqui e clique em <b>JÁ TENHO CADASTRO / ENTRAR</b>.";
-  }catch(e){
-    console.error("Erro ao criar cadastro:",e);
-    document.getElementById("cadMsg").innerHTML="<span class='erro'>Não foi possível criar o cadastro agora. Tente novamente em alguns minutos.</span>";
-  }
-}
-async function entrar(){const email=document.getElementById("loginEmail").value.trim(),senha=document.getElementById("loginSenha").value.trim();if(!email||!senha){document.getElementById("loginMsg").innerHTML="<span class='erro'>Informe e-mail e senha.</span>";return}const{error}=await db.auth.signInWithPassword({email,password:senha});if(error){document.getElementById("loginMsg").innerHTML="<span class='erro'>Login ou senha inválidos, ou e-mail ainda não confirmado.</span>";return}try{await registrarSessaoAppAtual()}catch(e){console.error(e);await db.auth.signOut({scope:"local"});document.getElementById("loginMsg").innerHTML="<span class='erro'>Não foi possível registrar este aparelho como sessão atual.</span>";return}try{await sincronizarPushNoLogin()}catch(e){console.error("Falha ao definir o aparelho atual para Push:",e)}window.location.replace(document.documentElement.classList.contains("modo-split")?"/?modo=split":"/p1.html")}
-async function recuperarSenha(){const email=document.getElementById("recEmail").value.trim();if(!email){document.getElementById("recMsg").innerHTML="<span class='erro'>Digite seu e-mail.</span>";return}const{error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});document.getElementById("recMsg").innerHTML=error?"<span class='erro'>"+error.message+"</span>":"Link de recuperação enviado. Verifique seu e-mail."}
-async function salvarNovaSenha(){const senha=document.getElementById("novaSenha").value.trim();if(!senha){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>Digite a nova senha.</span>";return}const{error}=await db.auth.updateUser({password:senha});if(error){document.getElementById("novaSenhaMsg").innerHTML="<span class='erro'>"+error.message+"</span>";return}document.getElementById("novaSenhaMsg").innerHTML="Senha atualizada. Faça login novamente.";setTimeout(()=>mostrarLogin("Senha atualizada. Entre com a nova senha."),2000)}
-async function verificarAcesso(redirecionarSemSessao=false){
-  if(["cadastro","recuperar","novaSenha"].includes(telaAtual))return;
-
-  const{data:sessionData}=await db.auth.getSession();
-  const user=sessionData?.session?.user;
-  if(!user){
-    painelAtivo=false;
-    if(redirecionarSemSessao)mostrarLogin();
-    return;
-  }
-
-  if(telaAtual==="app"||telaAtual==="aguardando"){
     const sessaoAtual=await sessaoAppContinuaAtual();
-    if(!sessaoAtual){await encerrarSessaoPorOutroAparelho();return}
-  }
-
-  let contratoAcesso;
-  try{
-    const{data,error}=await db.rpc("obter_acesso_mrg");
-    if(error)throw error;
-    contratoAcesso=normalizarContratoMRG(data);
+    if(sessaoAtual!==true){
+      if(sessaoAtual===false)await encerrarSessaoPorOutroAparelho();
+      else mostrarBloqueioP3("Não foi possível confirmar a sessão. Verifique a conexão e tente pela P1.");
+      return;
+    }
+    const {data:resposta,error:erroAcesso}=await db.rpc("obter_acesso_mrg");
+    if(erroAcesso)throw erroAcesso;
+    const contratoAcesso=normalizarContratoMRG(resposta);
+    if(contratoAcesso.pagina_3!==true){
+      const estado=String(contratoAcesso.nivel_acesso||"").toUpperCase();
+      mostrarBloqueioP3(estado==="BLOQUEADO"
+        ?"Acesso bloqueado pelo administrador."
+        :"A P3 PRO não está liberada para esta conta. Consulte as permissões na P1.");
+      return;
+    }
+    atualizarNavegacaoP3(contratoAcesso);
+    if(telaAtual!=="app"){
+      await sincronizarFinanceiro("ENTRADA_APP");
+      if(FINANCEIRO.bloquearLogin){
+        const msg=[FINANCEIRO.titulo,FINANCEIRO.mensagem].filter(Boolean).join("\n\n");
+        mostrarBloqueioP3(msg||"Acesso temporariamente indisponível por situação financeira.");
+        return;
+      }
+      mostrarApp(user.email);
+    }else{
+      const area=document.getElementById("usuarioEmail");if(area)area.innerText=user.email||"";
+      painelAtivo=true;
+    }
+    p3AtualizarCabecalhoAcesso(contratoAcesso.nivel_acesso,true);
   }catch(e){
-    console.error("Falha contrato central P3:",e);
-    painelAtivo=false;
-    esconderTudo();
-    mostrarLogin("Não foi possível validar o acesso central.");
-    return;
-  }
-
-  /* REGRA CRÍTICA:
-     P3 não usa mais perfis.liberado como autorização.
-     A única autorização é pagina_3 === true devolvida pelo contrato central. */
-  if(contratoAcesso.pagina_3!==true){
-    painelAtivo=false;
-    const estado=String(contratoAcesso.nivel_acesso||"").toUpperCase();
-
-    if(contratoAcesso.pagina_2===true){
-      window.location.replace("/p2.html");
-      return;
-    }
-    if(contratoAcesso.pagina_1===true){
-      window.location.replace("/p1.html");
-      return;
-    }
-
-    esconderTudo();
-    mostrarLogin(estado==="BLOQUEADO"
-      ?"Acesso bloqueado pelo administrador."
-      :"Página 3 PRO não liberada para o estado atual da conta.");
-    return;
-  }
-
-  atualizarNavegacaoP3(contratoAcesso);
-
-  const entrandoNoApp=telaAtual!=="app";
-
-  if(entrandoNoApp){
-    await sincronizarFinanceiro("ENTRADA_APP");
-    if(FINANCEIRO.bloquearLogin){
-      const msg=[FINANCEIRO.titulo,FINANCEIRO.mensagem].filter(Boolean).join("<br><br>");
-      await db.auth.signOut({scope:"local"});
-      mostrarLogin(msg);
-      return;
-    }
-    mostrarApp(user.email);
-  }else{
-    document.getElementById("usuarioEmail").innerText=user.email||"";
-    painelAtivo=true;
-  }
-  p3AtualizarCabecalhoAcesso(contratoAcesso.nivel_acesso,true);
+    console.error("[MRG P3] Não foi possível validar o acesso central:",e);
+    mostrarBloqueioP3("Não foi possível validar a permissão PRO agora. Tente novamente pela P1.");
+  }finally{P3_VALIDACAO_EM_ANDAMENTO=false}
 }
-async function sair(){painelAtivo=false;limparEstadoCentralAvisos();try{const{data:s}=await db.auth.getSession();const email=s?.session?.user?.email||"";const token=obterIdSessaoApp();if(email&&token)await db.from("sessoes_ativas").update({ativo:false,ultimo_ping:new Date().toISOString()}).eq("email",email).eq("session_token",token)}catch(e){}localStorage.removeItem(APP_SESSION_KEY);await db.auth.signOut({scope:"local"});mostrarLogin("Sessão encerrada.")}
 function alvoNumero(alvo){return Number(String(alvo||"").replace("x","").replace("X","").trim())||0}
 function horarioValor(h){if(!h)return 999999;const p=String(h).split(":").map(Number);return(p[0]||0)*3600+(p[1]||0)*60+(p[2]||0)}
 function ehAtivo(item){return item.ativo===true}
@@ -1841,8 +1794,8 @@ if(FINANCEIRO.bloquearSinais){
 
 const{data,error}=await db.from("sinais").select("*").order("id",{ascending:false}).limit(60);if(error){document.getElementById("ativos").innerHTML="<div class='vazio'>Erro ao carregar sinais</div>";document.getElementById("resumoFechados").innerHTML="<div class='vazio'>Serviço temporariamente indisponível</div>";document.getElementById("historico").innerHTML="<div class='vazio'>Serviço temporariamente indisponível</div>";return}let ativos=(data||[]).filter(ehAtivo),historico=(data||[]).filter(item=>!ehAtivo(item));ativos.sort((a,b)=>{const h=horarioValor(a.horario)-horarioValor(b.horario);return h!==0?h:alvoNumero(a.alvo)-alvoNumero(b.alvo)});ativos=ativos.slice(0,3);historico=historico.slice(0,20);atualizarResumoFechados(historico);let classe="ativos-grid";if(ativos.length===2)classe+=" dois";if(ativos.length===3)classe+=" tres";const aviso=avisoOperacionalHTML();document.getElementById("ativos").innerHTML=ativos.length?`${aviso}<div class="${classe}">${ativos.map(cardAtivo).join("")}</div>`:(aviso?aviso:"<div class='vazio'>Nenhum sinal ativo no momento</div>");document.getElementById("historico").innerHTML=historico.length?historico.map(item=>`<div class="historico-item"><div><span class="badge">${item.alvo||"-"}</span> | ${item.status||"-"}</div><div>Origem: ${nomeCategoria(item)}</div><div>Horário previsto: ${item.horario||"não informado"}</div><div>Janela: ${item.janela||"não informada"}</div><div>Resultado: ${item.resultado||"pendente"}</div><div>Multiplicador: ${textoMultiplicador(item)}</div></div>`).join(""):"<div class='vazio'>Nenhum sinal encerrado ainda</div>"}
 registrarServiceWorker();
-db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY")mostrarNovaSenha()});if(window.location.hash.includes("type=recovery"))mostrarNovaSenha();else verificarAcesso(true);
-setInterval(()=>{if(telaAtual==="aguardando"||telaAtual==="app")verificarAcesso(false)},3000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarFeed50Velas,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);setInterval(carregarAvisos,30000);setInterval(verificarFinanceiroPeriodico,FINANCEIRO_INTERVALO_MS);
+verificarAcesso();
+setInterval(()=>{verificarAcesso()},3000);setInterval(carregar,2000);setInterval(carregarLeitura,2000);setInterval(carregarFeed50Velas,2000);setInterval(carregarRosas,5000);setInterval(carregarProjecoes,60000);setInterval(carregarControleEnvio,5000);setInterval(carregarAvisos,30000);setInterval(verificarFinanceiroPeriodico,FINANCEIRO_INTERVALO_MS);
 
 
 /* ===== P3 V2 · ANALISTA SOMENTE VISUAL (SEM PUSH) ===== */
@@ -2184,7 +2137,7 @@ function p3AtualizarCabecalhoAcesso(nivel="",sessaoAtiva=false){
   const statusEl=document.getElementById("headerAcessoStatusP3");
   if(!statusEl)return;
   const estado=String(nivel||"").trim().toUpperCase();
-  let texto="FAÇA LOGIN",classe="publico";
+  let texto="ACESSO NÃO LIBERADO",classe="publico";
   if(sessaoAtiva){
     if(estado==="CADASTRADO"){texto="CADASTRADO";classe="cadastrado"}
     else if(["FREE","PRO_VENCIDO_FREE","FREE_REINSCRICAO"].includes(estado)){texto="ACESSO FREE";classe="free"}
@@ -2199,5 +2152,6 @@ atualizarRelogioCabecalho();
 setInterval(atualizarRelogioCabecalho,1000);
 
 </script>
+<!-- MRG P3 APENAS OPERACIONAL V1 | 15/11/2026 | sessão e permissões somente consultadas; cadastro/login na P1 -->
 </body>
 </html>
