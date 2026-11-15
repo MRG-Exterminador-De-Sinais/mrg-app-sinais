@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#050706">
-<title>MRG Exterminador de Sinais — Página 1 Estudos</title>
+<title>MRG Exterminador de Sinais — Acesso e Estudos (P1)</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MRG Sinais">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -115,6 +118,29 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
 @media(max-width:520px){.header-padrao-p1 .header-titulo .sub{font-size:14px}.header-marca-central{left:30%;width:41%}.header-marca-nome{margin-top:3px}.header-marca-plataforma{margin-top:4px}.header-marca-lema{margin-top:5px}}
 
 #modalTexto.projecoes-p1{white-space:pre-wrap;font-family:Consolas,monospace;font-size:13px;line-height:1.35;background:#050505;border:1px solid #333;border-radius:12px;padding:12px;text-align:left}
+
+/* LOGIN CENTRAL P1 — extensão visual: não altera painéis de Estudos */
+.login label{display:block;margin:10px 0 4px;font-size:12px;color:#cadbd0;font-weight:700}
+.login input{margin:3px 0 8px}
+.login .pw-row{display:flex;align-items:stretch;gap:7px}
+.login .pw-row input{flex:1;min-width:0}
+.login .pw-row button{width:auto;min-width:78px;margin:3px 0 8px;padding:10px;font-size:12px;background:#243028;color:#fff;border:1px solid #556258}
+.login .check-row{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:normal;color:#c6d0c9;cursor:pointer}
+.login .check-row input{width:16px;height:16px;accent-color:#00ee7e;margin:0}
+.login .auth-actions{display:flex;gap:8px;margin-top:8px}
+.login .auth-actions button{font-size:12px;padding:11px 5px}
+.login .auth-actions button.sec{background:#19231c}
+.login input:focus-visible,.login button:focus-visible,.nav button:focus-visible{outline:2px solid #00ee7e;outline-offset:2px}
+.login button:disabled,.nav button:disabled{opacity:.42;cursor:not-allowed}
+.login .micro{display:block;text-align:left;color:#9faea3;font-size:11px;line-height:1.5;margin:8px 0}
+.p1-sessao-msg{font-size:12px;color:#ffc400;text-align:center;margin:9px 0}
+.p1-device-box{margin-top:12px}
+.p1-device-box b{display:block;color:#00ee7e;margin-bottom:5px}
+.p1-device-box p{font-size:12px;color:#c6d0ca;line-height:1.5;margin:7px 0}
+.p1-device-box button{margin-top:6px}
+.p1-device-box .device-note{border-left:3px solid #00ae67;background:#102017;padding:9px;border-radius:7px}
+/* Dispositivos menores preservam o tamanho mínimo legível e o cabeçalho aprovado */
+@media(max-width:420px){.login .auth-actions{flex-direction:column;gap:2px}.login .auth-actions button{margin-top:3px}}
 </style>
 </head>
 <body>
@@ -130,11 +156,54 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
   <div class="warning">⚠️ MINISTÉRIO DA FAZENDA ADVERTE: APOSTA NÃO É INVESTIMENTO<br>+18 · JOGUE COM RESPONSABILIDADE</div>
 
   <section id="loginBox" class="card login">
-    <b>ACESSO MRG</b>
-    <input id="email" type="email" placeholder="E-mail">
-    <input id="senha" type="password" placeholder="Senha">
-    <button onclick="entrar()">ENTRAR</button>
-    <div id="loginMsg" class="msg">Use o mesmo acesso do sistema MRG.</div>
+    <b>ACESSO MRG — ENTRADA PRINCIPAL</b>
+    <form id="p1LoginForm" onsubmit="event.preventDefault();entrar()">
+      <label for="email">E-mail</label>
+      <input id="email" type="email" placeholder="E-mail" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      <label for="senha">Senha</label>
+      <div class="pw-row"><input id="senha" type="password" placeholder="Senha" autocomplete="current-password" required><button type="button" onclick="alternarSenhaP1('senha',this)">MOSTRAR</button></div>
+      <label class="check-row"><input type="checkbox" id="lembrarEmailP1"> Lembrar meu e-mail neste aparelho</label>
+      <span class="micro">Para salvar a senha, use o gerenciador seguro do navegador. O MRG não armazena sua senha neste aparelho.</span>
+      <button id="btnEntrarP1" type="submit">ENTRAR</button>
+    </form>
+    <div class="auth-actions"><button type="button" class="sec" onclick="mostrarTelaAcessoP1('cadastro')">CRIAR CONTA</button><button type="button" class="sec" onclick="mostrarTelaAcessoP1('recuperar')">ESQUECI MINHA SENHA</button></div>
+    <div id="loginMsg" class="msg" role="status" aria-live="polite">Use o mesmo acesso do sistema MRG.</div>
+  </section>
+  <section id="cadastroBoxP1" class="card login escondido">
+    <b>MRG — CRIAR CONTA</b>
+    <form id="p1CadastroForm" onsubmit="event.preventDefault();criarContaP1()">
+      <label for="cadNomeP1">Nome</label><input id="cadNomeP1" autocomplete="name" required>
+      <label for="cadEmailP1">E-mail</label><input id="cadEmailP1" type="email" autocomplete="email" required>
+      <label for="cadTelefoneP1">Telefone / WhatsApp</label><input id="cadTelefoneP1" type="tel" autocomplete="tel" required>
+      <label for="cadSenhaP1">Criar senha</label>
+      <div class="pw-row"><input id="cadSenhaP1" type="password" autocomplete="new-password" minlength="6" required><button type="button" onclick="alternarSenhaP1('cadSenhaP1',this)">MOSTRAR</button></div>
+      <button id="btnCriarContaP1" type="submit">CRIAR CONTA</button>
+    </form>
+    <button class="sec" onclick="mostrarTelaAcessoP1('login')">VOLTAR AO LOGIN</button>
+    <div id="cadMsgP1" class="msg" role="status" aria-live="polite">Use um e-mail válido para confirmação e recuperação da senha.</div>
+  </section>
+  <section id="recuperarBoxP1" class="card login escondido">
+    <b>RECUPERAR SENHA</b>
+    <form onsubmit="event.preventDefault();recuperarSenhaP1()">
+      <label for="recEmailP1">Seu e-mail</label><input id="recEmailP1" type="email" autocomplete="email" required>
+      <button id="btnRecuperarP1" type="submit">ENVIAR LINK DE RECUPERAÇÃO</button>
+    </form>
+    <button class="sec" onclick="mostrarTelaAcessoP1('login')">VOLTAR AO LOGIN</button>
+    <div id="recMsgP1" class="msg" role="status" aria-live="polite"></div>
+  </section>
+  <section id="novaSenhaBoxP1" class="card login escondido">
+    <b>DEFINIR NOVA SENHA</b>
+    <form onsubmit="event.preventDefault();salvarNovaSenhaP1()">
+      <label for="novaSenhaP1">Nova senha</label>
+      <div class="pw-row"><input id="novaSenhaP1" type="password" autocomplete="new-password" minlength="6" required><button type="button" onclick="alternarSenhaP1('novaSenhaP1',this)">MOSTRAR</button></div>
+      <button id="btnNovaSenhaP1" type="submit">SALVAR NOVA SENHA</button>
+    </form>
+    <div id="novaSenhaMsgP1" class="msg" role="status" aria-live="polite"></div>
+  </section>
+  <section id="aguardandoBoxP1" class="card login escondido">
+    <b id="aguardandoTituloP1">SITUAÇÃO DO CADASTRO</b>
+    <div id="aguardandoMsgP1" class="p1-sessao-msg"></div>
+    <button class="sec" type="button" onclick="sair()">SAIR</button>
   </section>
 
   <main id="appBox" class="escondido">
@@ -163,8 +232,10 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
     <section class="nav">
       <button id="btnP2" onclick="irPagina(2)">▥ PÁGINA 2 — ANALISTA<span>ANÁLISES EM TEMPO REAL</span></button>
       <button id="btnP3" onclick="irPagina(3)">♛ PÁGINA 3 — PRO<span>RECURSOS PRO</span></button>
+      <button id="btnP4" onclick="irPagina(4)" class="escondido">◈ PÁGINA 4 — MERCADO<span>ANÁLISES DO MERCADO</span></button>
     </section>
     <div id="statusAcesso" class="statusbox"></div>
+    <section id="opcoesDispositivoP1" class="card p1-device-box" aria-label="Acesso pelo dispositivo"></section>
     <button class="sec" onclick="sair()">SAIR</button>
     <div class="footer">FOCO · GESTÃO · EVOLUÇÃO</div>
   </main>
@@ -184,6 +255,77 @@ const SUPABASE_KEY="sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const MRG_SESSION_TOKEN_KEY="mrg_session_token_unica";
+const MRG_EMAIL_REMEMBER_KEY="mrg_p1_lembrar_email";
+const MRG_PC_PROTOCOLO_VERIFICADO="mrgp3://abrir/p3";
+const SITE_URL=window.location.origin;
+let P1_TELA_ACESSO="login";
+let P1_LOGIN_EM_ANDAMENTO=false;
+function mostrarTelaAcessoP1(tipo="login"){
+  P1_TELA_ACESSO=tipo;
+  const nomes={login:"loginBox",cadastro:"cadastroBoxP1",recuperar:"recuperarBoxP1",novaSenha:"novaSenhaBoxP1",aguardando:"aguardandoBoxP1"};
+  for(const id of Object.values(nomes))el(id)?.classList.add("escondido");
+  if(nomes[tipo])el(nomes[tipo])?.classList.remove("escondido");
+  if(tipo==="recuperar"&&el("email"))el("recEmailP1").value=el("email").value.trim();
+}
+function alternarSenhaP1(campo,botao){const x=el(campo);x.type=x.type==="password"?"text":"password";botao.textContent=x.type==="password"?"MOSTRAR":"OCULTAR"}
+function aparelhoP1(){const ua=navigator.userAgent||"";return /iPhone|iPad|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1)?"ios":/Android/i.test(ua)?"android":/Windows/i.test(ua)?"windows":"outro"}
+function preencherOpcoesDispositivoP1(){
+  const box=el("opcoesDispositivoP1");if(!box)return;box.replaceChildren();
+  const title=document.createElement("b");title.textContent="COMO ACESSAR O MRG NESTE DISPOSITIVO";box.appendChild(title);
+  const note=document.createElement("p");note.className="device-note";box.appendChild(note);
+  const aparelho=aparelhoP1();
+  if(aparelho==="ios"){
+    note.textContent="iPhone/iPad: utilize a Lista Online. O jogo Aviator integrado não está disponível nesta versão.";
+    const b=document.createElement("button");b.className="sec";b.type="button";b.textContent="ADICIONAR ATALHO NO IPHONE — INSTRUÇÕES";
+    b.onclick=()=>alert("Abra este endereço no Safari. Toque em Compartilhar e escolha Adicionar à Tela de Início. Confirme Adicionar.");box.appendChild(b);
+  }else if(aparelho==="android"){
+    note.textContent="Android: você pode continuar na Lista Online. A abertura e o download do aplicativo serão habilitados após a validação do link Android oficial. Não é possível detectar sua instalação diretamente pelo site.";
+  }else if(aparelho==="windows"){
+    note.textContent="Windows: você pode continuar online ou tentar abrir o aplicativo MRG já instalado. A instalação não pode ser confirmada diretamente pelo navegador.";
+    const b=document.createElement("button");b.className="sec";b.type="button";b.textContent="ABRIR APLICATIVO PC INSTALADO";
+    b.onclick=()=>{window.location.href=MRG_PC_PROTOCOLO_VERIFICADO};box.appendChild(b);
+  }else note.textContent="Use a Lista Online neste navegador. Os aplicativos específicos serão oferecidos apenas nos dispositivos compatíveis.";
+}
+async function criarContaP1(){
+  const nome=el("cadNomeP1").value.trim(),email=el("cadEmailP1").value.trim(),telefone=el("cadTelefoneP1").value.trim(),senha=el("cadSenhaP1").value;
+  const msg=el("cadMsgP1"),btn=el("btnCriarContaP1");
+  if(!nome||!email||!telefone||!senha){msg.textContent="Preencha nome, e-mail, telefone e senha.";return}
+  if(senha.length<6){msg.textContent="A senha deve ter pelo menos seis caracteres.";return}
+  btn.disabled=true;msg.textContent="Validando cadastro...";
+  try{
+    // Mesma RPC de validação prévia utilizada pela P3 original; não contornar regras do ADM.
+    const {data:permitido,error:erroValidacao}=await db.rpc("validar_novo_cadastro",{p_email:email,p_user_agent:navigator.userAgent||"",p_ip:null});
+    if(erroValidacao)throw erroValidacao;
+    if(permitido!==true){msg.textContent="Novos cadastros estão temporariamente bloqueados.";return}
+    const {data,error}=await db.auth.signUp({email,password:senha,options:{emailRedirectTo:SITE_URL,data:{nome,telefone}}});
+    if(error)throw error;
+    if(data?.user){
+      // Preserva o mesmo cadastro de perfil da P3. Erros são registrados, sem repetir signUp.
+      const registro=await db.from("perfis").upsert({id:data.user.id,nome,email,telefone,liberado:false});
+      if(registro.error)console.warn("[MRG P1] Perfil pendente de sincronização:",registro.error);
+    }
+    el("cadSenhaP1").value="";
+    msg.textContent="Cadastro criado. Confira seu e-mail de confirmação. Se não receber, entre em contato com o administrador.";
+  }catch(e){console.error("[MRG P1] Cadastro:",e);msg.textContent="Não foi possível concluir o cadastro neste momento. Tente novamente mais tarde."}
+  finally{btn.disabled=false}
+}
+async function recuperarSenhaP1(){
+  const email=el("recEmailP1").value.trim(),btn=el("btnRecuperarP1"),msg=el("recMsgP1");
+  if(!email){msg.textContent="Informe seu e-mail.";return}
+  btn.disabled=true;msg.textContent="Enviando solicitação...";
+  try{const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:SITE_URL});if(error)throw error;msg.textContent="Solicitação enviada. Verifique seu e-mail e a caixa de spam."}
+  catch(e){console.error("[MRG P1] Recuperação:",e);msg.textContent="Não foi possível enviar o link de recuperação."}
+  finally{btn.disabled=false}
+}
+async function salvarNovaSenhaP1(){
+  const senha=el("novaSenhaP1").value,btn=el("btnNovaSenhaP1"),msg=el("novaSenhaMsgP1");
+  if(senha.length<6){msg.textContent="Informe uma senha com pelo menos seis caracteres.";return}
+  btn.disabled=true;msg.textContent="Salvando...";
+  try{const {error}=await db.auth.updateUser({password:senha});if(error)throw error;el("novaSenhaP1").value="";msg.textContent="Senha alterada. Faça login novamente.";await db.auth.signOut({scope:"local"});setTimeout(()=>mostrarTelaAcessoP1("login"),1000)}
+  catch(e){console.error("[MRG P1] Nova senha:",e);msg.textContent="Não foi possível alterar a senha."}
+  finally{btn.disabled=false}
+}
+
 let MRG_SESSAO_CHECANDO=false;
 function mrgNovoTokenSessao(){try{if(window.crypto&&crypto.randomUUID)return crypto.randomUUID()}catch(e){}return "web-"+Date.now()+"-"+Math.random().toString(36).slice(2)+"-"+Math.random().toString(36).slice(2)}
 function mrgTokenSessaoAtual(){return localStorage.getItem(MRG_SESSION_TOKEN_KEY)||""}
@@ -223,15 +365,29 @@ function abrirProjecoesP1(){
 }
 
 async function entrar(){
+  if(P1_LOGIN_EM_ANDAMENTO)return;
   const email=el("email").value.trim(),password=el("senha").value;
   if(!email||!password){el("loginMsg").textContent="Informe e-mail e senha.";return}
-  el("loginMsg").textContent="Validando...";
-  const {error}=await db.auth.signInWithPassword({email,password});
-  if(error){el("loginMsg").textContent="Login ou senha inválidos.";return}
-  try{await mrgRegistrarSessaoUnica(email)}catch(e){console.error(e);await db.auth.signOut({scope:"local"});el("loginMsg").textContent="Não foi possível registrar a sessão única deste aparelho.";return}
-  await iniciarApp();
+  P1_LOGIN_EM_ANDAMENTO=true;el("btnEntrarP1").disabled=true;el("loginMsg").textContent="Validando...";
+  try{
+    const {data,error}=await db.auth.signInWithPassword({email,password});
+    if(error)throw new Error("E-mail ou senha inválidos, ou conta ainda não confirmada.");
+    const emailConfirmado=data?.user?.email||email;
+    // Reutilizar uma sessão única válida evita derrubar o próprio login no mesmo navegador.
+    const valido=await mrgValidarSessaoUnica(emailConfirmado);
+    if(valido!==true)await mrgRegistrarSessaoUnica(emailConfirmado);
+    if(el("lembrarEmailP1").checked)localStorage.setItem(MRG_EMAIL_REMEMBER_KEY,emailConfirmado);
+    else localStorage.removeItem(MRG_EMAIL_REMEMBER_KEY);
+    el("senha").value="";
+    await iniciarApp();
+  }catch(e){console.error("[MRG P1] Entrar:",e);el("loginMsg").textContent=e.message||"Não foi possível validar o acesso."}
+  finally{P1_LOGIN_EM_ANDAMENTO=false;el("btnEntrarP1").disabled=false}
 }
-async function sair(){fecharModal();await mrgEncerrarRegistroSessao();await db.auth.signOut({scope:"local"});contrato=null;el("appBox").classList.add("escondido");atualizarStatusCabecalhoP1();el("loginBox").classList.remove("escondido")}
+async function sair(){
+  fecharModal();await mrgEncerrarRegistroSessao();await db.auth.signOut({scope:"local"});
+  contrato=null;el("appBox").classList.add("escondido");atualizarStatusCabecalhoP1();
+  mostrarTelaAcessoP1("login");el("loginMsg").textContent="Sessão encerrada.";
+}
 
 function normalizarContrato(data){
   if(Array.isArray(data)) data=data[0]||{};
@@ -281,29 +437,24 @@ async function iniciarApp(){
   const user=s?.session?.user;
   if(!user)return;
   const sessaoOk=await mrgValidarSessaoUnica(user.email);
-  if(sessaoOk===false){localStorage.removeItem(MRG_SESSION_TOKEN_KEY);await db.auth.signOut({scope:"local"});el("appBox").classList.add("escondido");el("loginBox").classList.remove("escondido");el("loginMsg").textContent="Esta conta foi aberta em outro aparelho. Faça login novamente.";atualizarStatusCabecalhoP1();return}
-  try{
-    await obterContrato();
-  }catch(e){
-    console.error("Contrato MRG:",e);
-    el("loginMsg").textContent="Não foi possível consultar o contrato central de acesso.";
-    return;
+  if(sessaoOk===false){
+    localStorage.removeItem(MRG_SESSION_TOKEN_KEY);await db.auth.signOut({scope:"local"});
+    contrato=null;el("appBox").classList.add("escondido");mostrarTelaAcessoP1("login");
+    el("loginMsg").textContent="Esta conta foi aberta em outro aparelho. Faça login novamente.";atualizarStatusCabecalhoP1();return;
   }
-
+  try{await obterContrato()}catch(e){console.error("[MRG P1] Contrato:",e);mostrarTelaAcessoP1("login");el("loginMsg").textContent="Não foi possível consultar seu acesso central.";return}
   const estado=String(valor(contrato,["nivel_acesso"],"")).toUpperCase();
-  const p1=valorBool(contrato,["pagina_1"]);
   atualizarStatusCabecalhoP1(user.email,estado,true);
-  if(!p1){
-    el("loginMsg").textContent=estado==="BLOQUEADO"?"Acesso bloqueado pelo administrador.":"Acesso à Página 1 ainda não liberado.";
+  const liberadoP1=valorBool(contrato,["pagina_1"]);
+  if(!liberadoP1){
     el("appBox").classList.add("escondido");
-    el("loginBox").classList.remove("escondido");
-    return;
+    el("aguardandoTituloP1").textContent=estado==="BLOQUEADO"?"ACESSO BLOQUEADO":"CADASTRO / ACESSO EM ANÁLISE";
+    el("aguardandoMsgP1").textContent=estado==="BLOQUEADO"?"Acesso bloqueado pelo administrador.":"Sua conta está autenticada, mas a Página 1 ainda não foi liberada. Entre em contato com o administrador.";
+    mostrarTelaAcessoP1("aguardando");return;
   }
-
-  el("loginBox").classList.add("escondido");
+  for(const id of ["loginBox","cadastroBoxP1","recuperarBoxP1","novaSenhaBoxP1","aguardandoBoxP1"])el(id).classList.add("escondido");
   el("appBox").classList.remove("escondido");
-  aplicarPermissoes();
-  await carregarHistorico();
+  aplicarPermissoes();preencherOpcoesDispositivoP1();await carregarHistorico();
 }
 
 function rotuloStatusP1(estado){
@@ -314,24 +465,27 @@ function rotuloStatusP1(estado){
 }
 
 function aplicarPermissoes(){
-  const p2=valorBool(contrato,["pagina_2"]);
-  const p3=valorBool(contrato,["pagina_3"]);
-  el("btnP2").classList.toggle("lock",!p2);
-  el("btnP3").classList.toggle("lock",!p3);
-  el("statusAcesso").textContent=`Acesso atualizado · P2 ${p2?"LIBERADA":"INDISPONÍVEL"} · P3 ${p3?"LIBERADA":"INDISPONÍVEL"}`;
-}
-
-async function irPagina(n){
-  try{await obterContrato();aplicarPermissoes()}catch(e){alert("Não foi possível validar seu acesso agora.");return}
-  const ok=n===2
-    ?valorBool(contrato,["pagina_2"])
-    :valorBool(contrato,["pagina_3"]);
-  if(!ok){alert(n===2?"Página 2 não disponível para o estado atual da conta.":"Página 3 PRO não disponível para o estado atual da conta.");return}
-  const destinos={2:"/p2.html",3:"/"};
-  const novaAba=window.open(destinos[n], '_blank', 'noopener,noreferrer');
-  if(!novaAba){
-    window.top.location.href=destinos[n];
+  const nomes={2:"P2",3:"P3",4:"P4"};
+  for(const n of [2,3,4]){
+    const permitido=contrato?.["pagina_"+n]===true,btn=el("btnP"+n);
+    if(!btn)continue;
+    btn.disabled=!permitido;btn.classList.toggle("lock",!permitido);
+    btn.classList.toggle("escondido",!permitido);
+    btn.title=permitido?"Acesso autorizado":"Não liberado pelo administrador";
   }
+  const liberados=[2,3,4].filter(n=>contrato?.["pagina_"+n]===true).map(n=>nomes[n]);
+  el("statusAcesso").textContent=liberados.length?"Acessos liberados: "+liberados.join(" · "):"Somente P1 — Estudos liberada no momento.";
+}
+async function irPagina(n){
+  if(![2,3,4].includes(n))return;
+  const {data}=await db.auth.getSession();const email=data?.session?.user?.email;
+  if(!email){alert("Faça login na P1 para continuar.");mostrarTelaAcessoP1("login");return}
+  const sessaoOk=await mrgValidarSessaoUnica(email);
+  if(sessaoOk===false){alert("Sua sessão não está mais ativa. Entre novamente na P1.");return}
+  try{await obterContrato();aplicarPermissoes()}catch(e){alert("Não foi possível confirmar sua autorização agora.");return}
+  if(contrato?.["pagina_"+n]!==true){alert("Página "+n+" não liberada para seu acesso.");return}
+  // Uma única navegação. Não recriar sessão nem abrir login na P2/P3/P4.
+  window.location.href=({2:"/p2.html",3:"/p3.html",4:"/p4.html"})[n];
 }
 
 function classeVela(v){
@@ -352,8 +506,12 @@ document.addEventListener("visibilitychange",async()=>{if(document.visibilitySta
 atualizarStatusCabecalhoP1();
 atualizarRelogioCabecalhoP1();
 setInterval(atualizarRelogioCabecalhoP1,1000);
-setInterval(async()=>{if(MRG_SESSAO_CHECANDO)return;MRG_SESSAO_CHECANDO=true;try{const{data}=await db.auth.getSession();const user=data?.session?.user;if(user){const ok=await mrgValidarSessaoUnica(user.email);if(ok===false){localStorage.removeItem(MRG_SESSION_TOKEN_KEY);await db.auth.signOut({scope:"local"});contrato=null;el("appBox").classList.add("escondido");el("loginBox").classList.remove("escondido");el("loginMsg").textContent="Esta conta foi aberta em outro aparelho. Faça login novamente.";atualizarStatusCabecalhoP1()}}}finally{MRG_SESSAO_CHECANDO=false}},3000);
-(async()=>{const {data}=await db.auth.getSession();if(data?.session)await iniciarApp()})();
+setInterval(async()=>{if(MRG_SESSAO_CHECANDO||P1_TELA_ACESSO==="novaSenha")return;MRG_SESSAO_CHECANDO=true;try{const{data}=await db.auth.getSession();const user=data?.session?.user;if(user){const ok=await mrgValidarSessaoUnica(user.email);if(ok===false){localStorage.removeItem(MRG_SESSION_TOKEN_KEY);await db.auth.signOut({scope:"local"});contrato=null;el("appBox").classList.add("escondido");mostrarTelaAcessoP1("login");el("loginMsg").textContent="Esta conta foi aberta em outro aparelho. Faça login novamente.";atualizarStatusCabecalhoP1()}}}catch(e){console.warn("[MRG P1] Não foi possível validar sessão no momento",e)}finally{MRG_SESSAO_CHECANDO=false}},3000);
+if(localStorage.getItem(MRG_EMAIL_REMEMBER_KEY)){el("email").value=localStorage.getItem(MRG_EMAIL_REMEMBER_KEY);el("lembrarEmailP1").checked=true}
+db.auth.onAuthStateChange(event=>{if(event==="PASSWORD_RECOVERY")mostrarTelaAcessoP1("novaSenha")});
+(async()=>{try{const {data}=await db.auth.getSession();if(P1_TELA_ACESSO==="novaSenha"||location.hash.includes("type=recovery")){mostrarTelaAcessoP1("novaSenha");return}if(data?.session)await iniciarApp();else mostrarTelaAcessoP1("login")}catch(e){console.warn("[MRG P1] Sessão inicial:",e);mostrarTelaAcessoP1("login")}})();
+// MRG P1 CENTRAL DE ACESSO V1 | 15/11/2026 15:38 BRT | baseado no P1 oficial blob 2cb601a9;
+// login/cadastro/recuperacao e permissoes centralizados; P2/P3/P4 apenas operacionais.
 </script>
 </body>
 </html>
