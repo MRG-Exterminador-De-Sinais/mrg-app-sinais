@@ -297,7 +297,13 @@ html.mrg-p4-embutida .mrg-p4-solo-only{display:none!important}
 .best-choice.mrg-best-acompanhando #bestDetail{font-weight:700;line-height:1.3;color:#eef6ff}
 </style>
 <header><h1>MRG EXTERMINADOR DE SINAIS / MERCADO</h1><div class="head-actions"><button type="button" class="mrg-p4-solo-only" id="mrgP4SomSolo" aria-pressed="false" title="Ativar ou desativar alerta sonoro de COMPRA e VENDA">Som: OFF</button><button type="button" class="mrg-p4-solo-only" id="mrgP4ReloadSolo" title="Atualizar toda a P4: IQ Option e Mercado" aria-label="Atualizar toda a P4">↻</button><span id="status">Validando acesso…</span><button id="backP3" class="back-p3" hidden>← P1</button></div></header>
-<main id="app" hidden><div class="iq"><iframe title="IQ Option" src="https://iqoption.com/traderoom"></iframe></div><aside class="panel"><section class="essential"><div id="asset" class="asset">Nenhum ativo selecionado</div><div class="muted" id="instruction">Abaixo, toque em Ativos para escolher.</div><button type="button" id="bestChoice" class="best-choice" hidden><span class="best-title" id="bestTitle">MELHOR ASSERTIVIDADE AGORA</span><strong id="bestAsset">—</strong><small id="bestDetail">Clique para alterar somente o painel MRG</small></button><time id="mrgClock" aria-label="Horário do dispositivo">--:--:--</time><div class="muted" style="margin-top:10px">PREÇO AGORA</div><div class="price" id="price">—</div><div id="updated" class="muted">Sem atualização confirmada</div><div class="muted" style="margin-top:10px">SINAL</div><div id="signal" class="signal wait">AGUARDAR</div><div class="muted">ACOMPANHAMENTO</div><div id="follow" class="follow">Aguardando seleção do usuário</div><div class="grid"><div><div class="muted">DURAÇÃO DA ANÁLISE</div><div id="horizon" class="detail">—</div></div><div><div class="muted">PREÇO DE ENTRADA</div><div id="entry" class="detail">—</div></div></div><div class="metrics"><div class="grid"><div><div class="muted">CONVICÇÃO ATUAL DO MOTOR</div><div id="confidence" class="metric">—</div><div class="bar"><span id="confidenceBar" style="width:0"></span></div></div><div><div class="muted">ACERTOS DO HISTÓRICO</div><div id="accuracy" class="metric">—</div><div id="sample" class="muted">Sem resultados</div></div></div><div class="grid"><div><div class="muted">PROJEÇÃO DE ALTA</div><div id="upProb" class="detail">—</div></div><div><div class="muted">PROJEÇÃO DE BAIXA</div><div id="downProb" class="detail">—</div></div></div><div id="memory" class="muted" style="margin-top:8px"></div><div class="muted">Convicção é um indicador do motor, não garantia de acerto.</div></div><div id="timing" class="muted" style="margin-top:8px"></div><div id="reason" class="muted"></div></section><div class="tools"><button id="choose">Ativos</button><button id="recent">Últimos 10 sinais</button><button id="all">Todos os ativos MRG</button></div></aside></main>
+<main id="app" hidden><div class="iq"><iframe title="IQ Option" src="https://iqoption.com/traderoom"></iframe></div><aside class="panel"><div class="tools" aria-label="Favoritos">
+<button type="button" id="favorite1">Favorito 1</button>
+<button type="button" id="favorite2">Favorito 2</button>
+<button type="button" id="saveFavorite">Salvar ativo no favorito</button>
+</div><div id="secondFavorite" class="detail" hidden></div>
+<div id="maintenanceMessage" role="status" hidden>MRG Mercado temporariamente em manutenção.</div>
+<div id="payoutHighlight" class="muted" hidden></div><section class="essential"><div id="asset" class="asset">Nenhum ativo selecionado</div><div class="muted" id="instruction">Abaixo, toque em Ativos para escolher.</div><button type="button" id="bestChoice" class="best-choice" hidden><span class="best-title" id="bestTitle">MELHOR ASSERTIVIDADE AGORA</span><strong id="bestAsset">—</strong><small id="bestDetail">Clique para alterar somente o painel MRG</small></button><time id="mrgClock" aria-label="Horário do dispositivo">--:--:--</time><div class="muted" style="margin-top:10px">PREÇO AGORA</div><div class="price" id="price">—</div><div id="updated" class="muted">Sem atualização confirmada</div><div class="muted" style="margin-top:10px">SINAL</div><div id="signal" class="signal wait">AGUARDAR</div><div class="muted">ACOMPANHAMENTO</div><div id="follow" class="follow">Aguardando seleção do usuário</div><div class="grid"><div><div class="muted">DURAÇÃO DA ANÁLISE</div><div id="horizon" class="detail">—</div></div><div><div class="muted">PREÇO DE ENTRADA</div><div id="entry" class="detail">—</div></div></div><div class="metrics"><div class="grid"><div><div class="muted">CONVICÇÃO ATUAL DO MOTOR</div><div id="confidence" class="metric">—</div><div class="bar"><span id="confidenceBar" style="width:0"></span></div></div><div><div class="muted">ACERTOS DO HISTÓRICO</div><div id="accuracy" class="metric">—</div><div id="sample" class="muted">Sem resultados</div></div></div><div class="grid"><div><div class="muted">PROJEÇÃO DE ALTA</div><div id="upProb" class="detail">—</div></div><div><div class="muted">PROJEÇÃO DE BAIXA</div><div id="downProb" class="detail">—</div></div></div><div id="memory" class="muted" style="margin-top:8px"></div><div class="muted">Convicção é um indicador do motor, não garantia de acerto.</div></div><div id="timing" class="muted" style="margin-top:8px"></div><div id="reason" class="muted"></div></section><div class="tools"><button id="choose">Ativos</button><button id="recent">Últimos 10 sinais</button><button id="all">Todos os ativos MRG</button></div></aside></main>
 <section class="gate" id="gate"><h2>PRO+ Mercado</h2><p id="gateText">Validando o acesso ao MRG Mercado…</p><button id="goLogin" hidden>Entrar</button></section>
 <dialog id="picker"><div class="head"><h2>Escolha um ativo</h2><button data-close="picker">Fechar</button></div><p class="muted">Blitz primeiro · Binária abaixo. Ativos disponíveis, ordenados pela assertividade dos últimos 10 sinais concluídos. Fora de operação não podem ser selecionados.</p><input id="assetSearch" type="search" autocomplete="off" placeholder="Buscar ativo (USD, BRL, Bitcoin...)" aria-label="Buscar ativo"><div id="assetList"></div></dialog><dialog id="historyModal"><div class="head"><h2>Últimos 10 sinais</h2><button data-close="historyModal">Fechar</button></div><div id="historyAsset" class="asset"></div><p id="stats" class="muted"></p><div id="history"></div><p class="muted">Resultados do estudo por preço observado; não são liquidações oficiais da IQ.</p></dialog><dialog id="catalogModal"><div class="head"><h2>Todos os ativos MRG</h2><button data-close="catalogModal">Fechar</button></div><div id="catalog"></div></dialog>
 <script>
@@ -306,14 +312,20 @@ const MRG_SESSION_TOKEN_KEY='mrg_session_token_unica';let MRG_SESSAO_CHECANDO=fa
 async function mrgValidarSessaoP4(email){const token=localStorage.getItem(MRG_SESSION_TOKEN_KEY)||'';if(!email||!token)return false;const{data,error}=await db.from('sessoes_ativas').select('session_token,ativo').eq('email',email).maybeSingle();if(error){console.warn('[MRG WEB P4] Falha temporária ao validar sessão única:',error);return null}if(!data||data.ativo!==true||data.session_token!==token)return false;db.from('sessoes_ativas').update({ultimo_ping:new Date().toISOString()}).eq('email',email).eq('session_token',token).then(()=>{}).catch(()=>{});return true}
 async function mrgDerrubarSessaoP4(){localStorage.removeItem(MRG_SESSION_TOKEN_KEY);try{await db.auth.signOut({scope:'local'})}catch(e){}location.replace('/?sessao=substituida')}
 let ctx=[],selected=sessionStorage.getItem('mrg_contexto_reconstruido')||'',refreshing=false,pending=false,debounceTimer=null,pollTimer=null,marketChannel=null;const bool=v=>v===true||v===1||String(v).toLowerCase()==='true'||String(v)==='1',num=x=>x===null||x===undefined||x===''?NaN:Number(x),parse=(v,d={})=>{if(v&&typeof v==='object')return v;try{return JSON.parse(v||'')}catch{return d}},fmt=x=>{if(!x)return'—';let d=new Date(x);return isNaN(d)?'—':d.toLocaleString('pt-BR')},price=x=>Number.isFinite(num(x))?num(x).toLocaleString('pt-BR',{minimumFractionDigits:5,maximumFractionDigits:6}):'—',pct=x=>Number.isFinite(num(x))?num(x).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%':'—',label=c=>`${String(c.symbol||'').toUpperCase()==='GOLD'?'Ouro':(c.label||c.symbol||'Ativo')} · ${c.modality==='BINARIA'?'Binária':'Blitz'} · ${c.market||'—'}`;
-function fresh(c){return c.is_fresh===true&&Number.isFinite(Number(c.price))&&String(c.source_status||'').toLowerCase()==='online'}
+function fresh(c){
+  const age=Date.now()-tempoMRG(c.price_at);
+  return c.is_fresh===true&&c.price!=null&&Number.isFinite(Number(c.price))
+    &&c.source_status==='online'&&age>=-5000&&age<40000;
+}
+const historyCache=new Map();
 function norm(c){
-  const r=parse(c.recent20),sig=parse(c.raw_signal),ana=parse(c.raw_analysis);
+  const stored=historyCache.get(c.context_key)||{};
+  const r=c.recent20?parse(c.recent20):{hits:c.recent_hits,errors:c.recent_errors,ties:c.recent_ties,count:c.recent_count,accuracy:c.recent_accuracy,items:stored.items||[]},sig=parse(c.raw_signal),ana=parse(c.raw_analysis);
   const w=Number(r.hits??r.wins??r.POSITIVO??0),l=Number(r.errors??r.losses??r.NEGATIVO??0),ties=Number(r.ties??r.EMPATE??0);
   const rate=Number(r.accuracy??r.accuracy_percent??(w+l?w*100/(w+l):NaN));
   const dir=String(c.direction??sig.direction??sig.direcao??'').toUpperCase();
   const total=Number(c.history_count??0),estimatedHits=Number.isFinite(Number(c.history_accuracy_percent))?Math.round(total*Number(c.history_accuracy_percent)/100):0;
-  return{...c,key:c.context_key,symbol:c.symbol||c.context_key,label:c.label||c.symbol||c.context_key,modality:String(c.modality||'').toUpperCase(),open:c.is_open===true,fresh:fresh(c),price:num(c.price),tick_at:c.price_at||c.source_updated_at,payout:num(c.payout_percent),direction:dir,recent:{w,l,ties,rate,count:Number(r.count??w+l+ties)},history:Array.isArray(r.items)?r.items:[],confidence:num(c.confidence_percent),up:num(c.projection_up_percent),down:num(c.projection_down_percent),horizon:c.duration_seconds?Math.round(Number(c.duration_seconds)/60):null,entry:num(c.entry_price??sig.entry_price??sig.entrada_preco),entryAt:c.entry_at??sig.entry_at??sig.entrada_em,expiry:c.expiry_at??sig.expiry_at??sig.expira_em,validUntil:sig.valido_ate??sig.valid_until,reason:c.accompaniment||c.display_status||ana.reason||'',candles:Number(ana.candles??0),memoryMax:Number(ana.memoria_operacional_max??720),analysisStatus:String(ana.status||''),historyHits:Number(r.history_hits??estimatedHits),historyErrors:Number(r.history_errors??Math.max(0,total-estimatedHits)),historyTies:Number(r.history_ties??ties)}
+  return{...c,key:c.context_key,symbol:c.symbol||c.context_key,label:c.label||c.symbol||c.context_key,modality:String(c.modality||'').toUpperCase(),open:c.is_open===true,get fresh(){return fresh(c)},price:num(c.price),tick_at:c.price_at||c.source_updated_at,payout:num(c.payout_percent),direction:dir,recent:{w,l,ties,rate,count:Number(r.count??w+l+ties)},history:Array.isArray(r.items)?r.items:[],confidence:num(c.confidence_percent),up:num(c.projection_up_percent),down:num(c.projection_down_percent),horizon:c.duration_seconds?Math.round(Number(c.duration_seconds)/60):null,entry:num(c.entry_price??sig.entry_price??sig.entrada_preco),entryAt:c.entry_at??sig.entry_at??sig.entrada_em,expiry:c.expiry_at??sig.expiry_at??sig.expira_em,validUntil:sig.valido_ate??sig.valid_until,reason:c.accompaniment||c.display_status||ana.reason||'',candles:Number(ana.candles??0),memoryMax:Number(ana.memoria_operacional_max??720),analysisStatus:String(ana.status||''),historyHits:Number(r.history_hits??estimatedHits),historyErrors:Number(r.history_errors??Math.max(0,total-estimatedHits)),historyTies:Number(r.history_ties??ties)}
 }
 // Estatistica exclusivamente dos dez resultados concluidos mais recentes por contexto.
 // Empates e resultados pendentes nao entram na taxa de acerto/erro.
@@ -332,9 +344,12 @@ function mrgDesempenhoP4(c){
   const bruto=c?.recent||{};
   const count=Number(bruto.count)||0;
   if(count>total && count>=10 && Number.isFinite(bruto.rate)){
-    return {rate:bruto.rate,wins:Number(bruto.w)||0,total:count,last:validos.length?(positivo(validos[0])?'WIN':'LOSS'):''};
+    const last=validos[0]||String(c?.recent_last||'').toUpperCase();
+    return {rate:bruto.rate,wins:Number(bruto.w)||0,total:count,last:last?(positivo(last)?'WIN':'LOSS'):''};
   }
-  return {rate:total?wins*100/total:NaN,wins,total,last:total?(positivo(validos[0])?'WIN':'LOSS'):''};
+  if(total)return {rate:wins*100/total,wins,total,last:positivo(validos[0])?'WIN':'LOSS'};
+  const fallbackTotal=Number(c?.history_count)||0,fallbackRate=Number(c?.history_accuracy_percent);
+  return {rate:Number.isFinite(fallbackRate)?fallbackRate:NaN,wins:0,total:fallbackTotal,last:''};
 }
 function best(){return ctx.filter(c=>c.open&&c.fresh).map(c=>({c,s:mrgDesempenhoP4(c)}))
   .filter(x=>x.s.total>=10&&Number.isFinite(x.s.rate))
@@ -446,7 +461,117 @@ function mrgP4AvisarNovaEntrada(c,lado){
   if(atraso<0||atraso>11000)return;
   void mrgP4Toque(lado);
 }
+let favoritesStorageKey='', favorites=['',''], favoriteSlot=0, favoriteUserId='', nextInterestAt=0, renderTimer=null, dualMode=true;
+async function loadFavorites(userId){
+  favoriteUserId=userId;
+  favoritesStorageKey='mrg.p4.favoritos.'+userId;
+  try{
+    const saved=JSON.parse(localStorage.getItem(favoritesStorageKey)||'null');
+    if(Array.isArray(saved)&&saved.length===2)favorites=saved.map(key=>typeof key==='string'?key:'');
+  }catch{}
+  try{
+    const {data,error}=await db.from('mrg_mercado_favoritos').select('slot,context_key').order('slot');
+    if(!error&&Array.isArray(data)){
+      favorites=['',''];
+      data.forEach(row=>{if(Number(row.slot)===1||Number(row.slot)===2)favorites[Number(row.slot)-1]=String(row.context_key||'')});
+    }
+  }catch{}
+  if(favorites[0])selected=favorites[0];
+}
+async function persistFavorites(){
+  if(!favoriteUserId)return;
+  localStorage.setItem(favoritesStorageKey,JSON.stringify(favorites));
+  const rows=favorites.map((context_key,index)=>{
+    const item=ctx.find(row=>row.key===context_key);
+    return item?{user_id:favoriteUserId,slot:index+1,context_key,symbol:item.symbol,modality:item.modality,market:item.market,duration_seconds:item.duration_seconds,seen_at:new Date().toISOString()}:null;
+  }).filter(Boolean);
+  try{
+    for(let slot=0;slot<2;slot++)if(!favorites[slot])await db.from('mrg_mercado_favoritos').delete().eq('user_id',favoriteUserId).eq('slot',slot+1);
+    if(rows.length)await db.from('mrg_mercado_favoritos').upsert(rows,{onConflict:'user_id,slot'});
+  }catch{}
+}
+async function touchFavorites(){
+  if(!favoriteUserId||Date.now()<nextInterestAt)return;
+  nextInterestAt=Date.now()+60000;
+  const rows=favorites.map((context_key,index)=>{
+    const item=ctx.find(row=>row.key===context_key);
+    return item?{user_id:favoriteUserId,slot:index+1,context_key,symbol:item.symbol,modality:item.modality,market:item.market,duration_seconds:item.duration_seconds,seen_at:new Date().toISOString()}:null;
+  }).filter(Boolean);
+  try{if(rows.length)await db.from('mrg_mercado_favoritos').upsert(rows,{onConflict:'user_id,slot'});}catch{}
+}
+function secondPanel(){
+  let panel=document.getElementById('mrgSecondPanel');
+  if(panel)return panel;
+  panel=document.createElement('section');panel.id='mrgSecondPanel';panel.className='essential';
+  panel.innerHTML='<div id="mrgSecondAsset" class="asset"></div><div class="muted">PREÇO AGORA</div><div id="mrgSecondPrice" class="price">—</div><div class="muted">SINAL</div><div id="mrgSecondSignal" class="signal wait">AGUARDAR</div><div id="mrgSecondFollow" class="follow">—</div><div class="grid"><div><div class="muted">ASSERTIVIDADE</div><div id="mrgSecondAccuracy" class="detail">—</div></div><div><div class="muted">ENTRADA</div><div id="mrgSecondEntry" class="detail">—</div></div><div><div class="muted">CONFIANÇA</div><div id="mrgSecondConfidence" class="detail">—</div></div><div><div class="muted">PROJEÇÃO ALTA / BAIXA</div><div id="mrgSecondProjection" class="detail">—</div></div><div><div class="muted">DURAÇÃO</div><div id="mrgSecondDuration" class="detail">—</div></div><div><div class="muted">VENCIMENTO</div><div id="mrgSecondExpiry" class="detail">—</div></div></div>';
+  document.querySelector('.panel').append(panel);return panel;
+}
+const dualToggle=document.createElement('button');dualToggle.type='button';dualToggle.textContent='Modo 2 ativos';
+dualToggle.onclick=()=>{dualMode=!dualMode;dualToggle.textContent=dualMode?'Modo 2 ativos':'Modo 1 ativo';render()};
+document.querySelector('[aria-label="Favoritos"]').append(dualToggle);
+function estadoDestaque(row){
+  if(!row.fresh)return 'SEM COLETA';
+  const entrada=mrgEntradaVigenteP4(row);
+  if(entrada==='BUY')return 'COMPRA AGORA';
+  if(entrada==='SELL')return 'VENDA AGORA';
+  const acompanhamento=acompanharMRG(row);
+  if(acompanhamento==='BUY')return 'COMPRA EM ACOMPANHAMENTO';
+  if(acompanhamento==='SELL')return 'VENDA EM ACOMPANHAMENTO';
+  return row.result?String(row.result):'AGUARDAR';
+}
+function renderFavorites(){
+  favorites.forEach((key,index)=>{
+    const item=ctx.find(row=>row.key===key);
+    const button=el('favorite'+(index+1));
+    button.textContent=item?label(item):'Favorito '+(index+1);
+    button.setAttribute('aria-pressed',String(index===favoriteSlot));
+  });
+  const second=ctx.find(row=>row.key===favorites[1-favoriteSlot]&&row.key!==selected);
+  const card=el('secondFavorite');
+  card.hidden=!second||!matchMedia('(min-width: 900px) and (pointer: fine)').matches;
+  if(!card.hidden){
+    const side=mrgEntradaVigenteP4(second);
+    card.textContent=label(second)+' · '+(!second.fresh?'SEM COLETA':side==='BUY'?'COMPRA':side==='SELL'?'VENDA':'AGUARDAR');
+  }
+  const panel=secondPanel();panel.hidden=!dualMode||!second||!matchMedia('(min-width: 900px) and (pointer: fine)').matches;
+  if(!panel.hidden){
+    const side=mrgEntradaVigenteP4(second);
+    text('mrgSecondAsset',label(second));text('mrgSecondPrice',second.fresh?price(second.price):'—');
+    text('mrgSecondSignal',side==='BUY'?'COMPRAR AGORA':side==='SELL'?'VENDER AGORA':'AGUARDAR');
+    text('mrgSecondFollow',second.fresh?second.reason:'MRG MERCADO — SEM COLETA');
+    text('mrgSecondAccuracy',pct(second.history_accuracy_percent));text('mrgSecondEntry',price(second.entry));
+    text('mrgSecondConfidence',pct(second.confidence));text('mrgSecondProjection',pct(second.up)+' / '+pct(second.down));
+    text('mrgSecondDuration',second.horizon?second.horizon+' min':'—');text('mrgSecondExpiry',fmt(second.expiry));
+    mrgP4AvisarNovaEntrada(second,side);
+  }
+  const payouts=ctx.filter(row=>row.open&&row.fresh&&Number.isFinite(row.payout)).sort((a,b)=>b.payout-a.payout).slice(0,2);
+  const payoutBox=el('payoutHighlight');payoutBox.hidden=!payouts.length;payoutBox.replaceChildren();
+  payouts.forEach((row,index)=>{
+    const button=document.createElement('button');button.type='button';button.className='best-choice';
+    button.textContent=`${index+1}º payout · ${label(row)} · ${pct(row.payout)} · ${pct(row.history_accuracy_percent)} · ${estadoDestaque(row)} · ${fmt(row.tick_at)}`;
+    button.onclick=()=>{selected=row.key;render()};payoutBox.append(button);
+  });
+  void touchFavorites();
+}
+for(let index=0;index<2;index++){
+  el('favorite'+(index+1)).onclick=()=>{
+    favoriteSlot=index;
+    if(favorites[index])selected=favorites[index];
+    render();
+    if(!favorites[index])el('choose').click();
+  };
+}
+el('saveFavorite').onclick=()=>{
+  if(!favoritesStorageKey||!ctx.some(row=>row.key===selected))return;
+  if(favorites[1-favoriteSlot]===selected)favorites[1-favoriteSlot]='';
+  favorites[favoriteSlot]=selected;
+  void persistFavorites();
+  render();
+};
 function render(){
+  el("maintenanceMessage").hidden=!ctx.some(row=>row.source_status==="manutencao");
+  if(!el("maintenanceMessage").hidden)text('maintenanceMessage','ATENÇÃO, USUÁRIOS! O MRG Exterminador de Sinais Mercado está temporariamente em manutenção para ajustes e melhorias. Agradecemos a compreensão. Em breve, as análises operacionais estarão disponíveis novamente.');
+  renderFavorites();
   const c=ctx.find(x=>x.key===selected),b=best();drawPicker();
   el('bestChoice').hidden=!b;
   if(b){
@@ -480,13 +605,13 @@ function render(){
   text('asset',label(c));
   text('mrgOperacaoResumo',pct(desempenhoAtual.rate)+' '+mrgSetaP4(desempenhoAtual));
   el('mrgOperacaoResumo').className=desempenhoAtual.last==='WIN'?'mrg-operacao-tax mrg-ultimo-win':desempenhoAtual.last==='LOSS'?'mrg-operacao-tax mrg-ultimo-loss':'mrg-operacao-tax';
-  text('instruction','Na IQ, mantenha o mesmo ativo, modalidade e duração.');text('price',live?price(c.price):'—');text('updated',live?'Atualizado: '+fmt(c.tick_at):'Preço atrasado ou indisponível');
+  text('instruction','Na IQ, mantenha o mesmo ativo, modalidade e duração.');text('price',live?price(c.price):'—');text('updated',live?'Atualizado: '+fmt(c.tick_at)+' · atraso '+Math.max(0,Math.floor((Date.now()-tempoMRG(c.tick_at))/1000))+' s':'SEM COLETA');
   text('horizon',c.horizon?c.horizon+' min':'—');text('entry',price(c.entry));text('confidence',live?pct(c.confidence):'—');el('confidenceBar').style.width=live&&Number.isFinite(c.confidence)?Math.max(0,Math.min(100,c.confidence))+'%':'0%';
   text('accuracy',pct(c.history_accuracy_percent));text('sample',c.history_count?c.history_count+' resultados · '+c.historyHits+' acertos · '+c.historyErrors+' erros · '+c.historyTies+' empates':'Sem resultados');text('upProb',live?pct(c.up):'—');text('downProb',live?pct(c.down):'—');
   text('memory','Velas fechadas na análise: '+c.candles+' / '+c.memoryMax+' · '+(c.analysisStatus==='AQUECENDO_MEMORIA'?'Aquecendo: mínimo de 80 velas':'Histórico de estudo por preço observado'));
   text('timing',c.entryAt?'Entrada: '+fmt(c.entryAt)+' · Vencimento: '+fmt(c.expiry):c.validUntil?'Oportunidade válida até: '+fmt(c.validUntil):'');text('reason',c.reason||'');
   const s=el('signal');s.className='signal wait';
-  if(!live){text('signal','AGUARDAR');text('follow','Aguardando preço vivo/conexão.')}else if(buy){text('signal','COMPRAR AGORA');s.className='signal up';text('follow',c.reason||'Compra em acompanhamento')}else if(sell){text('signal','VENDER AGORA');s.className='signal down';text('follow',c.reason||'Venda em acompanhamento')}else{text('signal','AGUARDAR');text('follow','ESTUDANDO POSSÍVEL ENTRADA')}
+  if(!live){text('signal','SEM COLETA');text('follow','As análises operacionais estão temporariamente indisponíveis. Aguardando recuperação da comunicação com o sistema.')}else if(buy){text('signal','COMPRAR AGORA');s.className='signal up';text('follow',c.reason||'Compra em acompanhamento')}else if(sell){text('signal','VENDER AGORA');s.className='signal down';text('follow',c.reason||'Venda em acompanhamento')}else{text('signal','AGUARDAR');text('follow','ESTUDANDO POSSÍVEL ENTRADA')}
   const ladoEmCurso=acompanharMRG(c);
   const f=el('follow');f.classList.remove('follow-buy','follow-sell');
   if(live&&ladoEmCurso){
@@ -503,25 +628,91 @@ function catalog(){const h=el('catalog');h.replaceChildren();ctx.forEach(c=>{con
 async function acesso(){const{data,error}=await db.rpc('obter_acesso_mrg');if(error)throw error;return Array.isArray(data)?data[0]||{}:data||{}}
 function voltar(c){location.replace(c.pagina_3?'/':c.pagina_2?'/p2.html':c.pagina_1?'/p1.html':'/')}
 function programarLeitura(ms=90){clearTimeout(debounceTimer);debounceTimer=setTimeout(carregar,ms)}
+const marketColumns='context_key,symbol,label,modality,market,duration_seconds,payout_percent,is_open,is_fresh,operational,price,price_at,source_updated_at,source_status,display_status,direction,accompaniment,entry_price,entry_at,expiry_at,result,confidence_percent,projection_up_percent,projection_down_percent,history_accuracy_percent,history_count,recent_hits,recent_errors,recent_ties,recent_count,recent_accuracy,recent_last';
+const marketUpdates=new Map();
+let marketAuthorized=false;
+function aplicarAtualizacoesMercado(){
+  for(const [key,row] of marketUpdates){
+    if(!row){ctx=ctx.filter(item=>item.key!==key);continue}
+    const index=ctx.findIndex(item=>item.key===key);
+    if(index===-1)ctx.push(norm(row));
+    else ctx[index]=norm(row);
+  }
+  marketUpdates.clear();
+}
 async function carregar(){
-  if(refreshing){pending=true;return}refreshing=true;
-  try{const{data,error}=await db.from(T).select('*');if(error)throw error;ctx=(data||[]).map(norm);if(!ctx.some(c=>c.key===selected))selected=ctx.find(c=>c.open&&c.fresh)?.key||ctx[0]?.key||'';text('status',ctx.length?'Dados do Mercado atualizados':'Aguardando dados do Mercado');render();if(!mrgP4LeituraInicialConcluida){mrgP4MarcarSinaisAtuais();mrgP4LeituraInicialConcluida=true}}
-  catch{text('status','Sem conexão com os dados do Mercado');render()}
-  finally{refreshing=false;if(pending){pending=false;programarLeitura(40)}}
+  if(!marketAuthorized)return;
+  if(refreshing){pending=true;return}
+  refreshing=true;
+  try{
+    const{data,error}=await db.from('mrg_mercado_painel_compacto').select(marketColumns);
+    if(error)throw error;
+    ctx=(data||[]).map(norm);
+    aplicarAtualizacoesMercado();
+    if(!ctx.some(c=>c.key===selected))selected=ctx.find(c=>c.open&&c.fresh)?.key||ctx[0]?.key||'';
+    text('status',ctx.length?'Dados do Mercado atualizados':'Aguardando dados do Mercado');
+    render();
+    if(!mrgP4LeituraInicialConcluida){mrgP4MarcarSinaisAtuais();mrgP4LeituraInicialConcluida=true}
+  }catch{
+    aplicarAtualizacoesMercado();
+    text('status','Sem conexão com os dados do Mercado');
+    render();
+  }finally{refreshing=false;if(pending){pending=false;programarLeitura(40)}}
 }
 function iniciarAtualizacao(){
-  marketChannel=db.channel('mrg-mercado-p4-lote').on('postgres_changes',{event:'*',schema:'public',table:T},()=>programarLeitura(90)).subscribe();
-  pollTimer=setInterval(()=>programarLeitura(0),2000);
-  // Desliga o destaque aos 10 s mesmo que nao chegue nova atualizacao.
-  setInterval(()=>{const c=ctx.find(x=>x.key===selected);if(c&&Number.isFinite(tempoMRG(c.entryAt))&&Date.now()-tempoMRG(c.entryAt)<12000)render()},1000);
+  if(marketChannel)return;
+  marketChannel=db.channel('mrg-mercado-p4-lote').on('postgres_changes',{event:'*',schema:'public',table:'mrg_mercado_painel_compacto'},event=>{
+    const key=event.new?.context_key||event.old?.context_key;
+    if(!key)return;
+    marketUpdates.set(key,event.eventType==='DELETE'?null:event.new);
+    if(!refreshing){
+      aplicarAtualizacoesMercado();
+      render();
+    }
+  }).subscribe(status=>{if(status==='SUBSCRIBED')programarLeitura(0)});
+  pollTimer=setInterval(()=>{if(!document.hidden)programarLeitura(0)},30000);
+  if(!renderTimer)renderTimer=setInterval(()=>{if(!document.hidden)render()},1000);
 }
 async function iniciar(){
   const{data:{session}}=await db.auth.getSession();if(!session?.user){text('gateText','Entre com sua conta MRG para acessar o PRO+ Mercado.');el('goLogin').hidden=false;return}
   const sessaoOk=await mrgValidarSessaoP4(session.user.email);if(sessaoOk===false){await mrgDerrubarSessaoP4();return}
   try{const a=await acesso();if(!bool(a.pagina_4)){voltar(a);return}}catch{text('gateText','Não foi possível validar seu acesso central agora.');return}
-  el('gate').hidden=true;el('app').hidden=false;el('backP3').hidden=false;await carregar();iniciarAtualizacao()
+  await loadFavorites(session.user.id);marketAuthorized=true;el('gate').hidden=true;el('app').hidden=false;el('backP3').hidden=false;await carregar();iniciarAtualizacao()
 }
-el('assetSearch').addEventListener('input',drawPicker);el('choose').onclick=()=>{el('assetSearch').value='';drawPicker();el('picker').showModal()};el('recent').onclick=()=>el('historyModal').showModal();el('all').onclick=()=>{catalog();el('catalogModal').showModal()};el('bestChoice').onclick=()=>{selected=el('bestChoice').dataset.key||selected;sessionStorage.setItem('mrg_contexto_reconstruido',selected);render()};el('backP3').onclick=async()=>{try{const a=await acesso();if(!bool(a.pagina_1)){text('status','Página 1 não liberada.');return}if(window.parent!==window&&typeof window.parent.mrgAbrirPagina==='function'){window.parent.mrgAbrirPagina(1)}else{location.href='/'}}catch{text('status','Não foi possível validar o retorno agora.')}};el('goLogin').onclick=()=>location.href='/';document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>el(b.dataset.close).close());window.addEventListener('visibilitychange',()=>{if(!document.hidden)programarLeitura(0)});iniciar();
+async function carregarHistoricoSelecionado(){
+  if(!selected)return;
+  const {data,error}=await db.from(T).select('context_key,recent20,raw_signal,raw_analysis').eq('context_key',selected).maybeSingle();
+  if(error||!data)return;
+  const recent=parse(data.recent20);historyCache.set(data.context_key,{items:Array.isArray(recent.items)?recent.items:[]});
+  const index=ctx.findIndex(row=>row.key===selected);
+  if(index>=0)ctx[index]=norm({...ctx[index],...data});
+}
+el('assetSearch').addEventListener('input',drawPicker);el('choose').onclick=()=>{el('assetSearch').value='';drawPicker();el('picker').showModal()};el('recent').onclick=async()=>{await carregarHistoricoSelecionado();render();el('historyModal').showModal()};el('all').onclick=()=>{catalog();el('catalogModal').showModal()};el('bestChoice').onclick=()=>{selected=el('bestChoice').dataset.key||selected;sessionStorage.setItem('mrg_contexto_reconstruido',selected);render()};el('backP3').onclick=async()=>{try{const a=await acesso();if(!bool(a.pagina_1)){text('status','Página 1 não liberada.');return}if(window.parent!==window&&typeof window.parent.mrgAbrirPagina==='function'){window.parent.mrgAbrirPagina(1)}else{location.href='/'}}catch{text('status','Não foi possível validar o retorno agora.')}};el('goLogin').onclick=()=>location.href='/';document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>el(b.dataset.close).close());window.addEventListener('visibilitychange',()=>{if(document.hidden){clearInterval(pollTimer);pollTimer=null;if(marketChannel){db.removeChannel(marketChannel);marketChannel=null}}else{programarLeitura(0);iniciarAtualizacao()}});iniciar();
+function horarioDaSessao(zona){
+  const partes=new Intl.DateTimeFormat('en-US',{timeZone:zona,weekday:'short',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts();
+  return Object.fromEntries(partes.filter(parte=>parte.type!=='literal').map(parte=>[parte.type,parte.value]));
+}
+function flashDeMercado(sessoes){
+  const mensagens=[];
+  for(const sessao of sessoes){
+    const agora=horarioDaSessao(sessao.zona),data=`${agora.year}-${agora.month}-${agora.day}`;
+    if(agora.year!=='2026')continue;
+    const dia={Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6,Sun:7}[agora.weekday];
+    const [hora,minuto]=sessao.abre.split(':').map(Number),faltam=hora*60+minuto-(Number(agora.hour)*60+Number(agora.minute));
+    if(sessao.dias.includes(dia)&&!sessao.feriados.includes(data)&&faltam>=0&&faltam<=15)mensagens.push(`ATENÇÃO — ABERTURA DE ${sessao.nome.toUpperCase()} EM ${faltam} MIN`);
+  }
+  let aviso=el('marketSessionFlash');
+  if(!aviso){aviso=document.createElement('div');aviso.id='marketSessionFlash';aviso.className='follow';document.querySelector('.panel').prepend(aviso)}
+  aviso.hidden=!mensagens.length;aviso.textContent=mensagens.join(' · ');
+}
+async function iniciarSessoes(){
+  try{
+    const resposta=await fetch(new URL('mercados_sessoes_2026.json',location.href),{cache:'no-store'});
+    const dados=await resposta.json();
+    const atualizar=()=>flashDeMercado(dados.sessoes||[]);atualizar();setInterval(atualizar,60000);
+  }catch{}
+}
+iniciarSessoes();
 function configurarFallbackIQNoIphone(){
   const isiPhone=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   if(!isiPhone)return;
@@ -545,7 +736,7 @@ function configurarResumoTelefone(){
   [1,2,5,8,11,13].forEach(i=>itens[i]?.classList.add('mobile-landscape-secondary'));
   const botao=document.createElement('button');
   botao.type='button';botao.className='mobile-details';botao.textContent='Mais dados';
-  document.querySelector('.tools').append(botao);
+  document.querySelector('.panel > .tools:not([aria-label])').append(botao);
   const janela=document.createElement('dialog');
   janela.className='mobile-details-dialog';
   janela.innerHTML='<div class="head"><h2>Dados da operação</h2><button type="button">Fechar</button></div><div class="mobile-details-body"></div>';
