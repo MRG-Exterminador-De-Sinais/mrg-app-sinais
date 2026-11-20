@@ -598,8 +598,8 @@ async function carregar(){
   finally{refreshing=false;if(pending){pending=false;programarLeitura(40)}}
 }
 function iniciarAtualizacao(){
-  marketChannel=db.channel('mrg-mercado-p4-lote').on('postgres_changes',{event:'*',schema:'public',table:T},()=>programarLeitura(90)).subscribe();
-  pollTimer=setInterval(()=>programarLeitura(0),2000);
+  marketChannel=db.channel('mrg-mercado-p4-lote').on('postgres_changes',{event:'*',schema:'public',table:T},()=>{if(mrgPresencaDeveLerP4())programarLeitura(90)}).subscribe();
+  pollTimer=setInterval(()=>{if(mrgPresencaDeveLerP4())programarLeitura(0)},2000);
   // Desliga o destaque aos 10 s mesmo que nao chegue nova atualizacao.
   setInterval(()=>{const c=ctx.find(x=>x.key===selected);if(c&&Number.isFinite(tempoMRG(c.entryAt))&&Date.now()-tempoMRG(c.entryAt)<12000)render()},1000);
 }
@@ -607,7 +607,7 @@ async function iniciar(){
   const{data:{session}}=await db.auth.getSession();if(!session?.user){text('gateText','Entre com sua conta MRG para acessar o PRO+ Mercado.');el('goLogin').hidden=false;return}
   const sessaoOk=await mrgValidarSessaoP4(session.user.email);if(sessaoOk===false){await mrgDerrubarSessaoP4();return}
   try{const a=await acesso();if(!bool(a.pagina_4)){voltar(a);return}}catch{text('gateText','Não foi possível validar seu acesso central agora.');return}
-  el('gate').hidden=true;el('app').hidden=false;el('backP3').hidden=false;el('mrgP4FavoritosBar').hidden=false;mrgCarregarFiltroP4(session.user.id);await mrgCarregarFavoritosP4(session.user.id);await carregar();iniciarAtualizacao()
+  el('gate').hidden=true;el('app').hidden=false;el('backP3').hidden=false;el('mrgP4FavoritosBar').hidden=false;mrgCarregarFiltroP4(session.user.id);await mrgCarregarFavoritosP4(session.user.id);await carregar();mrgPresencaIniciarP4(session.user.id);iniciarAtualizacao()
 }
 el('choose').addEventListener('click',()=>{mrgSlotEdicaoP4=mrgModoDuploP4?mrgSlotEdicaoP4:mrgSlotVisivelP4},true);el('assetSearch').addEventListener('input',drawPicker);el('choose').onclick=()=>{el('assetSearch').value='';drawPicker();el('picker').showModal()};el('recent').onclick=()=>el('historyModal').showModal();el('all').onclick=()=>{catalog();el('catalogModal').showModal()};el('bestChoice').onclick=()=>{const c=ctx.find(x=>x.key===el('bestChoice').dataset.key);if(c){mrgSlotEdicaoP4=mrgModoDuploP4?1:mrgSlotVisivelP4;void mrgEscolherFavoritoP4(c)}};el('backP3').onclick=async()=>{try{const a=await acesso();if(!bool(a.pagina_3)){text('status','Página 3 não liberada.');return}if(window.parent!==window&&typeof window.parent.mrgAbrirPagina==='function'){window.parent.mrgAbrirPagina(3)}else{location.href='/p3.html'}}catch{text('status','Não foi possível validar o retorno agora.')}};el('goLogin').onclick=()=>location.href='/';document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>el(b.dataset.close).close());window.addEventListener('visibilitychange',()=>{if(!document.hidden)programarLeitura(0)});iniciar();
 function configurarFallbackIQNoIphone(){
@@ -852,6 +852,7 @@ async function mrgEscolherFavoritoP4(c){
     const {error}=await db.from('mrg_mercado_favoritos').upsert(registro,{onConflict:'user_id,slot'});
     if(error)throw error;
     mrgMensagemFavoritosP4('Ativo '+slot+' salvo');
+    void mrgPresencaEnviarP4(true);
   }catch(e){
     console.error('[MRG P4] Não foi possível salvar favorito no Supabase:',e);
     mrgMensagemFavoritosP4('Falha ao salvar · seleção só nesta tela');
@@ -958,14 +959,91 @@ function mrgInicializarBotoesP4(){
   setInterval(()=>{
     if(mrgCarregamentoFavoritosConcluidoP4&&el('app')&&!el('app').hidden){ctx.forEach(c=>{c.fresh=fresh(c)});render()}
   },3000);
-  // Heartbeat de interesse: no máximo uma atualização/minuto, somente se a aba estiver ativa.
-  setInterval(async()=>{
-    if(!mrgUsuarioP4||document.hidden||el('app')?.hidden)return;
-    try{await db.from('mrg_mercado_favoritos').update({seen_at:new Date().toISOString()}).eq('user_id',mrgUsuarioP4)}
-    catch(e){console.warn('[MRG P4] Presença:',e)}
-  },60000);
+  // Presença separada dos favoritos: controle de economia MRG P4.
   mrgAtualizarBarraP4();
 }
 mrgInicializarBotoesP4();
+
+
+/* MRG P4 — presença econômica por aba; não altera o motor, o layout ou a IQ.
+   Uma ação do usuário é registrada apenas em memória; não há chamada por mousemove.
+   A atividade dentro do iframe da IQ não é observável entre domínios. */
+const MRG_P4_INATIVO_MS = 10 * 60 * 1000;
+const MRG_P4_PRESENCA_PERIODO_MS = 45 * 1000;
+let mrgP4PresencaUsuario='',mrgP4PresencaTab='',mrgP4PresencaUltimaAcao=Date.now();
+let mrgP4PresencaEnviadaAtiva=false,mrgP4PresencaUltimoEnvio=0,mrgP4PresencaEmCurso=false;
+let mrgP4PresencaIniciada=false;
+function mrgPresencaOperacaoEmAndamentoP4(){
+  const keys=[mrgSlotKeyP4(1),mrgSlotKeyP4(2)].filter(Boolean);
+  return keys.some(key=>{
+    const c=ctx.find(item=>item.key===key);
+    if(!c||!fresh(c))return false;
+    const prazo=tempoMRG(c.expiry),agora=Date.now();
+    return Number.isFinite(prazo)&&prazo>agora&&prazo-agora<=60*60*1000&&!!acompanharMRG(c);
+  });
+}
+function mrgPresencaDeveLerP4(){
+  return !!mrgP4PresencaUsuario && !document.hidden && !el('app')?.hidden &&
+    (Date.now()-mrgP4PresencaUltimaAcao<MRG_P4_INATIVO_MS||mrgPresencaOperacaoEmAndamentoP4());
+}
+async function mrgPresencaEnviarP4(urgente=false,desativar=false){
+  if(!mrgP4PresencaUsuario||!mrgP4PresencaTab||mrgP4PresencaEmCurso)return;
+  const ativo=!desativar&&mrgPresencaDeveLerP4();
+  const t=Date.now();
+  if(!urgente&&t-mrgP4PresencaUltimoEnvio<MRG_P4_PRESENCA_PERIODO_MS)return;
+  if(!ativo&&!mrgP4PresencaEnviadaAtiva)return;
+  mrgP4PresencaEmCurso=true;
+  const registro={user_id:mrgP4PresencaUsuario,tab_id:mrgP4PresencaTab,active:ativo,
+    context_key_1:ativo?mrgSlotKeyP4(1)||null:null,
+    context_key_2:ativo?mrgSlotKeyP4(2)||null:null};
+  try{
+    const {error}=await db.from('mrg_mercado_presencas').upsert(registro,{onConflict:'user_id,tab_id'});
+    if(error)throw error;
+    mrgP4PresencaEnviadaAtiva=ativo;mrgP4PresencaUltimoEnvio=t;
+  }catch(e){
+    console.warn('[MRG P4] Presença indisponível; a publicação depende do modo seguro na VPS:',e);
+    // A interface continua operável; o publicador mantém fail-open em erro de demanda.
+  }finally{mrgP4PresencaEmCurso=false}
+}
+function mrgPresencaRegistrarAcaoP4(){
+  if(!mrgP4PresencaUsuario)return;
+  const eraAtivo=mrgPresencaDeveLerP4();
+  mrgP4PresencaUltimaAcao=Date.now();
+  if(!eraAtivo){void mrgPresencaEnviarP4(true);programarLeitura(0)}
+}
+function mrgCriarTabIdP4(){
+  if(globalThis.crypto&&typeof crypto.randomUUID==='function')return crypto.randomUUID();
+  const bytes=new Uint8Array(16);
+  if(globalThis.crypto&&typeof crypto.getRandomValues==='function')crypto.getRandomValues(bytes);
+  else for(let i=0;i<16;i++)bytes[i]=Math.floor(Math.random()*256);
+  bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
+  const hex=Array.from(bytes,v=>v.toString(16).padStart(2,'0')).join('');
+  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+}
+function mrgPresencaIniciarP4(userId){
+  if(!userId)return;
+  mrgP4PresencaUsuario=userId;
+  if(mrgP4PresencaIniciada){mrgP4PresencaUltimaAcao=Date.now();void mrgPresencaEnviarP4(true);return}
+  mrgP4PresencaIniciada=true;
+  try{mrgP4PresencaTab=sessionStorage.getItem('mrg_p4_tab_id')||'';}catch(e){}
+  if(!/^[0-9a-f-]{36}$/i.test(mrgP4PresencaTab))mrgP4PresencaTab=mrgCriarTabIdP4();
+  try{sessionStorage.setItem('mrg_p4_tab_id',mrgP4PresencaTab)}catch(e){}
+  mrgP4PresencaUltimaAcao=Date.now();
+  for(const evt of ['pointermove','pointerdown','touchstart','keydown','wheel','scroll']){
+    document.addEventListener(evt,mrgPresencaRegistrarAcaoP4,{passive:true});
+  }
+  window.addEventListener('focus',mrgPresencaRegistrarAcaoP4);
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){void mrgPresencaEnviarP4(true,true)}
+    else {mrgPresencaRegistrarAcaoP4();void mrgPresencaEnviarP4(true);programarLeitura(0)}
+  });
+  window.addEventListener('pagehide',()=>{void mrgPresencaEnviarP4(true,true)});
+  // Revalidação barata: somente o heartbeat de presença gera escrita; sem polling por movimento.
+  setInterval(()=>{
+    const ativo=mrgPresencaDeveLerP4();
+    if(ativo||mrgP4PresencaEnviadaAtiva)void mrgPresencaEnviarP4(!ativo);
+  },15000);
+  void mrgPresencaEnviarP4(true);
+}
 
 </script><!-- 15/11/2026: P4 online unificada com versão PC aprovada; label Ouro visual, sem alterar symbol GOLD. --></html>
