@@ -366,8 +366,25 @@ html.mrg-p4-embutida .mrg-p4-solo-only{display:none!important}
   header h1::after{content:'MRG';font-size:10px}
   #mrgP4FavoritosBar button{padding:3px 4px}
 }
+
+/* Filtro de mercado individual: controle compacto na barra já existente. */
+#mrgFiltroMercadoP4{width:78px;min-width:0;flex:0 0 78px;min-height:27px;padding:4px 15px 4px 5px;margin:0;border:1px solid #597a99;border-radius:7px;background:#17243a;color:#e7f5ff;font-size:10px;font-weight:750;line-height:1.05;white-space:nowrap;cursor:pointer}
+#mrgFiltroMercadoP4[hidden]{display:none!important}
+#mrgP4FavoritosBar button.mrg-slot-fora-filtro{background:#202a38;border-color:#526175;color:#a3afc1;box-shadow:none}
+@media(max-width:850px){
+ #mrgFiltroMercadoP4{width:66px;flex-basis:66px;min-height:26px;padding:3px 13px 3px 3px;font-size:9px}
+}
+@media(max-width:440px){
+ header h1{flex-basis:34px;width:34px}
+ header h1::after{content:'MRG';font-size:10px}
+ .head-actions{gap:2px}
+ #mrgP4FavoritosBar{gap:2px}
+ #mrgP4FavoritosBar button{padding:3px;font-size:9px}
+ #mrgFiltroMercadoP4{width:62px;flex-basis:62px;font-size:8.5px}
+}
+@media(max-width:360px){#mrgFiltroMercadoP4{width:55px;flex-basis:55px;padding-right:8px;font-size:8px}}
 </style>
-<header><h1>MRG EXTERMINADOR DE SINAIS / MERCADO</h1><div class="head-actions"><div id="mrgP4FavoritosBar" aria-label="Meus acompanhamentos" hidden><button type="button" id="mrgSlotUmP4" class="mrg-slot-ativo" aria-pressed="true">ATIVO 1</button><button type="button" id="mrgSlotDoisP4" aria-pressed="false">ATIVO 2</button><span id="mrgP4FavoritosMsg" role="status" aria-live="polite"></span><button type="button" id="mrgModoDuploP4" class="mrg-p4-modo" aria-pressed="false">DOIS QUADROS</button></div><button type="button" class="mrg-p4-solo-only" id="mrgP4SomSolo" aria-pressed="false" title="Ativar ou desativar alerta sonoro de COMPRA e VENDA">Som: OFF</button><button type="button" class="mrg-p4-solo-only" id="mrgP4ReloadSolo" title="Atualizar toda a P4: IQ Option e Mercado" aria-label="Atualizar toda a P4">↻</button><span id="status">Validando acesso…</span><button id="backP3" class="back-p3" hidden>← P3</button></div></header>
+<header><h1>MRG EXTERMINADOR DE SINAIS / MERCADO</h1><div class="head-actions"><div id="mrgP4FavoritosBar" aria-label="Meus acompanhamentos" hidden><button type="button" id="mrgSlotUmP4" class="mrg-slot-ativo" aria-pressed="true">ATIVO 1</button><button type="button" id="mrgSlotDoisP4" aria-pressed="false">ATIVO 2</button><span id="mrgP4FavoritosMsg" role="status" aria-live="polite"></span><button type="button" id="mrgModoDuploP4" class="mrg-p4-modo" aria-pressed="false">DOIS QUADROS</button></div><select id="mrgFiltroMercadoP4" aria-label="Selecionar tipos de mercado" title="Mercados: TODOS, NORMAL ou OTC" hidden><option value="TODOS">TODOS</option><option value="NORMAL">NORMAL</option><option value="OTC">OTC</option></select><button type="button" class="mrg-p4-solo-only" id="mrgP4SomSolo" aria-pressed="false" title="Ativar ou desativar alerta sonoro de COMPRA e VENDA">Som: OFF</button><button type="button" class="mrg-p4-solo-only" id="mrgP4ReloadSolo" title="Atualizar toda a P4: IQ Option e Mercado" aria-label="Atualizar toda a P4">↻</button><span id="status">Validando acesso…</span><button id="backP3" class="back-p3" hidden>← P3</button></div></header>
 <main id="app" hidden><div class="iq"><iframe title="IQ Option" src="https://iqoption.com/traderoom"></iframe></div><aside class="panel"><div id="mrgP4Quadros"><section class="essential"><div id="asset" class="asset">Nenhum ativo selecionado</div><div class="muted" id="instruction">Abaixo, toque em Ativos para escolher.</div><button type="button" id="bestChoice" class="best-choice" hidden><span class="best-title" id="bestTitle">MELHOR ASSERTIVIDADE AGORA</span><strong id="bestAsset">—</strong><small id="bestDetail">Clique para alterar somente o painel MRG</small></button><time id="mrgClock" aria-label="Horário do dispositivo">--:--:--</time><div class="muted" style="margin-top:10px">PREÇO AGORA</div><div class="price" id="price">—</div><div id="updated" class="muted">Sem atualização confirmada</div><div class="muted" style="margin-top:10px">SINAL</div><div id="signal" class="signal wait">AGUARDAR</div><div class="muted">ACOMPANHAMENTO</div><div id="follow" class="follow">Aguardando seleção do usuário</div><div class="grid"><div><div class="muted">DURAÇÃO DA ANÁLISE</div><div id="horizon" class="detail">—</div></div><div><div class="muted">PREÇO DE ENTRADA</div><div id="entry" class="detail">—</div></div></div><div class="metrics"><div class="grid"><div><div class="muted">CONVICÇÃO ATUAL DO MOTOR</div><div id="confidence" class="metric">—</div><div class="bar"><span id="confidenceBar" style="width:0"></span></div></div><div><div class="muted">ACERTOS DO HISTÓRICO</div><div id="accuracy" class="metric">—</div><div id="sample" class="muted">Sem resultados</div></div></div><div class="grid"><div><div class="muted">PROJEÇÃO DE ALTA</div><div id="upProb" class="detail">—</div></div><div><div class="muted">PROJEÇÃO DE BAIXA</div><div id="downProb" class="detail">—</div></div></div><div id="memory" class="muted" style="margin-top:8px"></div><div class="muted">Convicção é um indicador do motor, não garantia de acerto.</div></div><div id="timing" class="muted" style="margin-top:8px"></div><div id="reason" class="muted"></div></section></div><div class="tools"><button id="choose">Ativos</button><button id="recent">Últimos 10 sinais</button><button id="all">Todos os ativos MRG</button></div></aside></main>
 <section class="gate" id="gate"><h2>PRO+ Mercado</h2><p id="gateText">Validando o acesso ao MRG Mercado…</p><button id="goLogin" hidden>Entrar</button></section>
 <dialog id="picker"><div class="head"><h2>Escolha um ativo</h2><button data-close="picker">Fechar</button></div><p class="muted">Blitz primeiro · Binária abaixo. Ativos disponíveis, ordenados pela assertividade dos últimos 10 sinais concluídos. Fora de operação não podem ser selecionados.</p><input id="assetSearch" type="search" autocomplete="off" placeholder="Buscar ativo (USD, BRL, Bitcoin...)" aria-label="Buscar ativo"><div id="assetList"></div></dialog><dialog id="historyModal"><div class="head"><h2>Últimos 10 sinais</h2><button data-close="historyModal">Fechar</button></div><div id="historyAsset" class="asset"></div><p id="stats" class="muted"></p><div id="history"></div><p class="muted">Resultados do estudo por preço observado; não são liquidações oficiais da IQ.</p></dialog><dialog id="catalogModal"><div class="head"><h2>Todos os ativos MRG</h2><button data-close="catalogModal">Fechar</button></div><div id="catalog"></div></dialog>
@@ -407,7 +424,7 @@ function mrgDesempenhoP4(c){
   }
   return {rate:total?wins*100/total:NaN,wins,total,last:total?(positivo(validos[0])?'WIN':'LOSS'):''};
 }
-function best(){return ctx.filter(c=>c.open&&c.fresh).map(c=>({c,s:mrgDesempenhoP4(c)}))
+function best(){return ctx.filter(c=>mrgMercadoPermitidoP4(c)&&c.open&&c.fresh).map(c=>({c,s:mrgDesempenhoP4(c)}))
   .filter(x=>x.s.total>=10&&Number.isFinite(x.s.rate))
   .sort((a,b)=>b.s.rate-a.s.rate||b.s.total-a.s.total)[0]?.c}
 // Só há cor de entrada com horário vigente, direção atual publicada e confirmação compatível.
@@ -423,7 +440,7 @@ function drawPicker(){
   const host=el('assetList');host.replaceChildren();
   const query=(el('assetSearch')?.value||'').trim().toLocaleLowerCase('pt-BR');let found=0;
   for(const mode of ['BLITZ','BINARIA']){
-    const options=ctx.filter(c=>c.modality===mode&&c.open&&c.fresh&&label(c).toLocaleLowerCase('pt-BR').includes(query))
+    const options=ctx.filter(c=>mrgMercadoPermitidoP4(c)&&c.modality===mode&&c.open&&c.fresh&&label(c).toLocaleLowerCase('pt-BR').includes(query))
       .map(c=>({c,s:ultimosDez(c)}))
       .sort((a,b)=>(Number.isFinite(b.s.rate)?b.s.rate:-1)-(Number.isFinite(a.s.rate)?a.s.rate:-1)||label(a.c).localeCompare(label(b.c)));
     if(!options.length)continue;
@@ -502,7 +519,7 @@ function mrgP4Toque(lado){
   }).catch(e=>{console.warn('[MRG P4] Falha ao tocar alerta:',e);return false});
 }
 function mrgP4AvisarNovaEntrada(c,lado){
-  if(!c||!['BUY','SELL'].includes(lado))return;
+  if(!c||!mrgMercadoPermitidoP4(c)||!['BUY','SELL'].includes(lado))return;
   const instante=tempoMRG(c.entryAt);
   if(!Number.isFinite(instante))return;
   const id=mrgP4IdEntrada(c,lado);
@@ -518,7 +535,7 @@ function mrgP4AvisarNovaEntrada(c,lado){
   void mrgP4Toque(lado);
 }
 function render(){
-  ctx.forEach(x=>{x.fresh=fresh(x)});const c=ctx.find(x=>x.key===selected),b=best();drawPicker();
+  ctx.forEach(x=>{x.fresh=fresh(x)});const atual=ctx.find(x=>x.key===selected),c=mrgMercadoPermitidoP4(atual)?atual:null,b=best();drawPicker();
   el('bestChoice').hidden=!b;
   if(b){
     const desempenho=mrgDesempenhoP4(b),direcao=mrgEntradaVigenteP4(b),bc=el('bestChoice');
@@ -535,7 +552,7 @@ function render(){
     bc.classList.toggle('mrg-ultimo-win',desempenho.last==='WIN');
     bc.classList.toggle('mrg-ultimo-loss',desempenho.last==='LOSS');
   }else{el('bestChoice').classList.remove('mrg-best-comprar','mrg-best-vender','mrg-ultimo-win','mrg-ultimo-loss','mrg-best-acompanhando')}
-  if(!c){if(b)mrgP4AvisarNovaEntrada(b,mrgEntradaVigenteP4(b));text('asset','Nenhum ativo selecionado');text('mrgOperacaoResumo','—');text('instruction','Abaixo, toque em Ativos para escolher.');text('follow','Aguardando seleção do usuário');text('price','—');text('updated','Sem contexto selecionado');text('signal','AGUARDAR');for(const id of ['horizon','entry','confidence','accuracy','sample','upProb','downProb','memory','timing','reason'])text(id,'—');el('confidenceBar').style.width='0%';el('history').textContent='Selecione um contexto para acompanhar.';document.querySelector('.essential')?.classList.remove('entry-buy','entry-sell');document.querySelector('.panel')?.classList.remove('state-buy','state-sell');document.body.classList.remove('state-buy','state-sell');return}
+  if(!c){if(b)mrgP4AvisarNovaEntrada(b,mrgEntradaVigenteP4(b));text('asset',atual?'ATIVO FORA DO FILTRO '+mrgFiltroMercadoP4:'Nenhum ativo selecionado');text('mrgOperacaoResumo','—');text('instruction',atual?'O favorito foi mantido. Altere o filtro ou escolha outro ativo.':'Abaixo, toque em Ativos para escolher.');text('follow','Aguardando seleção do usuário');text('price','—');text('updated','Sem contexto selecionado');text('signal','AGUARDAR');for(const id of ['horizon','entry','confidence','accuracy','sample','upProb','downProb','memory','timing','reason'])text(id,'—');el('confidenceBar').style.width='0%';el('history').textContent='Selecione um contexto para acompanhar.';text('historyAsset',atual?'Favorito fora do filtro':'Nenhum ativo selecionado');text('stats','—');document.querySelector('.essential')?.classList.remove('entry-buy','entry-sell');document.querySelector('.panel')?.classList.remove('state-buy','state-sell');document.body.classList.remove('state-buy','state-sell');return}
   // Janela visual estrita: apenas 10 segundos desde a entrada real registrada.
   // Nunca reiniciar o contador ao atualizar, recarregar ou trocar de dispositivo.
   const live=c.fresh,agoraEntrada=Date.now(),inicioEntrada=tempoMRG(c.entryAt),fimEntrada=tempoMRG(c.expiry);
@@ -570,13 +587,13 @@ function render(){
   text('historyAsset',label(c));text('stats',Number.isFinite(Number(c.history_accuracy_percent))?pct(c.history_accuracy_percent)+' · '+c.historyHits+' acertos · '+c.historyErrors+' erros · '+c.historyTies+' empates':'Sem resultados concluídos');
   const h=el('history');h.replaceChildren();if(!c.history.length)h.textContent='Nenhum sinal registrado neste contexto.';c.history.filter(x=>{const v=String(x.result??x.resultado??'').toUpperCase();return !['','EM ACOMPANHAMENTO','PENDENTE','ABERTO','OPEN','PENDING'].includes(v)}).slice(0,10).forEach(x=>{const r=document.createElement('div');r.className='row';r.innerHTML='<strong>'+(x.direction||x.direcao||'—')+' · '+(x.result||x.resultado||'EM ACOMPANHAMENTO')+'</strong><div class="muted">'+fmt(x.entry_at||x.entrada_em)+' → '+fmt(x.expiry_at||x.expires_at||x.expira_em)+' · Entrada '+price(x.entry_price)+' · Final '+price(x.result_price)+'</div>';h.append(r)});if(el('catalogModal').open)catalog()
 }
-function catalog(){const h=el('catalog');h.replaceChildren();ctx.forEach(c=>{const r=document.createElement('div');r.className='row';r.textContent=label(c)+' · '+(c.open&&c.fresh?'Aberto · preço vivo':'Fora de operação');h.append(r)})}
+function catalog(){const h=el('catalog');h.replaceChildren();ctx.filter(mrgMercadoPermitidoP4).forEach(c=>{const r=document.createElement('div');r.className='row';r.textContent=label(c)+' · '+(c.open&&c.fresh?'Aberto · preço vivo':'Fora de operação');h.append(r)})}
 async function acesso(){const{data,error}=await db.rpc('obter_acesso_mrg');if(error)throw error;return Array.isArray(data)?data[0]||{}:data||{}}
 function voltar(c){location.replace(c.pagina_3?'/':c.pagina_2?'/p2.html':c.pagina_1?'/p1.html':'/')}
 function programarLeitura(ms=90){clearTimeout(debounceTimer);debounceTimer=setTimeout(carregar,ms)}
 async function carregar(){
   if(refreshing){pending=true;return}refreshing=true;
-  try{const{data,error}=await db.from(T).select('*');if(error)throw error;ctx=(data||[]).map(norm);if(!ctx.some(c=>c.key===selected)&&!mrgFavoritosP4[mrgSlotVisivelP4-1]){selected=ctx.find(c=>c.open&&c.fresh)?.key||ctx[0]?.key||'';if(mrgSlotVisivelP4===1&&!mrgFavoritosP4[0])mrgFavoritosP4[0]=selected;}text('status',ctx.length?'Dados do Mercado atualizados':'Aguardando dados do Mercado');render();if(!mrgP4LeituraInicialConcluida){mrgP4MarcarSinaisAtuais();mrgP4LeituraInicialConcluida=true}}
+  try{const{data,error}=await db.from(T).select('*');if(error)throw error;ctx=(data||[]).map(norm);if(!ctx.some(c=>c.key===selected)&&!mrgFavoritosP4[mrgSlotVisivelP4-1]){selected=ctx.find(c=>mrgMercadoPermitidoP4(c)&&c.open&&c.fresh)?.key||ctx.find(mrgMercadoPermitidoP4)?.key||'';if(mrgSlotVisivelP4===1&&!mrgFavoritosP4[0])mrgFavoritosP4[0]=selected;}text('status',ctx.length?'Dados do Mercado atualizados':'Aguardando dados do Mercado');render();if(!mrgP4LeituraInicialConcluida){mrgP4MarcarSinaisAtuais();mrgP4LeituraInicialConcluida=true}}
   catch{text('status','Sem conexão com os dados do Mercado');render()}
   finally{refreshing=false;if(pending){pending=false;programarLeitura(40)}}
 }
@@ -590,7 +607,7 @@ async function iniciar(){
   const{data:{session}}=await db.auth.getSession();if(!session?.user){text('gateText','Entre com sua conta MRG para acessar o PRO+ Mercado.');el('goLogin').hidden=false;return}
   const sessaoOk=await mrgValidarSessaoP4(session.user.email);if(sessaoOk===false){await mrgDerrubarSessaoP4();return}
   try{const a=await acesso();if(!bool(a.pagina_4)){voltar(a);return}}catch{text('gateText','Não foi possível validar seu acesso central agora.');return}
-  el('gate').hidden=true;el('app').hidden=false;el('backP3').hidden=false;el('mrgP4FavoritosBar').hidden=false;await mrgCarregarFavoritosP4(session.user.id);await carregar();iniciarAtualizacao()
+  el('gate').hidden=true;el('app').hidden=false;el('backP3').hidden=false;el('mrgP4FavoritosBar').hidden=false;mrgCarregarFiltroP4(session.user.id);await mrgCarregarFavoritosP4(session.user.id);await carregar();iniciarAtualizacao()
 }
 el('choose').addEventListener('click',()=>{mrgSlotEdicaoP4=mrgModoDuploP4?mrgSlotEdicaoP4:mrgSlotVisivelP4},true);el('assetSearch').addEventListener('input',drawPicker);el('choose').onclick=()=>{el('assetSearch').value='';drawPicker();el('picker').showModal()};el('recent').onclick=()=>el('historyModal').showModal();el('all').onclick=()=>{catalog();el('catalogModal').showModal()};el('bestChoice').onclick=()=>{const c=ctx.find(x=>x.key===el('bestChoice').dataset.key);if(c){mrgSlotEdicaoP4=mrgModoDuploP4?1:mrgSlotVisivelP4;void mrgEscolherFavoritoP4(c)}};el('backP3').onclick=async()=>{try{const a=await acesso();if(!bool(a.pagina_3)){text('status','Página 3 não liberada.');return}if(window.parent!==window&&typeof window.parent.mrgAbrirPagina==='function'){window.parent.mrgAbrirPagina(3)}else{location.href='/p3.html'}}catch{text('status','Não foi possível validar o retorno agora.')}};el('goLogin').onclick=()=>location.href='/';document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>el(b.dataset.close).close());window.addEventListener('visibilitychange',()=>{if(!document.hidden)programarLeitura(0)});iniciar();
 function configurarFallbackIQNoIphone(){
@@ -705,6 +722,35 @@ atualizarRelogioMRG();setInterval(atualizarRelogioMRG,1000);
  reload?.addEventListener('click',()=>{if(confirm('Recarregar IQ Option e painel MRG? Uma operação aberta pode ser interrompida na tela.'))location.reload()});
 })();
 
+
+/* Filtro opcional dos mercados NORMAL/OTC. NÃO modifica a coleta nem o catálogo real.
+   Padrão TODOS = comportamento anterior. Persistência por conta e navegador. */
+let mrgFiltroMercadoP4='TODOS';
+const mrgOpcoesFiltroP4=new Set(['TODOS','NORMAL','OTC']);
+function mrgMercadoPermitidoP4(c){
+  if(!c)return false;
+  if(mrgFiltroMercadoP4==='TODOS')return true;
+  return String(c.market||'').trim().toUpperCase()===mrgFiltroMercadoP4;
+}
+function mrgCarregarFiltroP4(uid){
+  mrgFiltroMercadoP4='TODOS';
+  try{
+    const v=localStorage.getItem('mrg.p4.filtro_mercado.'+String(uid));
+    if(mrgOpcoesFiltroP4.has(v))mrgFiltroMercadoP4=v;
+  }catch(e){console.warn('[MRG P4] Preferência local indisponível:',e)}
+  const controle=el('mrgFiltroMercadoP4');
+  if(controle){controle.value=mrgFiltroMercadoP4;controle.hidden=false}
+}
+function mrgAlterarFiltroP4(novo){
+  if(!mrgOpcoesFiltroP4.has(novo))return;
+  mrgFiltroMercadoP4=novo;
+  try{if(mrgUsuarioP4)localStorage.setItem('mrg.p4.filtro_mercado.'+mrgUsuarioP4,novo)}
+  catch(e){console.warn('[MRG P4] Não foi possível salvar o filtro local:',e)}
+  // Os dois favoritos permanecem intactos. Os excluídos ficam sem sinais/alertas.
+  render();
+  // Os favoritos excluídos permanecem cinza sem sobrepor avisos no painel.
+}
+
 /* MRG P4 - dois contextos individuais. Sem novo iframe, sem novo motor, sem alterar a coleta. */
 let mrgFavoritosP4=['',''];
 let mrgUsuarioP4='';
@@ -730,11 +776,11 @@ function mrgAtualizarBarraP4(){
     // O sinal é lido do contexto próprio, mesmo quando outro painel está visível.
     // Mesma validação do painel (preço fresco, direção confirmada e janela real de 10 s).
     // Não perpetuar cor por simples "em acompanhamento", previsão ou dado vencido.
-    const sinal=c?mrgEntradaVigenteP4(c):'';
+    const permitido=mrgMercadoPermitidoP4(c);const sinal=permitido?mrgEntradaVigenteP4(c):'';
     b.textContent='ATIVO '+slot;
     const rotuloSinal=sinal==='BUY'?'COMPRA AGORA':sinal==='SELL'?'VENDA AGORA':'';
-    b.title=c?('ATIVO '+slot+' · '+label(c)+(rotuloSinal?' · '+rotuloSinal:ativo===slot?' · SELECIONADO':' · AGUARDANDO')):'Selecionar contexto do ATIVO '+slot+' usando o botão Ativos';
-    b.classList.toggle('mrg-slot-ativo',ativo===slot&&!sinal);
+    b.title=c?('ATIVO '+slot+' · '+label(c)+(permitido?(rotuloSinal?' · '+rotuloSinal:ativo===slot?' · SELECIONADO':' · AGUARDANDO'):' · Fora do filtro '+mrgFiltroMercadoP4)):'Selecionar contexto do ATIVO '+slot+' usando o botão Ativos';
+    b.classList.toggle('mrg-slot-fora-filtro',!!c&&!permitido);b.classList.toggle('mrg-slot-ativo',ativo===slot&&!sinal&&permitido);
     b.classList.toggle('mrg-slot-compra',sinal==='BUY');
     b.classList.toggle('mrg-slot-venda',sinal==='SELL');
     b.setAttribute('aria-pressed',String(ativo===slot));
@@ -789,6 +835,7 @@ async function mrgCarregarFavoritosP4(uid){
 }
 async function mrgEscolherFavoritoP4(c){
   if(!c||!c.key)return;
+  if(!mrgMercadoPermitidoP4(c)){mrgMensagemFavoritosP4('Este ativo está fora do filtro '+mrgFiltroMercadoP4);return}
   const slot=mrgSlotEdicaoP4===2?2:1;
   mrgFavoritosP4[slot-1]=c.key;
   if(!mrgModoDuploP4 && mrgSlotVisivelP4===slot){
@@ -846,7 +893,7 @@ function mrgRenderSegundoP4(){
   const root=el('mrgP4Segundo');if(!root)return;
   const G=id=>root.querySelector('#mrg2_'+id);
   const S=(id,v)=>{const node=G(id);if(node)node.textContent=String(v??'')};
-  const c=ctx.find(x=>x.key===mrgSlotKeyP4(2)),d=G('bestChoice');
+  const contexto=ctx.find(x=>x.key===mrgSlotKeyP4(2)),c=mrgMercadoPermitidoP4(contexto)?contexto:null,d=G('bestChoice');
   d.hidden=!c;
   if(c){
     const desempenho=mrgDesempenhoP4(c),acomp=c.fresh?mrgP4MelhorEmAcompanhamento(c):null,direcao=mrgEntradaVigenteP4(c);
@@ -861,9 +908,9 @@ function mrgRenderSegundoP4(){
   root.classList.remove('entry-buy','entry-sell');
   for(const n of ['signal','follow']) G(n)?.classList.remove('up','down','follow-buy','follow-sell');
   if(!c){
-    S('asset','ATIVO 2 — SELECIONAR');S('mrgOperacaoResumo','—');S('price','—');S('updated','Sem contexto selecionado');S('signal','AGUARDAR');S('follow','Escolha o ativo do segundo acompanhamento');
+    S('asset',contexto?'ATIVO 2 — FORA DO FILTRO '+mrgFiltroMercadoP4:'ATIVO 2 — SELECIONAR');S('mrgOperacaoResumo','—');S('price','—');S('updated','Sem contexto selecionado');S('signal','AGUARDAR');S('follow','Escolha o ativo do segundo acompanhamento');
     for(const id of ['horizon','entry','confidence','accuracy','sample','upProb','downProb','memory','timing','reason'])S(id,'—');
-    const bar=G('confidenceBar');if(bar)bar.style.width='0%';return;
+    const bar=G('confidenceBar');if(bar)bar.style.width='0%';if(el('historyModal')?.open&&mrgHistoricoSlotP4===2)mrgPreencherHistoricoP4(null);return;
   }
   const live=c.fresh,des=mrgDesempenhoP4(c),nowSide=mrgEntradaVigenteP4(c),curso=live?acompanharMRG(c):'';
   const manut=String(c.source_status||'').toLowerCase().includes('manut');
@@ -893,6 +940,7 @@ const mrgRenderOficialP4=render;
 render=function(){const result=mrgRenderOficialP4();mrgRenderSegundoP4();return result};
 function mrgInicializarBotoesP4(){
   mrgCriarSegundoPainelP4();
+  el('mrgFiltroMercadoP4').addEventListener('change',event=>mrgAlterarFiltroP4(event.target.value));
   el('mrgSlotUmP4').onclick=()=>mrgMudarSlotP4(1);
   el('mrgSlotDoisP4').onclick=()=>mrgMudarSlotP4(2);
   el('mrgModoDuploP4').onclick=mrgAlterarModoP4;
