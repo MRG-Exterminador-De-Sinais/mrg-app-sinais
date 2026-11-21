@@ -84,16 +84,12 @@ html.modo-split .mrg-identidade-arte{height:50px}html.modo-split .mrg-identidade
 html,body{background-color:#030508}
 body{background:radial-gradient(ellipse at 22% 7%,rgba(var(--p2pred-rgb),.16),transparent 48%),linear-gradient(180deg,#071018,#030506 55%,#020304)!important;transition:background .45s}
 .mrg-identidade-pc,.p2-shell,.p2-panel,.p2-kpi,.p2-hip-item,.mrg-identidade-box,.p2-line,
-.p2-estatistica-fechados .taxa-box,.p2-mainpred,.p2-gatilho-caixa,
+.p2-estatistica-fechados .taxa-box,.p2-mainpred,
 .mrg-nativo-aviator .p2-aviator-slot{border-color:rgba(var(--p2pred-rgb),.48)!important;transition:border-color .35s,box-shadow .35s}
 .mrg-identidade-pc,.p2-shell{box-shadow:0 0 22px rgba(var(--p2pred-rgb),.12),0 10px 30px #0008!important}
-.p2-mainpred,.p2-gatilho-caixa{box-shadow:0 0 16px rgba(var(--p2pred-rgb),.18),inset 0 0 18px rgba(var(--p2pred-rgb),.055)!important}
+.p2-mainpred{box-shadow:0 0 16px rgba(var(--p2pred-rgb),.18),inset 0 0 18px rgba(var(--p2pred-rgb),.055)!important}
 .mrg-identidade-main:before{background:radial-gradient(ellipse at 12% 45%,rgba(26,71,101,.35),transparent 58%),linear-gradient(90deg,transparent 3%,rgba(5,13,25,.62) 44%,#03070b 97%)}
 .p2-mainpred .p2-panel-title{color:var(--p2pred)!important}
-.p2-gatilho-caixa{border:1px solid var(--p2pred);border-radius:8px;background:#030b0b;padding:10px 11px;margin-top:13px}
-.p2-gatilho-caixa strong{display:block;color:var(--p2pred);font-size:12px;letter-spacing:.5px;margin-bottom:5px}
-.p2-gatilho-principal{font-size:clamp(14px,1.6vw,20px);font-weight:1000;color:#fff;margin-bottom:3px;overflow-wrap:anywhere}
-.p2-gatilho-caixa small{font-size:10px;color:#accdc5}
 .p2-alerta-area{margin-left:auto;display:flex;align-items:end;flex-direction:column;gap:3px;flex:0 0 auto}
 .p2-alerta-toggle{font-size:10px;font-weight:800;border-radius:7px;background:#0b1215;color:#abd9c9;border:1px solid rgba(var(--p2pred-rgb),.45);padding:6px 10px}
 .p2-alerta-toggle.on{color:#07150f;background:var(--p2pred)}
@@ -113,8 +109,13 @@ body{background:radial-gradient(ellipse at 22% 7%,rgba(var(--p2pred-rgb),.16),tr
 .p2-history-tools button.ativo{background:var(--p2pred)!important;border-color:var(--p2pred)!important;color:#000!important}
 .p2-history-meta,#p2NorteOrigem{font-size:10px;color:#b4c9c0}
 @media(max-width:1150px){.p2-history-grid{grid-template-columns:repeat(8,minmax(0,1fr))}}
-@media(max-width:730px){.p2-history-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.p2-gatilho-principal{font-size:15px}.p2-alerta-area{margin-left:0;align-items:center}.p2-top{flex-wrap:wrap}.p2-alerta-toggle{padding:5px 9px}}
+@media(max-width:730px){.p2-history-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.p2-alerta-area{margin-left:0;align-items:center}.p2-top{flex-wrap:wrap}.p2-alerta-toggle{padding:5px 9px}}
 @media(max-width:400px){.p2-history-grid{gap:4px}.p2-alerta-area{align-items:flex-start}#p2AtualizacaoTopo{margin:0}}
+
+/* P2: gatilho discreto na barra original, sem faixa e sem ampliação do painel. */
+.p2-mainpred .p2-pred-title{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.p2-mainpred .p2-gatilho-inline{color:#b6d6cc;font-size:10px;font-weight:700;letter-spacing:0;white-space:nowrap;margin-left:auto}
+.p2-mainpred .p2-gatilho-inline b{color:var(--p2pred);font-size:11px;font-weight:900}
 </style></head><body><section hidden="" id="mrgAcessoBloqueadoP2" style="margin:20vh auto;max-width:420px;padding:20px;border:1px solid #355349;border-radius:14px;background:#071414;text-align:center"><h3>Acesso pela Página Inicial</h3><p>Entre pela P1 e utilize suas permissões de acesso.</p><button onclick="mrgVoltarPaginaInicial()" style="padding:9px 14px;border-radius:7px;color:#0d241a;background:#28d59d;border:0;font-weight:bold" type="button">← Voltar à página inicial</button></section><div class="mrg-pagina mrg-pagina-2 mrg-pagina-base mrg-web-p2" id="mrgPagina2">
 <header class="mrg-identidade-pc mrg-identidade-compacta"><button class="mrg-voltar-p1" id="mrgVoltarP1" onclick="mrgVoltarPaginaInicial()" title="Voltar à página inicial P1" type="button">← Voltar à página inicial</button>
 <div class="mrg-identidade-main">
@@ -131,8 +132,8 @@ body{background:radial-gradient(ellipse at 22% 7%,rgba(var(--p2pred-rgb),.16),tr
 <div class="mrg-manutencao-faixa" id="mrgManutencaoP2"></div>
 <main class="p2-layout">
 <aside class="p2-col mrg-analise-pausavel">
-<section class="p2-panel p2-mainpred"><div class="p2-panel-title">AO VIVO · PREVISÃO ATUAL</div><div class="p2-pred-row"><div class="p2-pred-tipo" id="p2Tipo">AGUARDANDO</div><div class="p2-pred-pct" id="p2Confianca">--</div></div><div class="p2-status" id="p2Status">Aguardando leitura prospectiva...</div><div aria-live="polite" class="p2-gatilho-caixa" role="status"><strong>GATILHO DO ANALISTA</strong><div class="p2-gatilho-principal" id="p2Gatilho">AGUARDANDO</div><small id="p2GatilhoDetalhe">Acompanhamento oficial da próxima vela</small></div></section>
-<section class="p2-panel"><div class="p2-panel-title">LEITURA PUBLICADA</div><div class="p2-kpis"><div class="p2-kpi"><span>Última vela</span><b id="p2Ultima">--</b></div><div class="p2-kpi"><span>Convicção</span><b id="p2Conviccao">--</b></div><div class="p2-kpi"><span>Exato 30</span><b id="p2Exato30">--</b></div><div class="p2-kpi"><span>Família 30</span><b id="p2Familia30">--</b></div></div></section>
+<section class="p2-panel p2-mainpred"><div class="p2-panel-title p2-pred-title">AO VIVO · PREVISÃO ATUAL <span class="p2-gatilho-inline" aria-live="polite">GATILHO: <b id="p2Gatilho">--</b></span></div><div class="p2-pred-row"><div class="p2-pred-tipo" id="p2Tipo">AGUARDANDO</div><div class="p2-pred-pct" id="p2Confianca">--</div></div><div class="p2-status" id="p2Status">Aguardando leitura prospectiva...</div></section>
+<section class="p2-panel"><div class="p2-panel-title">LEITURA PUBLICADA</div><div class="p2-kpis"><div class="p2-kpi"><span>Última vela</span><b id="p2Ultima">--</b></div><div class="p2-kpi"><span title="Convicção calculada pelo Analista; não pelo navegador">Convicção</span><b id="p2Conviccao">--</b></div><div class="p2-kpi"><span title="Percentual publicado pelo Analista; classificação operacional depende de ajuste no motor">Exato 30</span><b id="p2Exato30">--</b></div><div class="p2-kpi"><span title="Percentual publicado pelo Analista; compatibilidade rosa/roxa deve ser contabilizada no motor">Família 30</span><b id="p2Familia30">--</b></div></div></section>
 <section class="p2-panel"><div class="p2-panel-title">HIPÓTESES DE CURTO PRAZO</div><div class="p2-hip-ajuda">Força de cada hipótese na leitura atual · percentuais independentes</div><div class="p2-hip" id="p2Hipoteses"><div class="p2-empty">Aguardando hipóteses publicadas...</div></div></section>
 </aside>
 <section class="p2-col mrg-nativo-aviator" id="mrgP2CentroAviator"><div class="p2-aviator-slot" data-mrg-slot="aviator-unico" id="p2AviatorSlot"></div></section>
@@ -151,7 +152,7 @@ body{background:radial-gradient(ellipse at 22% 7%,rgba(var(--p2pred-rgb),.16),tr
 const SUPABASE_URL='https://bflptqejltvwfjhixwpj.supabase.co';
 const SUPABASE_KEY='sb_publishable_b2JbHd6f4drsWQIFgKEyRQ_QEDi4ODO';
 const MRG_SESSAO_CHAVE='mrg_session_token_unica';
-let db=null,contrato=null,usuario=null,permitido=false,p2Mais=50,p2Filtro='TODAS',p2Historico=[],p2UltimaChave='',p2SnapshotChave='',p2Ocupado=false,p2HistoricoEmCurso=false,p2ResumoEmCurso=false,p2Timers=[],p2BridgeAtiva=false;
+let db=null,contrato=null,usuario=null,permitido=false,p2Mais=50,p2Filtro='TODAS',p2Historico=[],p2UltimaChave='',p2UltimaVelaFechada=null,p2SnapshotChave='',p2Ocupado=false,p2HistoricoEmCurso=false,p2ResumoEmCurso=false,p2Timers=[],p2BridgeAtiva=false;
 const byId=id=>document.getElementById(id);
 const set=(id,valor)=>{const n=byId(id);if(n)n.textContent=valor==null?'--':String(valor)};
 const first=(o,ks,def=null)=>{for(const k of ks){if(o&&o[k]!==undefined&&o[k]!==null&&o[k]!=='')return o[k]}return def};
@@ -227,8 +228,11 @@ async function p2LerHistorico(){
 async function p2ChecarUltima(){
  if(!p2Ativo()||p2HistoricoEmCurso)return;
  try{
- const{data,error}=await db.from('mrg_analista_velas_24h').select('numero_rodada,data_hora').order('data_hora',{ascending:false}).limit(1);
+ const{data,error}=await db.from('mrg_analista_velas_24h').select('numero_rodada,data_hora,multiplicador').order('data_hora',{ascending:false}).limit(1);
  if(error)return;const v=(data||[])[0];if(!v)return;
+ // Somente a última vela FECHADA da fonte oficial; independente do snapshot de previsão.
+ const m=Number(v.multiplicador);
+ if(Number.isFinite(m)&&m>0){p2UltimaVelaFechada=m;set('p2Gatilho',mult(m));set('p2Ultima',mult(m))}
  const k=String(v.numero_rodada||v.data_hora);
  if(k!==p2UltimaChave){p2UltimaChave=k;await Promise.all([p2LerHistorico(),p2NorteCarregar()])}
  }catch(e){console.warn('MRG P2: atualização de vela:',e)}
@@ -276,17 +280,10 @@ async function p2NorteCarregar(){
 let p2UltimoEventoNotificado='',p2FoiInicializado=false,p2AlertaPreferencia=false,p2AlertaAudio=null;
 try{p2AlertaPreferencia=localStorage.getItem('mrg_p2_alertas_v2')==='1'}catch(e){}
 function p2GatilhoAtualizar(s){
- const tipo=String(first(s,['proxima_tipo'],'AGUARDANDO')).toUpperCase();
- const status=String(first(s,['proxima_status','status'],'AGUARDANDO')).toUpperCase();
- const peso=first(s,['gatilho_peso']);
- const diag=first(s,['gatilho_rosa_vala'],{});
- let texto=status;
- if(peso!==null)texto+=' · PESO '+peso;
- set('p2Gatilho',texto);
- const detalhes=['PREVISÃO: '+tipo];
- if(diag&&typeof diag==='object'&&diag.nivel){detalhes.push('GATILHO ROSA/VALA: '+String(diag.nivel).toUpperCase());
-  if(diag.score!==null&&diag.score!==undefined)detalhes.push('SCORE '+diag.score);}
- set('p2GatilhoDetalhe',detalhes.join(' · '));
+  // Mesmo cabeçalho compacto da previsão. Sem quadro adicional, peso ou fonte ampliada.
+  // A consulta da última vela fechada prevalece sobre o snapshot, que pode chegar atrasado.
+  if(p2UltimaVelaFechada!==null){set('p2Gatilho',mult(p2UltimaVelaFechada));return}
+  set('p2Gatilho',mult(first(s,['ultima','ultima_mult','ultima_vela'])));
 }
 function p2AlertasUI(){const b=byId('p2AlertaToggle');if(!b)return;b.classList.toggle('on',p2AlertaPreferencia);b.setAttribute('aria-pressed',String(p2AlertaPreferencia));b.textContent=p2AlertaPreferencia?'♪ Alertas ativados':'♩ Ativar alertas';set('p2AlertaEstado',p2AlertaPreferencia?'TELA + SOM · ALERTAS LIGADOS':'ALERTAS OPCIONAIS')}
 async function mrgP2AlternarAlertas(){
