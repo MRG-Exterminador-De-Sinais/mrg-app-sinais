@@ -140,6 +140,19 @@ body{background:radial-gradient(ellipse at 22% 7%,rgba(var(--p2pred-rgb),.16),tr
   .mrg-web-p2 .p2-layout #p2ResumoProResultados {order:70;}
   .mrg-web-p2 .p2-layout #p2ResumoRoxoResultados + .p2-panel {order:60;}
 }
+
+/* Mesma caixa de 5 FECHADOS da P3; pequeno quadro no rodapé da P2. */
+.p2-pro-rodape{display:flex;justify-content:flex-end;margin-top:12px}
+.p2-pro-rodape #p2ResumoProResultados{width:min(100%,355px);margin:0}
+.p2-pro-rodape .p2-estatistica-fechados .stat-line{display:flex;justify-content:space-between;gap:10px;margin:8px 0;padding:0;border:0;color:#eee;font-size:14px}
+.p2-pro-rodape .p2-estatistica-fechados .stat-line b{color:#19ff19}
+.p2-pro-rodape .p2-estatistica-fechados .stat-line .warn{color:#ffc400}
+.p2-pro-rodape .p2-estatistica-fechados .stat-line .err{color:#ff6666}
+.p2-pro-rodape .p2-estatistica-fechados .taxas{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;padding:0}
+.p2-pro-rodape .p2-estatistica-fechados .taxa-box{border:1px solid #252525;border-radius:10px;padding:10px;text-align:center;background:#080808;color:#aaa;font-size:11px}
+.p2-pro-rodape .p2-estatistica-fechados .taxa-box b{color:#19ff19;font-size:24px;display:block;margin-top:4px}
+.p2-pro-rodape .p2-previa-aviso{margin-top:9px;padding-top:8px;border-top:1px solid #273631;color:#b9c8c1;font-size:10px;line-height:1.45}
+@media(max-width:730px){.p2-pro-rodape #p2ResumoProResultados{width:100%}}
 </style></head><body><section hidden="" id="mrgAcessoBloqueadoP2" style="margin:20vh auto;max-width:420px;padding:20px;border:1px solid #355349;border-radius:14px;background:#071414;text-align:center"><h3>Acesso pela Página Inicial</h3><p>Entre pela P1 e utilize suas permissões de acesso.</p><button onclick="mrgVoltarPaginaInicial()" style="padding:9px 14px;border-radius:7px;color:#0d241a;background:#28d59d;border:0;font-weight:bold" type="button">← Voltar à página inicial</button></section><div class="mrg-pagina mrg-pagina-2 mrg-pagina-base mrg-web-p2" id="mrgPagina2">
 <header class="mrg-identidade-pc mrg-identidade-compacta"><button class="mrg-voltar-p1" id="mrgVoltarP1" onclick="mrgVoltarPaginaInicial()" title="Voltar à página inicial P1" type="button">← Voltar à página inicial</button>
 <div class="mrg-identidade-main">
@@ -165,10 +178,11 @@ body{background:radial-gradient(ellipse at 22% 7%,rgba(var(--p2pred-rgb),.16),tr
 <section class="p2-panel p2-leitura-publicada"><div class="p2-panel-title">LEITURA PUBLICADA</div><div class="p2-kpis"><div class="p2-kpi"><span>Última vela</span><b id="p2Ultima">--</b></div><div class="p2-kpi"><span title="Convicção calculada pelo Analista; não pelo navegador">Convicção</span><b id="p2Conviccao">--</b></div><div class="p2-kpi"><span title="Percentual publicado pelo Analista; classificação operacional depende de ajuste no motor">Exato 30</span><b id="p2Exato30">--</b></div><div class="p2-kpi"><span title="Percentual publicado pelo Analista; compatibilidade rosa/roxa deve ser contabilizada no motor">Família 30</span><b id="p2Familia30">--</b></div></div></section>
 <section class="p2-panel" id="p2ResumoRoxoResultados"><div class="p2-panel-title">NORTE DO ANALISTA · ASSERTIVIDADE (ÚLTIMAS 10)</div><div class="p2-estatistica-linha" id="p2RoxoAssertividade"><b>—</b><span>Aguardando resultados</span></div><div class="p2-barra-assertividade"><i id="p2RoxoBarra"></i></div><div class="p2-nota-estatistica" id="p2RoxoStatus">Aguardando resultados históricos do Analista.</div><div class="p2-nota-estatistica" id="p2NorteOrigem">Base central · não depende do login neste dispositivo.</div></section>
 <section class="p2-panel"><div class="p2-panel-title">OBSERVAÇÃO</div><div class="p2-status" id="p2Observacao">A leitura permanece estática durante o voo e muda após a publicação de uma nova vela fechada.</div></section>
-<section class="p2-panel" id="p2ResumoProResultados"><div class="p2-panel-title">PRÉVIA P3 PRO · VELAS ALTAS</div><div class="p2-estatistica-fechados" id="p2ProUltimos5"><div class="p2-nota-estatistica">Aguardando últimos 5 fechados de HYPER e SNARPY...</div></div><div class="p2-previa-aviso">Amostra de resultados da P3 PRO, para assinantes ativos. Para conhecer, chame o administrador.</div></section>
+
 </aside>
 </main>
 <section class="p2-panel p2-history mrg-analise-pausavel"><div class="p2-panel-title">HISTÓRICO AO VIVO · 50 ÚLTIMAS / 100 POR FILTRO</div><div class="p2-history-tools"><button class="ativo" data-p2f="TODAS" onclick="mrgP2Filtro('TODAS',this)" type="button">TODAS</button><button data-p2f="AZUL" onclick="mrgP2Filtro('AZUL',this)" type="button">AZUIS</button><button data-p2f="ROXO" onclick="mrgP2Filtro('ROXO',this)" type="button">ROXAS</button><button data-p2f="ROSA" onclick="mrgP2Filtro('ROSA',this)" type="button">ROSAS</button><button data-p2f="10-50" onclick="mrgP2Filtro('10-50',this)" type="button">10–50x</button><button data-p2f="50-100" onclick="mrgP2Filtro('50-100',this)" type="button">50–100x</button><button data-p2f="100-200" onclick="mrgP2Filtro('100-200',this)" type="button">100–200x</button><button data-p2f="200+" onclick="mrgP2Filtro('200+',this)" type="button">200x+</button><span class="p2-history-meta" id="p2HistoricoMeta">FILTRAGEM NA FONTE</span></div><div class="p2-history-grid" id="p2HistoricoGrid"><div class="p2-empty">Aguardando histórico...</div></div><div class="p2-history-actions"><button onclick="mrgP2CarregarMais()" type="button">CARREGAR MAIS</button><button onclick="mrgP2VoltarInicio()" type="button">ÚLTIMAS 50 VELAS</button></div></section>
+<div class="p2-pro-rodape mrg-analise-pausavel"><section class="p2-panel" id="p2ResumoProResultados"><div class="p2-panel-title">📊 ÚLTIMOS 5 FECHADOS</div><div class="p2-estatistica-fechados" id="p2ProUltimos5"><div class="p2-nota-estatistica">Aguardando resultados encerrados de HYPER e SNARPY...</div></div><div class="p2-previa-aviso">Para acompanhar os sinais HYPER/SNARPY e os recursos completos, acesse a P3 PRO. Sem acesso? Solicite a ativação da assinatura PRO ao administrador.</div></section></div>
 </div>
 </div><div aria-live="polite" class="p2-html-freshness" id="p2HistoricoErro"></div><script>
 'use strict';
@@ -266,8 +280,28 @@ function mrgP2VoltarInicio(){p2Mais=50;p2Filtro='TODAS';document.querySelectorAl
 
 function p2StatusNormalizado(i){const t=String(i.status||'')+' '+String(i.resultado||'');const u=t.toUpperCase();if(u.includes('PROTECAO')||u.includes('PROTEÇÃO')||u.includes('PARCIAL'))return 'PROTECAO';if(u.includes('ACERTO'))return 'ACERTO';if(u.includes('ERRO'))return 'ERRO';if(u.includes('RETIDO')||u.includes('PRESSAO')||u.includes('PRESSÃO'))return 'RETIDO';if(u.includes('CANCEL'))return 'CANCELADO';return 'OUTRO'}
 function p2Categoria(i){return String(i.categoria||i.tipo||i.origem||'').toUpperCase()}
-async function p2LerProResumo(){if(!p2Ativo()||p2ResumoEmCurso)return;p2ResumoEmCurso=true;try{const{data,error}=await db.from('sinais').select('id,status,resultado,categoria,tipo,origem').order('id',{ascending:false}).limit(80);if(error)throw error;const u=(data||[]).filter(i=>{const t=p2Categoria(i);return (t.includes('SNARPY')||t.includes('SNIPER')||t.includes('HYPER'))&&['ACERTO','PROTECAO','ERRO','RETIDO','CANCELADO'].includes(p2StatusNormalizado(i))}).slice(0,5);if(!u.length){set('p2ProUltimos5','Aguardando resultados encerrados de HYPER e SNARPY.');return}let a=0,p=0,e=0,r=0;for(const i of u){const s=p2StatusNormalizado(i);if(s==='ACERTO')a++;else if(s==='PROTECAO')p++;else if(s==='ERRO')e++;else r++}const tc=Math.round(a/u.length*100),to=Math.round((a+p)/u.length*100);byId('p2ProUltimos5').innerHTML='<div class="p2-nota-estatistica">Últimos '+u.length+' fechados · HYPER / SNARPY</div><div class="stat-line"><span>✅ Acertos</span><b>'+a+'</b></div><div class="stat-line"><span>🟡 Proteções</span><b class="warn">'+p+'</b></div><div class="stat-line"><span>❌ Erros</span><b class="err">'+e+'</b></div><div class="stat-line"><span>🟠 Retidos/Cancel.</span><b>'+r+'</b></div><div class="taxas"><div class="taxa-box">TAXA CHEIA<b>'+tc+'%</b></div><div class="taxa-box">OPERACIONAL<b>'+to+'%</b></div></div>';}catch(e){console.warn('MRG P2 prévia PRO:',e);set('p2ProUltimos5','Resumo temporariamente indisponível.')}finally{p2ResumoEmCurso=false}}
-// Mesmo julgamento de apresentação usado no PC: últimas 10 previsões acompanhadas neste dispositivo.
+async function p2LerProResumo(){
+ if(!p2Ativo()||p2ResumoEmCurso)return;
+ p2ResumoEmCurso=true;
+ try{
+  const{data,error}=await db.from('sinais')
+   .select('id,status,resultado,categoria,tipo,origem')
+   .in('categoria',['SNARPY','HYPER100','HYPER1000'])
+   .in('status',['ACERTO','PROTEÇÃO','PROTECAO','ERRO','RETIDO','CANCELADO'])
+   .order('id',{ascending:false}).limit(5);
+  if(error)throw error;
+  const u=(data||[]).filter(i=>['ACERTO','PROTECAO','ERRO','RETIDO','CANCELADO'].includes(p2StatusNormalizado(i))).slice(0,5);
+  const alvo=byId('p2ProUltimos5');
+  if(!u.length){alvo.textContent='Nenhum sinal encerrado ainda.';return}
+  let a=0,p=0,e=0,r=0;
+  for(const i of u){const st=p2StatusNormalizado(i);if(st==='ACERTO')a++;else if(st==='PROTECAO')p++;else if(st==='ERRO')e++;else r++}
+  const tc=Math.round(a/u.length*100),to=Math.round((a+p)/u.length*100);
+  // HTML, linhas e taxas copiadas da função atualizarResumoFechados(h) original da P3.
+  alvo.innerHTML='<div class="stat-line"><span>✅ Acertos</span><b>'+a+'</b></div><div class="stat-line"><span>🟡 Proteções</span><b class="warn">'+p+'</b></div><div class="stat-line"><span>❌ Erros</span><b class="err">'+e+'</b></div><div class="stat-line"><span>🟠 Retidos/Cancel.</span><b class="warn">'+r+'</b></div><div class="taxas"><div class="taxa-box">TAXA CHEIA <b>'+tc+'%</b></div><div class="taxa-box">OPERACIONAL <b>'+to+'%</b></div></div>';
+ }catch(e){console.warn('[P2 PRO] Falha ao ler os 5 fechados:',e);set('p2ProUltimos5','Resumo temporariamente indisponível.')}
+ finally{p2ResumoEmCurso=false}
+}
+
 // Norte SEM ESTATÍSTICA LOCAL: lê previsões reais emitidas e conferidas centralmente.
 let p2NorteEmCurso=false;
 function p2NorteRenderizar(dados){
@@ -290,14 +324,12 @@ async function p2NorteCarregar(){
  if(!p2Ativo()||p2NorteEmCurso)return;
  p2NorteEmCurso=true;
  try{
-  const {data,error}=await db.from('mrg_p2_previsoes_analista')
-    .select('rodada_base,previsao,resultado,fechada_em')
-    .not('resultado','is',null).order('fechada_em',{ascending:false}).limit(10);
+  const {data,error}=await db.rpc('mrg_p2_ler_norte_ultimos10');
   if(error)throw error;
   p2NorteRenderizar(data||[]);
- }catch(e){console.warn('Norte central: aguardando estrutura SQL ou permissão',e);
+ }catch(e){console.warn('[MRG P2] Falha na consulta POST ao Norte:',e);
   p2NorteRenderizar([]);
-  set('p2NorteOrigem','HISTÓRICO CENTRAL NÃO CONFIGURADO · consulte instalação SQL antes da publicação');
+  set('p2NorteOrigem','Falha na leitura do Norte; verifique a função de consulta do Supabase.');
  }finally{p2NorteEmCurso=false}
 }
 
