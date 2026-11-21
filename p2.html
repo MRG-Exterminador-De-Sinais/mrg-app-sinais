@@ -115,6 +115,31 @@ body{background:radial-gradient(ellipse at 22% 7%,rgba(var(--p2pred-rgb),.16),tr
 /* P2: gatilho da ultima vela ao lado de OBSERVAR; manter o quadro original. */
 .p2-mainpred .p2-status .p2-gatilho-inline{display:inline;margin-left:.35em;color:#b6d6cc;font-size:inherit;font-weight:700;letter-spacing:0;white-space:nowrap}
 .p2-mainpred .p2-status .p2-gatilho-inline b{color:var(--p2pred);font-size:1.055em;line-height:1;font-weight:900}
+
+/* P2 · reorganização restrita à ordem de leitura. Sem mudar dimensões, dados ou cores.
+   PC: previsão → mapa (coluna esquerda); leitura publicada (coluna direita).
+   Android/iPhone: previsão → mapa → leitura → hipóteses → Norte → demais.
+   No app, a área do Aviator continua vinculada ao slot compartilhado. */
+@media (max-width: 730px) {
+  .mrg-web-p2 .p2-layout {
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch;
+    gap:10px;
+  }
+  .mrg-web-p2 .p2-layout > aside.p2-col {
+    display:contents!important;
+  }
+  .mrg-web-p2 .p2-layout .p2-panel {width:100%;}
+  .mrg-web-p2 .p2-layout .p2-mainpred {order:10;}
+  .mrg-web-p2 .p2-layout .p2-mapa-prospectivo {order:20;}
+  .mrg-web-p2 .p2-layout > .mrg-nativo-aviator {order:25;align-self:stretch;}
+  .mrg-web-p2 .p2-layout .p2-leitura-publicada {order:30;}
+  .mrg-web-p2 .p2-layout .p2-hipoteses-curto-prazo {order:40;}
+  .mrg-web-p2 .p2-layout #p2ResumoRoxoResultados {order:50;}
+  .mrg-web-p2 .p2-layout #p2ResumoProResultados {order:70;}
+  .mrg-web-p2 .p2-layout #p2ResumoRoxoResultados + .p2-panel {order:60;}
+}
 </style></head><body><section hidden="" id="mrgAcessoBloqueadoP2" style="margin:20vh auto;max-width:420px;padding:20px;border:1px solid #355349;border-radius:14px;background:#071414;text-align:center"><h3>Acesso pela Página Inicial</h3><p>Entre pela P1 e utilize suas permissões de acesso.</p><button onclick="mrgVoltarPaginaInicial()" style="padding:9px 14px;border-radius:7px;color:#0d241a;background:#28d59d;border:0;font-weight:bold" type="button">← Voltar à página inicial</button></section><div class="mrg-pagina mrg-pagina-2 mrg-pagina-base mrg-web-p2" id="mrgPagina2">
 <header class="mrg-identidade-pc mrg-identidade-compacta"><button class="mrg-voltar-p1" id="mrgVoltarP1" onclick="mrgVoltarPaginaInicial()" title="Voltar à página inicial P1" type="button">← Voltar à página inicial</button>
 <div class="mrg-identidade-main">
@@ -132,12 +157,12 @@ body{background:radial-gradient(ellipse at 22% 7%,rgba(var(--p2pred-rgb),.16),tr
 <main class="p2-layout">
 <aside class="p2-col mrg-analise-pausavel">
 <section class="p2-panel p2-mainpred"><div class="p2-panel-title p2-pred-title">AO VIVO · PREVISÃO ATUAL</div><div class="p2-pred-row"><div class="p2-pred-tipo" id="p2Tipo">AGUARDANDO</div><div class="p2-pred-pct" id="p2Confianca">--</div></div><div class="p2-status"><span id="p2Status">Aguardando leitura prospectiva...</span><span class="p2-gatilho-inline" aria-live="polite">· GATILHO <b id="p2Gatilho">--</b></span></div></section>
-<section class="p2-panel"><div class="p2-panel-title">LEITURA PUBLICADA</div><div class="p2-kpis"><div class="p2-kpi"><span>Última vela</span><b id="p2Ultima">--</b></div><div class="p2-kpi"><span title="Convicção calculada pelo Analista; não pelo navegador">Convicção</span><b id="p2Conviccao">--</b></div><div class="p2-kpi"><span title="Percentual publicado pelo Analista; classificação operacional depende de ajuste no motor">Exato 30</span><b id="p2Exato30">--</b></div><div class="p2-kpi"><span title="Percentual publicado pelo Analista; compatibilidade rosa/roxa deve ser contabilizada no motor">Família 30</span><b id="p2Familia30">--</b></div></div></section>
-<section class="p2-panel"><div class="p2-panel-title">HIPÓTESES DE CURTO PRAZO</div><div class="p2-hip-ajuda">Força de cada hipótese na leitura atual · percentuais independentes</div><div class="p2-hip" id="p2Hipoteses"><div class="p2-empty">Aguardando hipóteses publicadas...</div></div></section>
+<section class="p2-panel p2-mapa-prospectivo"><div class="p2-panel-title">MAPA PROSPECTIVO</div><div class="p2-line"><span>Melhor previsão</span><b id="p2Melhor">--</b></div><div class="p2-line"><span>Alternativa</span><b id="p2Alternativa">--</b></div><div class="p2-line"><span>Convergência</span><b id="p2Convergencia">--</b></div><div class="p2-line"><span>Leitura publicada</span><b id="p2Atualizacao">--</b></div></section>
+<section class="p2-panel p2-hipoteses-curto-prazo"><div class="p2-panel-title">HIPÓTESES DE CURTO PRAZO</div><div class="p2-hip-ajuda">Força de cada hipótese na leitura atual · percentuais independentes</div><div class="p2-hip" id="p2Hipoteses"><div class="p2-empty">Aguardando hipóteses publicadas...</div></div></section>
 </aside>
 <section class="p2-col mrg-nativo-aviator" id="mrgP2CentroAviator"><div class="p2-aviator-slot" data-mrg-slot="aviator-unico" id="p2AviatorSlot"></div></section>
 <aside class="p2-col mrg-analise-pausavel">
-<section class="p2-panel"><div class="p2-panel-title">MAPA PROSPECTIVO</div><div class="p2-line"><span>Melhor previsão</span><b id="p2Melhor">--</b></div><div class="p2-line"><span>Alternativa</span><b id="p2Alternativa">--</b></div><div class="p2-line"><span>Convergência</span><b id="p2Convergencia">--</b></div><div class="p2-line"><span>Leitura publicada</span><b id="p2Atualizacao">--</b></div></section>
+<section class="p2-panel p2-leitura-publicada"><div class="p2-panel-title">LEITURA PUBLICADA</div><div class="p2-kpis"><div class="p2-kpi"><span>Última vela</span><b id="p2Ultima">--</b></div><div class="p2-kpi"><span title="Convicção calculada pelo Analista; não pelo navegador">Convicção</span><b id="p2Conviccao">--</b></div><div class="p2-kpi"><span title="Percentual publicado pelo Analista; classificação operacional depende de ajuste no motor">Exato 30</span><b id="p2Exato30">--</b></div><div class="p2-kpi"><span title="Percentual publicado pelo Analista; compatibilidade rosa/roxa deve ser contabilizada no motor">Família 30</span><b id="p2Familia30">--</b></div></div></section>
 <section class="p2-panel" id="p2ResumoRoxoResultados"><div class="p2-panel-title">NORTE DO ANALISTA · ASSERTIVIDADE (ÚLTIMAS 10)</div><div class="p2-estatistica-linha" id="p2RoxoAssertividade"><b>—</b><span>Aguardando resultados</span></div><div class="p2-barra-assertividade"><i id="p2RoxoBarra"></i></div><div class="p2-nota-estatistica" id="p2RoxoStatus">Aguardando resultados históricos do Analista.</div><div class="p2-nota-estatistica" id="p2NorteOrigem">Base central · não depende do login neste dispositivo.</div></section>
 <section class="p2-panel"><div class="p2-panel-title">OBSERVAÇÃO</div><div class="p2-status" id="p2Observacao">A leitura permanece estática durante o voo e muda após a publicação de uma nova vela fechada.</div></section>
 <section class="p2-panel" id="p2ResumoProResultados"><div class="p2-panel-title">PRÉVIA P3 PRO · VELAS ALTAS</div><div class="p2-estatistica-fechados" id="p2ProUltimos5"><div class="p2-nota-estatistica">Aguardando últimos 5 fechados de HYPER e SNARPY...</div></div><div class="p2-previa-aviso">Amostra de resultados da P3 PRO, para assinantes ativos. Para conhecer, chame o administrador.</div></section>
