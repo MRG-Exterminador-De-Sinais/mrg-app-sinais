@@ -153,6 +153,39 @@ body{background:radial-gradient(ellipse at 22% 7%,rgba(var(--p2pred-rgb),.16),tr
 .p2-pro-rodape .p2-estatistica-fechados .taxa-box b{color:#19ff19;font-size:24px;display:block;margin-top:4px}
 .p2-pro-rodape .p2-previa-aviso{margin-top:9px;padding-top:8px;border-top:1px solid #273631;color:#b9c8c1;font-size:10px;line-height:1.45}
 @media(max-width:730px){.p2-pro-rodape #p2ResumoProResultados{width:100%}}
+
+/* MRG P2 | retorno à P1 responsivo em fluxo normal, sem sobrepor HORÁRIO/STATUS.
+   Vale para PC, Android, iOS e modo de tela dividida do mesmo HTML na Vercel. */
+.mrg-pagina .mrg-identidade-pc .mrg-voltar-p1{
+  position:static!important;top:auto!important;right:auto!important;
+  display:flex;align-items:center;justify-content:center;
+  box-sizing:border-box;max-width:calc(100% - 16px);width:max-content;
+  min-height:32px;margin:7px 8px 3px auto;padding:6px 10px;
+  border:1px solid #69c6a1;border-radius:8px;
+  background:#082623;color:#e3fff2;
+  font-size:11px;font-weight:800;line-height:1.2;
+  text-align:center;white-space:normal;overflow-wrap:anywhere;
+  cursor:pointer;
+}
+.mrg-pagina .mrg-identidade-pc .mrg-voltar-p1:focus-visible{
+  outline:2px solid #fff;outline-offset:2px;
+}
+@media(max-width:730px){
+ .mrg-pagina .mrg-identidade-pc .mrg-voltar-p1{
+   min-height:30px;margin:5px 6px 3px auto;
+   max-width:calc(100% - 12px);padding:5px 9px;font-size:10px;
+ }
+}
+html.modo-split .mrg-pagina .mrg-identidade-pc .mrg-voltar-p1{
+  min-height:28px;margin:4px 5px 2px auto;
+  max-width:calc(100% - 10px);padding:4px 7px;font-size:10px;
+}
+/* Rótulo da vitrine PRO sem tocar na consulta e nas taxas originais. */
+.p2-pro-rodape .p2-pro-subtitulo{
+  display:block;margin-top:5px;color:#a8d5c5;
+  font-size:10px;font-weight:800;line-height:1.35;
+  letter-spacing:.2px;white-space:normal;
+}
 </style></head><body><section hidden="" id="mrgAcessoBloqueadoP2" style="margin:20vh auto;max-width:420px;padding:20px;border:1px solid #355349;border-radius:14px;background:#071414;text-align:center"><h3>Acesso pela Página Inicial</h3><p>Entre pela P1 e utilize suas permissões de acesso.</p><button onclick="mrgVoltarPaginaInicial()" style="padding:9px 14px;border-radius:7px;color:#0d241a;background:#28d59d;border:0;font-weight:bold" type="button">← Voltar à página inicial</button></section><div class="mrg-pagina mrg-pagina-2 mrg-pagina-base mrg-web-p2" id="mrgPagina2">
 <header class="mrg-identidade-pc mrg-identidade-compacta"><button class="mrg-voltar-p1" id="mrgVoltarP1" onclick="mrgVoltarPaginaInicial()" title="Voltar à página inicial P1" type="button">← Voltar à página inicial</button>
 <div class="mrg-identidade-main">
@@ -182,7 +215,7 @@ body{background:radial-gradient(ellipse at 22% 7%,rgba(var(--p2pred-rgb),.16),tr
 </aside>
 </main>
 <section class="p2-panel p2-history mrg-analise-pausavel"><div class="p2-panel-title">HISTÓRICO AO VIVO · 50 ÚLTIMAS / 100 POR FILTRO</div><div class="p2-history-tools"><button class="ativo" data-p2f="TODAS" onclick="mrgP2Filtro('TODAS',this)" type="button">TODAS</button><button data-p2f="AZUL" onclick="mrgP2Filtro('AZUL',this)" type="button">AZUIS</button><button data-p2f="ROXO" onclick="mrgP2Filtro('ROXO',this)" type="button">ROXAS</button><button data-p2f="ROSA" onclick="mrgP2Filtro('ROSA',this)" type="button">ROSAS</button><button data-p2f="10-50" onclick="mrgP2Filtro('10-50',this)" type="button">10–50x</button><button data-p2f="50-100" onclick="mrgP2Filtro('50-100',this)" type="button">50–100x</button><button data-p2f="100-200" onclick="mrgP2Filtro('100-200',this)" type="button">100–200x</button><button data-p2f="200+" onclick="mrgP2Filtro('200+',this)" type="button">200x+</button><span class="p2-history-meta" id="p2HistoricoMeta">FILTRAGEM NA FONTE</span></div><div class="p2-history-grid" id="p2HistoricoGrid"><div class="p2-empty">Aguardando histórico...</div></div><div class="p2-history-actions"><button onclick="mrgP2CarregarMais()" type="button">CARREGAR MAIS</button><button onclick="mrgP2VoltarInicio()" type="button">ÚLTIMAS 50 VELAS</button></div></section>
-<div class="p2-pro-rodape mrg-analise-pausavel"><section class="p2-panel" id="p2ResumoProResultados"><div class="p2-panel-title">📊 ÚLTIMOS 5 FECHADOS</div><div class="p2-estatistica-fechados" id="p2ProUltimos5"><div class="p2-nota-estatistica">Aguardando resultados encerrados de HYPER e SNARPY...</div></div><div class="p2-previa-aviso">Para acompanhar os sinais HYPER/SNARPY e os recursos completos, acesse a P3 PRO. Sem acesso? Solicite a ativação da assinatura PRO ao administrador.</div></section></div>
+<div class="p2-pro-rodape mrg-analise-pausavel"><section class="p2-panel" id="p2ResumoProResultados"><div class="p2-panel-title">📊 RESULTADOS EXCLUSIVOS DA P3 PRO<span class="p2-pro-subtitulo">ÚLTIMOS 5 SINAIS DE VELAS ROSAS ENCERRADOS · HYPER/SNARPY</span></div><div class="p2-estatistica-fechados" id="p2ProUltimos5"><div class="p2-nota-estatistica">Aguardando resultados encerrados de HYPER e SNARPY...</div></div><div class="p2-previa-aviso">Esta vitrine apresenta os resultados encerrados dos sinais HYPER/SNARPY da P3 PRO. Para acompanhar os sinais e acessar os recursos completos, solicite a ativação da assinatura PRO ao administrador.</div></section></div>
 </div>
 </div><div aria-live="polite" class="p2-html-freshness" id="p2HistoricoErro"></div><script>
 'use strict';
