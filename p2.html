@@ -112,10 +112,9 @@ body{background:radial-gradient(ellipse at 22% 7%,rgba(var(--p2pred-rgb),.16),tr
 @media(max-width:730px){.p2-history-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.p2-alerta-area{margin-left:0;align-items:center}.p2-top{flex-wrap:wrap}.p2-alerta-toggle{padding:5px 9px}}
 @media(max-width:400px){.p2-history-grid{gap:4px}.p2-alerta-area{align-items:flex-start}#p2AtualizacaoTopo{margin:0}}
 
-/* P2: gatilho discreto na barra original, sem faixa e sem ampliação do painel. */
-.p2-mainpred .p2-pred-title{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.p2-mainpred .p2-gatilho-inline{color:#b6d6cc;font-size:10px;font-weight:700;letter-spacing:0;white-space:nowrap;margin-left:auto}
-.p2-mainpred .p2-gatilho-inline b{color:var(--p2pred);font-size:11px;font-weight:900}
+/* P2: gatilho da ultima vela ao lado de OBSERVAR; manter o quadro original. */
+.p2-mainpred .p2-status .p2-gatilho-inline{display:inline;margin-left:.35em;color:#b6d6cc;font-size:inherit;font-weight:700;letter-spacing:0;white-space:nowrap}
+.p2-mainpred .p2-status .p2-gatilho-inline b{color:var(--p2pred);font-size:1.055em;line-height:1;font-weight:900}
 </style></head><body><section hidden="" id="mrgAcessoBloqueadoP2" style="margin:20vh auto;max-width:420px;padding:20px;border:1px solid #355349;border-radius:14px;background:#071414;text-align:center"><h3>Acesso pela Página Inicial</h3><p>Entre pela P1 e utilize suas permissões de acesso.</p><button onclick="mrgVoltarPaginaInicial()" style="padding:9px 14px;border-radius:7px;color:#0d241a;background:#28d59d;border:0;font-weight:bold" type="button">← Voltar à página inicial</button></section><div class="mrg-pagina mrg-pagina-2 mrg-pagina-base mrg-web-p2" id="mrgPagina2">
 <header class="mrg-identidade-pc mrg-identidade-compacta"><button class="mrg-voltar-p1" id="mrgVoltarP1" onclick="mrgVoltarPaginaInicial()" title="Voltar à página inicial P1" type="button">← Voltar à página inicial</button>
 <div class="mrg-identidade-main">
@@ -132,7 +131,7 @@ body{background:radial-gradient(ellipse at 22% 7%,rgba(var(--p2pred-rgb),.16),tr
 <div class="mrg-manutencao-faixa" id="mrgManutencaoP2"></div>
 <main class="p2-layout">
 <aside class="p2-col mrg-analise-pausavel">
-<section class="p2-panel p2-mainpred"><div class="p2-panel-title p2-pred-title">AO VIVO · PREVISÃO ATUAL <span class="p2-gatilho-inline" aria-live="polite">GATILHO: <b id="p2Gatilho">--</b></span></div><div class="p2-pred-row"><div class="p2-pred-tipo" id="p2Tipo">AGUARDANDO</div><div class="p2-pred-pct" id="p2Confianca">--</div></div><div class="p2-status" id="p2Status">Aguardando leitura prospectiva...</div></section>
+<section class="p2-panel p2-mainpred"><div class="p2-panel-title p2-pred-title">AO VIVO · PREVISÃO ATUAL</div><div class="p2-pred-row"><div class="p2-pred-tipo" id="p2Tipo">AGUARDANDO</div><div class="p2-pred-pct" id="p2Confianca">--</div></div><div class="p2-status"><span id="p2Status">Aguardando leitura prospectiva...</span><span class="p2-gatilho-inline" aria-live="polite">· GATILHO <b id="p2Gatilho">--</b></span></div></section>
 <section class="p2-panel"><div class="p2-panel-title">LEITURA PUBLICADA</div><div class="p2-kpis"><div class="p2-kpi"><span>Última vela</span><b id="p2Ultima">--</b></div><div class="p2-kpi"><span title="Convicção calculada pelo Analista; não pelo navegador">Convicção</span><b id="p2Conviccao">--</b></div><div class="p2-kpi"><span title="Percentual publicado pelo Analista; classificação operacional depende de ajuste no motor">Exato 30</span><b id="p2Exato30">--</b></div><div class="p2-kpi"><span title="Percentual publicado pelo Analista; compatibilidade rosa/roxa deve ser contabilizada no motor">Família 30</span><b id="p2Familia30">--</b></div></div></section>
 <section class="p2-panel"><div class="p2-panel-title">HIPÓTESES DE CURTO PRAZO</div><div class="p2-hip-ajuda">Força de cada hipótese na leitura atual · percentuais independentes</div><div class="p2-hip" id="p2Hipoteses"><div class="p2-empty">Aguardando hipóteses publicadas...</div></div></section>
 </aside>
@@ -232,7 +231,7 @@ async function p2ChecarUltima(){
  if(error)return;const v=(data||[])[0];if(!v)return;
  // Somente a última vela FECHADA da fonte oficial; independente do snapshot de previsão.
  const m=Number(v.multiplicador);
- if(Number.isFinite(m)&&m>0){p2UltimaVelaFechada=m;set('p2Gatilho',mult(m));set('p2Ultima',mult(m))}
+ if(Number.isFinite(m)&&m>0){p2UltimaVelaFechada=v.multiplicador;set('p2Gatilho',p2FormatarGatilho(v.multiplicador));set('p2Ultima',mult(m))}
  const k=String(v.numero_rodada||v.data_hora);
  if(k!==p2UltimaChave){p2UltimaChave=k;await Promise.all([p2LerHistorico(),p2NorteCarregar()])}
  }catch(e){console.warn('MRG P2: atualização de vela:',e)}
@@ -279,11 +278,24 @@ async function p2NorteCarregar(){
 
 let p2UltimoEventoNotificado='',p2FoiInicializado=false,p2AlertaPreferencia=false,p2AlertaAudio=null;
 try{p2AlertaPreferencia=localStorage.getItem('mrg_p2_alertas_v2')==='1'}catch(e){}
+function p2FormatarGatilho(valor){
+  // Usa os algarismos da fonte sem arredondar. Padrao solicitado:
+  // 1.20 -> 1.200x; 1.02 -> 1.02x; 1.00 -> 1.00x.
+  if(valor && typeof valor==='object')valor=first(valor,['multiplicador','valor','x','mult']);
+  if(valor===null||valor===undefined||valor==='')return '--';
+  const original=String(valor).trim().replace(/x$/i,'').replace(',','.');
+  const n=Number(original);
+  if(!Number.isFinite(n)||n<=0)return '--';
+  if(!/^\d+(?:\.\d+)?$/.test(original))return String(n.toFixed(2))+'x';
+  let [int,dec='']=original.split('.');
+  dec=dec.padEnd(2,'0');
+  if(int==='1' && dec==='20')dec='200';
+  return int+'.'+dec+'x';
+}
 function p2GatilhoAtualizar(s){
-  // Mesmo cabeçalho compacto da previsão. Sem quadro adicional, peso ou fonte ampliada.
-  // A consulta da última vela fechada prevalece sobre o snapshot, que pode chegar atrasado.
-  if(p2UltimaVelaFechada!==null){set('p2Gatilho',mult(p2UltimaVelaFechada));return}
-  set('p2Gatilho',mult(first(s,['ultima','ultima_mult','ultima_vela'])));
+  // Valor da ultima vela FECHADA; sem caixa adicional e sem exibir peso do bot.
+  if(p2UltimaVelaFechada!==null){set('p2Gatilho',p2FormatarGatilho(p2UltimaVelaFechada));return}
+  set('p2Gatilho',p2FormatarGatilho(first(s,['ultima','ultima_mult','ultima_vela'])));
 }
 function p2AlertasUI(){const b=byId('p2AlertaToggle');if(!b)return;b.classList.toggle('on',p2AlertaPreferencia);b.setAttribute('aria-pressed',String(p2AlertaPreferencia));b.textContent=p2AlertaPreferencia?'♪ Alertas ativados':'♩ Ativar alertas';set('p2AlertaEstado',p2AlertaPreferencia?'TELA + SOM · ALERTAS LIGADOS':'ALERTAS OPCIONAIS')}
 async function mrgP2AlternarAlertas(){
