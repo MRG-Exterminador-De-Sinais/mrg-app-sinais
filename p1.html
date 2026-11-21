@@ -200,6 +200,45 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
 .p1-access-links .sec{font-size:11px;padding:10px 5px;min-width:0}
 @media(max-width:400px){.p1-access-card{padding:12px}.p1-access-links{grid-template-columns:1fr 1fr;gap:5px}.p1-access-links .sec{font-size:10px}}
 
+
+/* MRG P1: ajuste proporcional, sem modificar grade aprovada de estudos. */
+.mrg-historico-status{font-size:10px;color:#9ab3a6;text-align:right;min-height:13px;margin:-2px 1px 8px}
+.p1-password-row{position:relative;display:block;min-width:0}
+.p1-password-row>input{display:block;width:100%!important;min-width:0;padding-right:45px!important}
+.p1-access-card .p1-eye{position:absolute;right:7px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:28px!important;height:28px!important;min-width:0!important;min-height:0!important;max-width:28px;padding:0!important;margin:0!important;background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;color:#abbab3!important;font-size:0!important;line-height:1!important}
+.p1-access-card .p1-eye svg{width:19px;height:19px;display:block}
+.p1-access-card .p1-eye:focus-visible{outline:2px solid #9adfc0;outline-offset:2px;border-radius:3px!important}
+@media (min-width:900px){
+ .header-padrao-p1 .header-identidade{height:clamp(158px,15vw,210px)!important}
+ .header-padrao-p1 .header-marca-central{top:4%;height:90%}
+ .header-padrao-p1 .header-marca-mrg{font-size:clamp(31px,3.3vw,48px)!important}
+ .header-padrao-p1 .header-marca-nome{font-size:clamp(11px,1.1vw,17px)!important}
+ .header-padrao-p1 .header-marca-plataforma{font-size:clamp(9px,.8vw,12px)!important;margin-top:4px}
+ .header-padrao-p1 .header-marca-lema{font-size:clamp(6px,.62vw,9px)!important;margin-top:4px}
+ .header-padrao-p1 .header-relogio-vivo{top:25%!important;width:21%!important;right:3%!important}
+ .header-padrao-p1 .header-relogio-vivo .hora{font-size:clamp(18px,2vw,28px)!important}
+ .header-padrao-p1 .header-relogio-vivo .data{font-size:clamp(7px,.8vw,10px)!important;margin-top:2px!important}
+ .header-padrao-p1 .header-status-p1{top:62%!important;right:4%!important;width:19%!important;height:25%!important;border-width:1px!important}
+ .header-padrao-p1 .header-status-tipo{font-size:clamp(9px,.9vw,12px)!important}
+ .header-padrao-p1 .header-titulo{padding:6px 8px 7px!important}
+ .header-padrao-p1 .header-titulo .linha{font-size:10px!important}
+ .header-padrao-p1 .header-titulo .sub{font-size:14px!important;margin:3px 0!important}
+ .header-padrao-p1 .header-titulo .micro{font-size:8px!important;margin:2px 0!important}
+ .p1-email-linha{padding:6px 10px;font-size:11px;margin-bottom:5px}
+ .warning{padding:6px 2px 2px;font-size:10px}
+ #appBox>.page-title{padding:9px 2px 8px}
+ #appBox>.page-title h2{font-size:21px}
+ #appBox>.page-title p{font-size:12px;margin:3px 0 0}
+ #appBox>.feed{grid-template-columns:repeat(10,minmax(0,1fr))}
+ .feed{grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+ .vela{padding:6px 2px 5px}
+ .mult{font-size:12px}
+ .hora{font-size:9px}
+}
+@media(min-width:900px) and (max-width:1199px){.feed{grid-template-columns:repeat(8,minmax(0,1fr))}}
+@media(min-width:600px) and (max-width:899px){.feed{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(max-width:430px){.feed{grid-template-columns:repeat(4,minmax(0,1fr))}.mrg-historico-status{font-size:9px;text-align:left}}
+
 </style>
 </head>
 <body>
@@ -222,7 +261,7 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
     <label class="p1-access-label" for="senha">Senha</label>
     <div class="p1-password-row">
       <input id="senha" name="password" type="password" autocomplete="current-password" placeholder="Senha" required>
-      <button type="button" class="p1-eye" title="Mostrar senha" aria-label="Mostrar senha" aria-pressed="false" onclick="mrgMostrarSenhaP1('senha',this)">👁</button>
+      <button type="button" class="p1-eye" title="Mostrar senha" aria-label="Mostrar senha" aria-pressed="false" onclick="mrgMostrarSenhaP1('senha',this)"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.2A10.8 10.8 0 0 1 12 6c5.3 0 9.3 6 9.3 6a15.7 15.7 0 0 1-3.2 3.9"/><path d="M6.5 6.5C3.7 8.5 2.7 12 2.7 12s4 6 9.3 6c1.5 0 2.8-.4 4-1.1"/><path d="M10 10a3 3 0 0 0 4 4"/></svg></button>
     </div>
     <label class="p1-remember"><input type="checkbox" id="lembrarEmailP1"> Lembrar meu e-mail neste aparelho</label>
     <p class="p1-password-note">Para memorizar a senha, aceite a opção de salvar senha do navegador ou do dispositivo. O MRG não grava sua senha localmente.</p>
@@ -245,7 +284,7 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
     <label class="p1-access-label" for="cadSenhaP1">Criar senha</label>
     <div class="p1-password-row">
       <input id="cadSenhaP1" name="new-password" type="password" autocomplete="new-password" minlength="8" placeholder="Mínimo 8 caracteres" required>
-      <button type="button" class="p1-eye" aria-label="Mostrar senha" aria-pressed="false" onclick="mrgMostrarSenhaP1('cadSenhaP1',this)">👁</button>
+      <button type="button" class="p1-eye" aria-label="Mostrar senha" aria-pressed="false" onclick="mrgMostrarSenhaP1('cadSenhaP1',this)"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.2A10.8 10.8 0 0 1 12 6c5.3 0 9.3 6 9.3 6a15.7 15.7 0 0 1-3.2 3.9"/><path d="M6.5 6.5C3.7 8.5 2.7 12 2.7 12s4 6 9.3 6c1.5 0 2.8-.4 4-1.1"/><path d="M10 10a3 3 0 0 0 4 4"/></svg></button>
     </div>
     <button id="btnCriarContaP1" type="submit">CRIAR CONTA</button>
     <button type="button" class="sec" onclick="mrgMostrarTelaP1('login')">VOLTAR AO LOGIN</button>
@@ -267,12 +306,12 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
     <label class="p1-access-label" for="novaSenhaP1">Nova senha</label>
     <div class="p1-password-row">
       <input id="novaSenhaP1" name="new-password" type="password" autocomplete="new-password" minlength="8" placeholder="Mínimo 8 caracteres" required>
-      <button type="button" class="p1-eye" aria-label="Mostrar senha" aria-pressed="false" onclick="mrgMostrarSenhaP1('novaSenhaP1',this)">👁</button>
+      <button type="button" class="p1-eye" aria-label="Mostrar senha" aria-pressed="false" onclick="mrgMostrarSenhaP1('novaSenhaP1',this)"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.2A10.8 10.8 0 0 1 12 6c5.3 0 9.3 6 9.3 6a15.7 15.7 0 0 1-3.2 3.9"/><path d="M6.5 6.5C3.7 8.5 2.7 12 2.7 12s4 6 9.3 6c1.5 0 2.8-.4 4-1.1"/><path d="M10 10a3 3 0 0 0 4 4"/></svg></button>
     </div>
     <label class="p1-access-label" for="confirmarSenhaP1">Confirmar nova senha</label>
     <div class="p1-password-row">
       <input id="confirmarSenhaP1" name="new-password-confirm" type="password" autocomplete="new-password" minlength="8" placeholder="Repita a nova senha" required>
-      <button type="button" class="p1-eye" aria-label="Mostrar senha" aria-pressed="false" onclick="mrgMostrarSenhaP1('confirmarSenhaP1',this)">👁</button>
+      <button type="button" class="p1-eye" aria-label="Mostrar senha" aria-pressed="false" onclick="mrgMostrarSenhaP1('confirmarSenhaP1',this)"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.2A10.8 10.8 0 0 1 12 6c5.3 0 9.3 6 9.3 6a15.7 15.7 0 0 1-3.2 3.9"/><path d="M6.5 6.5C3.7 8.5 2.7 12 2.7 12s4 6 9.3 6c1.5 0 2.8-.4 4-1.1"/><path d="M10 10a3 3 0 0 0 4 4"/></svg></button>
     </div>
     <button id="btnNovaSenhaP1" type="submit">SALVAR NOVA SENHA</button>
     <button type="button" class="sec" onclick="mrgMostrarTelaP1('login')">VOLTAR AO LOGIN</button>
@@ -298,7 +337,8 @@ button.sec{background:#242724;color:#fff;border:1px solid #444}
     </section>
 
     <section class="card" style="margin-top:12px">
-      <div class="history-head"><b>◷ HISTÓRICO AO VIVO — ÚLTIMAS 20 VELAS</b><span>1WIN BET AVIATOR</span></div>
+      <div class="history-head"><b>◷ HISTÓRICO AO VIVO — ÚLTIMAS 50 VELAS</b><span>1WIN BET AVIATOR</span></div>
+      <div id="mrgHistoricoEstadoP1" class="mrg-historico-status" aria-live="polite">Atualização automática quando houver nova rodada</div>
       <div id="feed" class="feed"><div style="grid-column:1/-1;text-align:center;color:#888">Carregando histórico...</div></div>
     </section>
 
@@ -360,15 +400,18 @@ function mrgMostrarTelaP1(tela="login"){
   if(tela==="novaSenha")MRG_P1_RECUPERACAO_ATIVA=true;
   if(tela==="login")MRG_P1_RECUPERACAO_ATIVA=false;
 }
+const MRG_P1_ICONE_OLHO_FECHADO='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.2A10.8 10.8 0 0 1 12 6c5.3 0 9.3 6 9.3 6a15.7 15.7 0 0 1-3.2 3.9"/><path d="M6.5 6.5C3.7 8.5 2.7 12 2.7 12s4 6 9.3 6c1.5 0 2.8-.4 4-1.1"/><path d="M10 10a3 3 0 0 0 4 4"/></svg>';
+const MRG_P1_ICONE_OLHO_ABERTO='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.7 12S6.7 6 12 6s9.3 6 9.3 6-4 6-9.3 6-9.3-6-9.3-6Z"/><circle cx="12" cy="12" r="3"/></svg>';
 function mrgMostrarSenhaP1(inputId,botao){
   const input=el(inputId);if(!input)return;
   const visivel=input.type==="password";
   input.type=visivel?"text":"password";
-  botao.textContent=visivel?"🙈":"👁";
+  botao.innerHTML=visivel?MRG_P1_ICONE_OLHO_ABERTO:MRG_P1_ICONE_OLHO_FECHADO;
   botao.setAttribute("aria-pressed",String(visivel));
   botao.setAttribute("aria-label",visivel?"Ocultar senha":"Mostrar senha");
   botao.title=visivel?"Ocultar senha":"Mostrar senha";
 }
+
 function mrgMemorizarEmailP1(email){
   try{if(el("lembrarEmailP1").checked)localStorage.setItem(MRG_P1_EMAIL_MEMORIZADO,email);
   else localStorage.removeItem(MRG_P1_EMAIL_MEMORIZADO)}catch(e){console.warn("Preferência de e-mail indisponível.")}
@@ -472,7 +515,7 @@ async function entrar(){
   }catch(e){console.error("[MRG P1] Login:",e);el("loginMsg").textContent=e.message||"Não foi possível autenticar."}
   finally{MRG_P1_LOGIN_EXECUTANDO=false;el("btnEntrarP1").disabled=false}
 }
-async function sair(){fecharModal();await mrgEncerrarRegistroSessao();await db.auth.signOut({scope:"local"});contrato=null;el("appBox").classList.add("escondido");atualizarStatusCabecalhoP1();el("loginBox").classList.remove("escondido")}
+async function sair(){if(mrgHistoricoP1Timer!==null){clearInterval(mrgHistoricoP1Timer);mrgHistoricoP1Timer=null}fecharModal();await mrgEncerrarRegistroSessao();await db.auth.signOut({scope:"local"});contrato=null;el("appBox").classList.add("escondido");atualizarStatusCabecalhoP1();el("loginBox").classList.remove("escondido")}
 
 function normalizarContrato(data){
   if(Array.isArray(data)) data=data[0]||{};
@@ -546,6 +589,7 @@ async function iniciarApp(){
   aplicarPermissoes();
   mrgAtualizarDispositivoP1();
   await carregarHistorico();
+  mrgHistoricoP1Iniciar();
 }
 
 function rotuloStatusP1(estado){
@@ -591,14 +635,32 @@ function mrgDetectarDispositivoP1(){
   return "navegador";
 }
 function mrgRotasDispositivoP1(){return MRG_ROTAS_APLICATIVOS_P1[mrgDetectarDispositivoP1()]||null}
+function mrgExecutandoDentroAplicativoP1(){
+  // P1 apenas adapta UX. Permissão sempre conferida no Supabase.
+  const bridge=window.MRG_APP_SHELL;
+  if(bridge && (bridge.isNative===true || bridge.isApp===true))return true;
+  const ua=navigator.userAgent||"";
+  // Fallback para o Electron existente até o novo aplicativo expor a ponte.
+  if(/\bElectron\/\d/i.test(ua))return true;
+  // WebView Android identificada por marcador wv; o Chrome normal não tem esse marcador.
+  if(/Android/i.test(ua) && /(?:;\s*wv[;)]|\bVersion\/4\.0.*\bChrome\/)/i.test(ua))return true;
+  return false;
+}
 function mrgAtualizarDispositivoP1(){
   const tipo=mrgDetectarDispositivoP1();
   const labels={windows:"PC Windows",android:"Android",ios:"iPhone / iPad",navegador:"Navegador"};
-  const local=el("mrgPlataformaP1");if(local)local.textContent=labels[tipo];
+  const box=el("mrgDispositivoP1"),local=el("mrgPlataformaP1"),msg=el("mrgMensagemDispositivoP1");
+  if(local)local.textContent=labels[tipo];
+  const noAplicativo=mrgExecutandoDentroAplicativoP1();
+  // Dentro do aplicativo, P1 é a entrada principal: não oferecer lista sem jogo.
+  if(box)box.classList.toggle("escondido",noAplicativo || tipo==="ios");
+  if(noAplicativo || tipo==="ios")return;
   const links=mrgRotasDispositivoP1();
-  // Um website não consegue verificar a instalação do aplicativo sem tentativa iniciada pelo usuário.
   el("mrgAbrirAplicativoP1")?.classList.toggle("escondido",!links?.abrir);
   el("mrgBaixarAplicativoP1")?.classList.toggle("escondido",!links?.baixar);
+  if(msg)msg.textContent=(tipo==="windows"||tipo==="android") && !links?.abrir
+    ?"A opção de abrir ou instalar o aplicativo será disponibilizada após validar os links da nova versão."
+    :"";
 }
 function mrgContinuarOnlineP1(){
   // A navegação é mantida na própria P1; cada botão P2/P3/P4 valida o contrato.
@@ -620,16 +682,71 @@ function classeVela(v){
   if(c==="ROSA")return"rosa"; if(c==="ROXO")return"roxo"; if(c==="AZUL")return"azul";
   const x=Number(v?.multiplicador)||0; return x>=10?"rosa":x>=2?"roxo":"azul";
 }
-async function carregarHistorico(){
-  const {data,error}=await db.from("mrg_analista_velas_24h").select("id,data_hora,hora,multiplicador,cor").order("data_hora",{ascending:false}).limit(20);
-  if(error){el("feed").innerHTML='<div style="grid-column:1/-1;text-align:center;color:#888">Histórico indisponível.</div>';return}
-  el("feed").innerHTML=(data||[]).map(v=>{
-    let h=String(v.hora||"").slice(-8);if(!h&&v.data_hora)h=new Date(v.data_hora).toLocaleTimeString("pt-BR");
-    return `<div class="vela ${classeVela(v)}"><div class="mult">${v.multiplicador}x</div><div class="hora">${h}</div></div>`;
-  }).join("")||'<div style="grid-column:1/-1;text-align:center;color:#888">Sem velas disponíveis.</div>';
+let mrgHistoricoP1Carregando=false;
+let mrgHistoricoP1Checando=false;
+let mrgHistoricoP1Chave="";
+let mrgHistoricoP1UltimaCarga=0;
+let mrgHistoricoP1Timer=null;
+function mrgHistoricoP1Visivel(){
+  return document.visibilityState==="visible" &&
+    el("appBox") && !el("appBox").classList.contains("escondido") && Boolean(contrato);
 }
-
-document.addEventListener("visibilitychange",async()=>{if(document.visibilityState==="visible"&&contrato){try{await obterContrato();aplicarPermissoes()}catch(e){}}});
+function mrgHistoricoP1Status(mensagem){const x=el("mrgHistoricoEstadoP1");if(x)x.textContent=mensagem}
+function mrgHistoricoP1Fingerprint(item){return !item?"":String(item.id)+"|"+String(item.data_hora)+"|"+String(item.multiplicador)+"|"+String(item.cor)}
+async function carregarHistorico(){
+  if(mrgHistoricoP1Carregando)return;
+  mrgHistoricoP1Carregando=true;
+  try{
+    const {data,error}=await db.from("mrg_analista_velas_24h")
+      .select("id,data_hora,hora,multiplicador,cor")
+      .order("data_hora",{ascending:false})
+      .order("id",{ascending:false})
+      .limit(50);
+    if(error)throw error;
+    const feed=el("feed");if(!feed)return;
+    const fragment=document.createDocumentFragment();
+    (data||[]).forEach(v=>{
+      const item=document.createElement("div");item.className="vela "+classeVela(v);
+      const mult=document.createElement("div");mult.className="mult";
+      const num=Number(v.multiplicador);mult.textContent=(Number.isFinite(num)?num.toFixed(2):"--")+"x";
+      const hora=document.createElement("div");hora.className="hora";
+      let h=String(v.hora||"").slice(-8);
+      if(!h&&v.data_hora)h=new Date(v.data_hora).toLocaleTimeString("pt-BR",{timeZone:"America/Sao_Paulo"});
+      hora.textContent=h;item.append(mult,hora);fragment.append(item);
+    });
+    feed.replaceChildren(fragment);
+    if(!(data||[]).length)feed.textContent="Sem velas disponíveis.";
+    mrgHistoricoP1Chave=mrgHistoricoP1Fingerprint((data||[])[0]);
+    mrgHistoricoP1UltimaCarga=Date.now();
+    mrgHistoricoP1Status("50 velas · atualização automática ativa · mais recente à esquerda");
+  }catch(e){
+    console.warn("[MRG P1] Falha ao atualizar últimas velas:",e);
+    mrgHistoricoP1Status("Tentando reconectar ao histórico...");
+  }finally{mrgHistoricoP1Carregando=false}
+}
+async function mrgHistoricoP1VerificarNovaVela(){
+  if(!mrgHistoricoP1Visivel()||mrgHistoricoP1Checando||mrgHistoricoP1Carregando)return;
+  mrgHistoricoP1Checando=true;
+  try{
+    // Consulta mínima de uma única vela. Não repete a leitura das 50 se nada mudou.
+    const {data,error}=await db.from("mrg_analista_velas_24h")
+      .select("id,data_hora,multiplicador,cor")
+      .order("data_hora",{ascending:false})
+      .order("id",{ascending:false})
+      .limit(1);
+    if(error)throw error;
+    const nova=mrgHistoricoP1Fingerprint((data||[])[0]);
+    if(nova!==mrgHistoricoP1Chave || Date.now()-mrgHistoricoP1UltimaCarga>60000){
+      await carregarHistorico();
+    }
+  }catch(e){mrgHistoricoP1Status("Conexão instável · aguardando atualização")}
+  finally{mrgHistoricoP1Checando=false}
+}
+function mrgHistoricoP1Iniciar(){
+  if(mrgHistoricoP1Timer!==null)return;
+  mrgHistoricoP1Timer=setInterval(mrgHistoricoP1VerificarNovaVela,5000);
+}
+document.addEventListener("visibilitychange",async()=>{if(document.visibilityState==="visible"&&mrgHistoricoP1Visivel())await carregarHistorico();if(document.visibilityState==="visible"&&contrato){try{await obterContrato();aplicarPermissoes()}catch(e){}}});
 atualizarStatusCabecalhoP1();
 atualizarRelogioCabecalhoP1();
 setInterval(atualizarRelogioCabecalhoP1,1000);
