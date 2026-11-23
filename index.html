@@ -4827,6 +4827,29 @@ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgP3OnlineFlow #p3HistoricoGrid .
 })();
 </script>
 
+
+<!-- Teste compartilhado PC + Lista Online: somente o acionador de projeções. -->
+<style id="mrg-p3-projecao-compartilhada-teste">
+#mrgPagina3 .mrg-proj-panel.mrg-projecao-compartilhada{min-height:0!important;padding:7px!important}
+#mrgPagina3 .mrg-proj-panel.mrg-projecao-compartilhada>.panel-title,
+#mrgPagina3 .mrg-proj-panel.mrg-projecao-compartilhada #projecoesMercado{display:none!important}
+#mrgPagina3 .mrg-proj-panel.mrg-projecao-compartilhada .mrg-btn-projecoes{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;width:100%!important;margin:0!important;padding:10px 12px!important;font-size:12px!important}
+#mrgPagina3 .mrg-proj-panel.mrg-projecao-compartilhada .mrg-btn-projecoes::after{content:'↗';font-size:18px!important;line-height:1!important}
+</style>
+<script id="mrg-p3-projecao-compartilhada-teste-logica">
+(function(){
+ function aplicar(){
+   const painel=document.querySelector('#mrgPagina3 .mrg-proj-panel');
+   const botao=painel?.querySelector('.mrg-btn-projecoes');
+   if(!painel||!botao)return;
+   painel.classList.add('mrg-projecao-compartilhada');
+   botao.textContent='PROJEÇÕES FUTURAS · ABRIR PROJEÇÃO COMPLETA';
+   botao.setAttribute('aria-label','Abrir projeções futuras completas');
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',aplicar,{once:true});else aplicar();
+})();
+</script>
+
 </body>
 </html>
 <!-- 09/11/2026 10:22 UTC — P2: Aviator compartilhado e histórico sem identificação de round. P1/P2/P3/P4: continuidade do céu da arte oficial no cabeçalho. Preparado; publicação e teste visual pendentes. -->
