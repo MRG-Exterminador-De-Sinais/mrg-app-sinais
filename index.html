@@ -918,10 +918,7 @@ html.mrg-p3-portal #mrgPagina3{display:block!important}
 #mrgPagina3 #mrgAviatorCore .game-area{position:relative}
 #mrgPagina3 #viewAviator{display:none!important}
 #mrgPagina3 #mrgP3JogoOnlineAviso{display:flex;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;padding:24px;background:#02060a;color:#b3c5c7;font-size:13px;line-height:1.5;pointer-events:none}
-/* Mesmo contrato da P2: o aplicativo sinaliza conexão sem trocar a P3
-   para uma versão visual local. O Aviator permanece exclusivamente no chassi. */
-html.mrg-p3-host-aviator #mrgPagina3 #mrgP3JogoOnlineAviso,
-html.mrg-app-connected #mrgPagina3 #mrgP3JogoOnlineAviso{display:none!important}
+html.mrg-p3-host-aviator #mrgPagina3 #mrgP3JogoOnlineAviso{display:none!important}
 @media(max-width:730px){#mrgPagina3 .mrg-p3-nav-mini{flex-wrap:wrap!important;justify-content:flex-start}}
 </style>
 <style id="mrg-p3-lista-online-responsiva-20261122">
@@ -4539,8 +4536,7 @@ function mrgAbrirP4Online(){
     const host=window.MRG_APP_SHELL;
     if(!host||typeof host.mountAviator!=='function')return;
     host.mountAviator({page:'P3',slotId:'p3AviatorSlot',shared:true});
-    // Mesmo estado da P2: o host reserva o Aviator, sem desligar a P3 online.
-    document.documentElement.classList.add('mrg-app-connected');
+    document.documentElement.classList.add('mrg-p3-host-aviator');
   };
   // Desabilitar carregamento do site de terceiro pelo próprio HTML. Único Aviator = host.
   window.mrgAbrirAviator=function(){window.mrgP3MontarAviatorHost();};
@@ -4828,64 +4824,6 @@ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgP3OnlineFlow #p3HistoricoGrid .
    const botao=projecao?.querySelector('.mrg-btn-projecoes');if(botao)botao.textContent='PROJEÇÕES FUTURAS · ABRIR PROJEÇÃO COMPLETA';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(montar,180),{once:true});else setTimeout(montar,180);
-})();
-</script>
-
-
-<!-- PC: todos os painéis começam abertos e podem ser recolhidos individualmente.
-     Não alcança p3AviatorSlot nem altera o único WebView nativo do Aviator. -->
-<style id="mrg-p3-paineis-recolhiveis-pc-rev01">
-#mrgPagina3 .mrg-p3-painel-recolhivel{position:relative}
-#mrgPagina3 .mrg-p3-painel-recolhivel>.panel-title{display:flex!important;align-items:center!important;gap:8px!important}
-#mrgPagina3 .mrg-p3-painel-recolhivel .mrg-p3-toggle-painel{margin-left:auto!important;flex:0 0 auto!important;width:25px!important;height:25px!important;padding:0!important;border:1px solid currentColor!important;border-radius:7px!important;background:rgba(0,0,0,.28)!important;color:inherit!important;font:900 16px/1 Arial,sans-serif!important;cursor:pointer!important}
-#mrgPagina3 .mrg-p3-painel-recolhivel .mrg-p3-toggle-painel:hover{filter:brightness(1.35);box-shadow:0 0 10px currentColor!important}
-#mrgPagina3 .mrg-p3-painel-recolhivel.mrg-p3-painel-fechado{min-height:0!important}
-#mrgPagina3 .mrg-p3-painel-recolhivel.mrg-p3-painel-fechado>:not(.panel-title){display:none!important}
-/* Projeções fechada conserva o botão verde operacional, sem abrir conteúdo dentro do painel. */
-#mrgPagina3 .mrg-proj-panel.mrg-p3-painel-fechado>.mrg-btn-projecoes{display:block!important;width:100%!important;margin:8px 0 0!important}
-#mrgPagina3 .mrg-proj-panel.mrg-p3-painel-fechado #projecoesMercado{display:none!important}
-@media(max-width:650px){
- #mrgPagina3 .mrg-p3-painel-recolhivel .mrg-p3-toggle-painel{width:28px!important;height:28px!important;font-size:18px!important}
-}
-</style>
-<script id="mrg-p3-paineis-recolhiveis-pc-rev01-logica">
-(function(){
-  function montarPainel(painel){
-    if(!painel||painel.dataset.mrgPainelRecolhivel==='1')return;
-    const titulo=painel.querySelector(':scope > .panel-title');
-    if(!titulo)return;
-    painel.dataset.mrgPainelRecolhivel='1';
-    painel.classList.add('mrg-p3-painel-recolhivel');
-    const botao=document.createElement('button');
-    botao.type='button';botao.className='mrg-p3-toggle-painel';
-    botao.setAttribute('aria-expanded','true');botao.setAttribute('aria-label','Recolher painel');
-    botao.title='Recolher painel';botao.textContent='−';
-    function alternar(){
-      const fechado=painel.classList.toggle('mrg-p3-painel-fechado');
-      botao.textContent=fechado?'+':'−';
-      botao.title=fechado?'Abrir painel':'Recolher painel';
-      botao.setAttribute('aria-label',botao.title);
-      botao.setAttribute('aria-expanded',String(!fechado));
-    }
-    botao.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();alternar();});
-    titulo.appendChild(botao);
-  }
-  function iniciar(){
-    const p3=document.getElementById('mrgPagina3');if(!p3)return;
-    const seletores=[
-      '.p3-sinais-panel',
-      '.p3-left-real > .panel:nth-child(2)',
-      '.p3-left-real > .panel:nth-child(3)',
-      '.mrg-norte',
-      '.mrg-live-panel',
-      '.mrg-proj-panel',
-      '.p3-right-real > .panel:last-child',
-      '.p3-history'
-    ];
-    seletores.forEach(s=>montarPainel(p3.querySelector(s)));
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',iniciar,{once:true});else iniciar();
-  window.addEventListener('mrg-app-ready',iniciar);
 })();
 </script>
 
