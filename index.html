@@ -1607,6 +1607,13 @@ async function mrgAbrirPagina(numero,{revalidar=true}={}){
 }
 function mrgP2Primeiro(obj,nomes,padrao=null){for(const k of nomes){if(obj&&obj[k]!==undefined&&obj[k]!==null&&obj[k]!=="")return obj[k]}return padrao}
 function mrgP2Pct(v){if(v===null||v===undefined||v==="")return"--";let n=Number(String(v).replace("%","").replace(",","."));if(!Number.isFinite(n))return String(v);if(n>=0&&n<=1)n*=100;return `${Math.round(n)}%`}
+function mrgP3MultExato(v){
+  if(v&&typeof v==="object")v=mrgP2Primeiro(v,["multiplicador","valor","x","mult"],null);
+  if(v===null||v===undefined||v==="")return "--";
+  const original=String(v).trim();
+  const numero=Number(original.replace(/[xX]$/," ").trim().replace(",","."));
+  return Number.isFinite(numero)?numero.toFixed(2)+"x":original;
+}
 function mrgP2Mult(v){if(v&&typeof v==="object")v=mrgP2Primeiro(v,["multiplicador","valor","x","mult"],null);if(v===null||v===undefined||v==="")return"--";const t=String(v).trim();return /x$/i.test(t)?t:`${t}x`}
 function mrgP2Cor(tipo){const t=String(tipo||"").toUpperCase();let hex="#ffffff",rgb="255,255,255";if(t.includes("ROSA")){hex="#ff4fa3";rgb="255,79,163"}else if(t.includes("ROX")){hex="#b65cff";rgb="182,92,255"}else if(t.includes("AZUL")){hex="#38bdf8";rgb="56,189,248"}document.documentElement.style.setProperty("--p2pred",hex);document.documentElement.style.setProperty("--p2pred-rgb",rgb)}
 function mrgP2NomeHipotese(chave){const t=String(chave||"").replace(/_/g," ").trim().toUpperCase();const nomes={"VALA AZUL":"VALA AZUL","SURF ROXO":"SURF ROXO","ROXA ALTA":"ROXA ALTA","ROSA MEDIANA":"ROSA MEDIANA","ROSA ALTA":"ROSA ALTA"};return nomes[t]||t||"HIPÓTESE"}
@@ -1672,7 +1679,47 @@ function mrgP3RoundSomenteNumeros(v){
   const numeros=String(original||"").replace(/\D/g,"");
   return numeros?`<div class="mrg-vela-round">${mrgEscaparHtml(numeros)}</div>`:"";
 }
-function mrgP3RenderHistorico(){const g=document.getElementById("p3HistoricoGrid");const meta=document.getElementById("p3HistoricoMeta");if(!g)return;const dados=MRG_P3_HIST_DADOS.filter(mrgP3PassaFiltro);if(meta)meta.textContent=`${dados.length} velas carregadas`;g.innerHTML=dados.length?dados.map(v=>{const mult=Number(v.multiplicador)||0;let hora=String(v.hora||"").slice(-8);if(!hora&&v.data_hora)try{hora=new Date(v.data_hora).toLocaleTimeString("pt-BR",{hour12:false})}catch(e){};return `<div class="mrg-vela-card ${mrgCorVela(mult)}"><div class="mrg-vela-mult">${mult}x</div><div class="mrg-vela-hora">${hora||"--:--:--"}</div>${mrgP3RoundSomenteNumeros(v)}</div>`}).join(""):'<div class="empty">Sem velas para este filtro.</div>'}
+/* P3 PRO: exibir o multiplicador completo, reduzindo APENAS a fonte da celula. */
+function mrgP3AjustarFonteGrade(){
+  const grade=document.getElementById('p3HistoricoGrid');
+  if(!grade)return;
+  grade.querySelectorAll('.mrg-vela-card .mrg-vela-mult').forEach(texto=>{
+    const card=texto.closest('.mrg-vela-card');
+    if(!card)return;
+    texto.style.setProperty('display','block','important');
+    texto.style.setProperty('white-space','nowrap','important');
+    texto.style.setProperty('width','max-content','important');
+    texto.style.setProperty('max-width','none','important');
+    texto.style.setProperty('letter-spacing','-.2px','important');
+    let tamanho=10;
+    const largura=Math.max(8,card.clientWidth-4);
+    texto.style.setProperty('font-size',tamanho+'px','important');
+    while(tamanho>4 && texto.getBoundingClientRect().width>largura){
+      tamanho-=0.5;
+      texto.style.setProperty('font-size',tamanho+'px','important');
+    }
+  });
+}
+let mrgP3FonteGradePendente=false;
+function mrgP3AgendarFonteGrade(){
+  if(mrgP3FonteGradePendente)return;
+  mrgP3FonteGradePendente=true;
+  requestAnimationFrame(()=>{mrgP3FonteGradePendente=false;mrgP3AjustarFonteGrade()});
+}
+window.addEventListener('resize',mrgP3AgendarFonteGrade);
+/* A grade 24h pode iniciar recolhida; reajustar quando ela for aberta. */
+if(typeof ResizeObserver==='function'){
+  const mrgP3ObservarGrade=()=>{
+    const grade=document.getElementById('p3HistoricoGrid');
+    if(grade&&!grade.dataset.mrgFonteObservada){
+      grade.dataset.mrgFonteObservada='1';
+      new ResizeObserver(mrgP3AgendarFonteGrade).observe(grade);
+    }
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mrgP3ObservarGrade,{once:true});
+  else mrgP3ObservarGrade();
+}
+function mrgP3RenderHistorico(){const g=document.getElementById("p3HistoricoGrid");const meta=document.getElementById("p3HistoricoMeta");if(!g)return;const dados=MRG_P3_HIST_DADOS.filter(mrgP3PassaFiltro);if(meta)meta.textContent=`${dados.length} velas carregadas`;g.innerHTML=dados.length?dados.map(v=>{const mult=Number(v.multiplicador)||0;let hora=String(v.hora||"").slice(-8);if(!hora&&v.data_hora)try{hora=new Date(v.data_hora).toLocaleTimeString("pt-BR",{hour12:false})}catch(e){};return `<div class="mrg-vela-card ${mrgCorVela(mult)}"><div class="mrg-vela-mult">${mrgP3MultExato(v.multiplicador)}</div><div class="mrg-vela-hora">${hora||"--:--:--"}</div>${mrgP3RoundSomenteNumeros(v)}</div>`}).join(""):'<div class="empty">Sem velas para este filtro.</div>';mrgP3AgendarFonteGrade()}
 async function mrgP3CarregarHistorico24h(){if(!mrgLogado)return;try{const{data,error}=await db.from("mrg_analista_velas_24h").select("*").order("data_hora",{ascending:false}).limit(MRG_P3_HIST_LIMITE);if(error)throw error;MRG_P3_HIST_DADOS=Array.isArray(data)?data:[];mrgP3RenderHistorico()}catch(e){const g=document.getElementById("p3HistoricoGrid");if(g)g.innerHTML='<div class="empty">Histórico 24h temporariamente indisponível.</div>'}}
 function mrgP3Filtro(f,btn){MRG_P3_HIST_FILTRO=f||"TODAS";document.querySelectorAll('[data-p3f]').forEach(b=>b.classList.toggle('ativo',b===btn));mrgP3RenderHistorico()}
 function mrgP3CarregarMais(){MRG_P3_HIST_LIMITE+=100;mrgP3CarregarHistorico24h()}
@@ -1758,7 +1805,7 @@ function mrgP3RotuloCompacto(valor){
   if(t.includes("ROXO")||t.includes("ROXA"))return "ROXO";
   return t.split(/\s+/)[0]||"--";
 }
-function mrgAtualizarNorteP3(s,tipo,conf,aud,altTipo,altForca){const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};set("p3AnalistaPrincipal",`${mrgP3RotuloCompacto(tipo)}${conf!==null?" · "+mrgP2Pct(conf):""}`);set("p3AnalistaAlt",altTipo==="--"?"--":`${mrgP3RotuloCompacto(altTipo)}${altForca!==null?" · "+mrgP2Pct(altForca):""}`);set("p3AnalistaConv",mrgP2Pct(mrgP2Primeiro(s,["conviccao"],conf)));const ultimaBruta=mrgP2Primeiro(s,["ultima","ultima_mult","ultima_vela"],null);set("p3AnalistaUltima",mrgP2Mult(ultimaBruta));const ultimaEl=document.getElementById("p3AnalistaUltima");if(ultimaEl)ultimaEl.style.color=mrgP3CorUltimaVela(ultimaBruta);const gatilhoPublico=mrgP2Primeiro(s,["proxima_gatilho","gatilho_entrada","gatilho_operacional","gatilho","entrada_apos","referencia_entrada"],null);set("p3UltimaMobile",mrgP2Mult(ultimaBruta));const ultimaMobileEl=document.getElementById("p3UltimaMobile");if(ultimaMobileEl)ultimaMobileEl.style.color=mrgP3CorUltimaVela(ultimaBruta);set("p3AnalistaExato",mrgP2Pct(mrgP2Primeiro(aud,["exato_pct","exato30"],null)));set("p3AnalistaFamilia",mrgP2Pct(mrgP2Primeiro(aud,["familia_pct","familia30"],null)));mrgAplicarCorAnalistaGeral(tipo);if(typeof window.mrgP3AvaliarPrevisaoNotificacao==="function")window.mrgP3AvaliarPrevisaoNotificacao(s,tipo,conf)}
+function mrgAtualizarNorteP3(s,tipo,conf,aud,altTipo,altForca){const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};set("p3AnalistaPrincipal",`${mrgP3RotuloCompacto(tipo)}${conf!==null?" · "+mrgP2Pct(conf):""}`);set("p3AnalistaAlt",altTipo==="--"?"--":`${mrgP3RotuloCompacto(altTipo)}${altForca!==null?" · "+mrgP2Pct(altForca):""}`);set("p3AnalistaConv",mrgP2Pct(mrgP2Primeiro(s,["conviccao"],conf)));const ultimaBruta=mrgP2Primeiro(s,["ultima","ultima_mult","ultima_vela"],null);set("p3AnalistaUltima",mrgP3MultExato(ultimaBruta));const ultimaEl=document.getElementById("p3AnalistaUltima");if(ultimaEl)ultimaEl.style.color=mrgP3CorUltimaVela(ultimaBruta);const gatilhoPublico=mrgP2Primeiro(s,["proxima_gatilho","gatilho_entrada","gatilho_operacional","gatilho","entrada_apos","referencia_entrada"],null);set("p3UltimaMobile",mrgP3MultExato(ultimaBruta));const ultimaMobileEl=document.getElementById("p3UltimaMobile");if(ultimaMobileEl)ultimaMobileEl.style.color=mrgP3CorUltimaVela(ultimaBruta);set("p3AnalistaExato",mrgP2Pct(mrgP2Primeiro(aud,["exato_pct","exato30"],null)));set("p3AnalistaFamilia",mrgP2Pct(mrgP2Primeiro(aud,["familia_pct","familia30"],null)));mrgAplicarCorAnalistaGeral(tipo);if(typeof window.mrgP3AvaliarPrevisaoNotificacao==="function")window.mrgP3AvaliarPrevisaoNotificacao(s,tipo,conf)}
 
 function mrgAbrirConteudoP1(titulo){
   const modal=document.getElementById("mrgModalConteudoP1");
@@ -3004,7 +3051,7 @@ async function mrgAbrirDetalhesRosas(indice){
 
         return{
           hora:mrgExtrairHoraMinuto(horario),
-          mult:String(mult).toLowerCase().includes("x")?String(mult):`${mult}x`
+          mult:mrgP3MultExato(mult)
         };
       })
       .sort((a,b)=>horarioValor(a.hora)-horarioValor(b.hora));
