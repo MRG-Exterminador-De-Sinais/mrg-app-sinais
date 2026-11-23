@@ -999,6 +999,47 @@ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-layout-real > * {
  html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-p3-norte10 span{min-width:0!important;}
 }
 </style>
+<script id="mrg-p3-iphone-split-identificacao-rev04">
+/* Mesma chave e parametro das paginas MRG anteriores; nao ativa split no iPhone comum. */
+(function(){
+ 'use strict';
+ const search=new URLSearchParams(location.search);
+ const force=search.get('modo')==='split';
+ let saved=false;
+ try{saved=sessionStorage.getItem('mrg_modo_split')==='1';if(force)sessionStorage.setItem('mrg_modo_split','1')}catch(e){}
+ if(force||saved)document.documentElement.classList.add('modo-split');
+})();
+</script>
+<style id="mrg-p3-iphone-split-responsivo-rev04">
+/* SOMENTE a janela P3 da interface dupla iPhone.
+   Segue a P3 online antiga e a chave modo=split da P4 iPhone.
+   Nao altera jogo, zoom, sinais, permissao, cores, nem layout PC/Android normal. */
+@media(max-width:900px){
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator),
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) body {overflow-x:hidden!important;max-width:100%!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 {width:100%!important;min-width:0!important;max-width:100%!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-layout-real {display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:8px!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-layout-real > * {min-width:0!important;width:100%!important;max-width:100%!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-titlebar {display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:6px!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-tools,
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-p3-nav-mini {display:flex!important;flex-wrap:wrap!important;min-width:0!important;max-width:100%!important;gap:4px!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-norte-horizontal .mrg-norte-grid {display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-norte-cell {min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-p3-norte10 {min-width:0!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-identidade-main {grid-template-columns:minmax(0,30%) minmax(0,1fr)!important;gap:4px!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-identidade-arte{height:70px!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-identidade-box{display:none!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-left-real,
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-right-real {display:flex!important;flex-direction:column!important;gap:8px!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .side .panel,
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .center .panel {max-width:100%!important;min-width:0!important;}
+}
+@media(max-width:320px){
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-p3-nav-mini button {font-size:10px!important;padding:5px!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-titlebar-brand strong{font-size:12px!important;}
+ html.mrg-p3-portal.modo-split:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-identidade-compacta .mrg-identidade-mrg{font-size:20px!important;}
+}
+</style>
 </head>
 <body>
 <div id="mrgP3PortaP1" role="status" aria-live="polite"><b>MRG · P3 PRO</b><span id="mrgP3PortaTexto">Validando sessão e permissões da P1...</span><button type="button" onclick="location.assign('/p1.html')">Voltar para P1</button></div>
@@ -4134,7 +4175,7 @@ function mrgAbrirP4Online(){
   const status=document.getElementById('mrgP3PortaTexto');
   let identificador=null, carregando=false, autorizado=false;
   function msg(t){if(status)status.textContent=t;}
-  function irP1(){location.assign('/p1.html');}
+  function irP1(){location.assign('/p1.html'+(document.documentElement.classList.contains('modo-split')?'?modo=split':''));}
   function contratoBool(c,k){return c?.[k]===true||c?.[k]===1||String(c?.[k]).toLowerCase()==='true';}
   async function conferir(){
     if(!window.supabase||typeof db==='undefined')throw Error('Autenticação temporariamente indisponível.');
@@ -4205,8 +4246,8 @@ function mrgAbrirP4Online(){
       if(!permitido){alert('Página '+n+' não liberada para este associado.');return;}
       const host=window.MRG_APP_SHELL;
       if(host&&typeof host.abrirPagina==='function'){host.abrirPagina(n);return;}
-      if(n===2)location.assign('/p2.html');
-      if(n===4)location.assign('/p4.html');
+      if(n===2)location.assign('/p2.html'+(document.documentElement.classList.contains('modo-split')?'?modo=split':''));
+      if(n===4)location.assign('/p4.html'+(document.documentElement.classList.contains('modo-split')?'?modo=split':''));
     }catch(e){console.warn('[P3] Acesso P'+n+':',e);alert('Não foi possível confirmar o acesso. Volte à P1.');}
   };
   // A P3 online não oferece seu próprio login. A função do chassi antigo é redirecionada.
