@@ -89,7 +89,7 @@ body{background:radial-gradient(ellipse at 35% 0,rgba(19,62,69,.38),transparent 
 .p2-estatistica-fechados .taxa-box b{display:block;color:#22e4a0;font-size:20px;margin-top:5px}
 .mrg-nativo-aviator{display:none}.mrg-web-p2.mrg-app-connected .p2-layout{grid-template-columns:minmax(220px,1fr) minmax(0,2fr) minmax(220px,1fr)}
 .mrg-web-p2.mrg-app-connected .mrg-nativo-aviator{display:block}
-.p2-aviator-slot{width:100%;min-height:340px;border:11px solid #344449;border-radius:10px;background:#020508;overflow:hidden;position:relative}
+.p2-aviator-slot{width:100%;min-height:340px;border:0 solid #344449;border-radius:10px;background:#020508;overflow:hidden;position:relative}
 .p2-aviator-slot::before{content:"";position:absolute;inset:0;background:#020405}
 .p2-history{margin-top:13px}
 .p2-history-tools{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-bottom:10px}
@@ -162,9 +162,9 @@ body{background:radial-gradient(ellipse at 22% 7%,rgba(var(--p2pred-rgb),.16),tr
   .mrg-web-p2 .p2-layout .p2-mainpred {order:10;}
   .mrg-web-p2 .p2-layout .p2-mapa-prospectivo {order:20;}
   .mrg-web-p2 .p2-layout > .mrg-nativo-aviator {order:25;align-self:stretch;}
-  .mrg-web-p2 .p2-layout .p2-leitura-publicada {order:30;}
+  .mrg-web-p2 .p2-layout .p2-leitura-publicada {order:50;}
   .mrg-web-p2 .p2-layout .p2-hipoteses-curto-prazo {order:40;}
-  .mrg-web-p2 .p2-layout #p2ResumoRoxoResultados {order:50;}
+  .mrg-web-p2 .p2-layout #p2ResumoRoxoResultados {order:30;}
   .mrg-web-p2 .p2-layout #p2ResumoProResultados {order:70;}
   .mrg-web-p2 .p2-layout #p2ResumoRoxoResultados + .p2-panel {order:60;}
 }
@@ -299,6 +299,17 @@ html.modo-split .mrg-pagina .mrg-faixa-seguranca-topo{margin-bottom:5px}
 html.modo-split .mrg-web-p2 .p2-top.mrg-p2-cabecalho-unico{padding:5px 2px 8px}
 html.modo-split .mrg-web-p2 .mrg-p2-acoes>button,
 html.modo-split .mrg-web-p2 .mrg-p2-acoes .p2-alerta-toggle{font-size:8px;min-height:31px}
+</style><style id="mrg-p2-moldura-externa-original-p3">
+/* P2 PC: mesmas três camadas EXTERNAS do P3. Sem borda interna e sem alterar WebView/zoom. */
+.mrg-web-p2.mrg-app-connected .mrg-nativo-aviator .p2-aviator-slot{
+  width:calc(100% - 16px)!important; /* reserva 8px de cada lado para a sombra */
+  border-width:0!important;
+  border-radius:18px!important;
+  box-shadow:0 0 0 8px rgba(var(--p2pred-rgb),1),
+             0 0 15px 10px rgba(var(--p2pred-rgb),.48),
+             0 0 30px 13px rgba(var(--p2pred-rgb),.27)!important;
+  transition:box-shadow .12s linear!important;
+}
 </style></head><body><section hidden="" id="mrgAcessoBloqueadoP2" style="margin:20vh auto;max-width:420px;padding:20px;border:1px solid #355349;border-radius:14px;background:#071414;text-align:center"><h3>Acesso pela Página Inicial</h3><p>Entre pela P1 e utilize suas permissões de acesso.</p><button onclick="mrgVoltarPaginaInicial()" style="padding:9px 14px;border-radius:7px;color:#0d241a;background:#28d59d;border:0;font-weight:bold" type="button">← Voltar à página inicial</button></section><div class="mrg-pagina mrg-pagina-2 mrg-pagina-base mrg-web-p2" id="mrgPagina2">
 <div class="mrg-faixa-seguranca-topo" aria-hidden="true"></div>
 <header class="mrg-identidade-pc mrg-identidade-compacta">
