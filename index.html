@@ -4828,25 +4828,60 @@ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgP3OnlineFlow #p3HistoricoGrid .
 </script>
 
 
-<!-- Teste compartilhado PC + Lista Online: somente o acionador de projeções. -->
-<style id="mrg-p3-projecao-compartilhada-teste">
-#mrgPagina3 .mrg-proj-panel.mrg-projecao-compartilhada{min-height:0!important;padding:7px!important}
-#mrgPagina3 .mrg-proj-panel.mrg-projecao-compartilhada>.panel-title,
-#mrgPagina3 .mrg-proj-panel.mrg-projecao-compartilhada #projecoesMercado{display:none!important}
-#mrgPagina3 .mrg-proj-panel.mrg-projecao-compartilhada .mrg-btn-projecoes{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;width:100%!important;margin:0!important;padding:10px 12px!important;font-size:12px!important}
-#mrgPagina3 .mrg-proj-panel.mrg-projecao-compartilhada .mrg-btn-projecoes::after{content:'↗';font-size:18px!important;line-height:1!important}
+<!-- PC: todos os painéis começam abertos e podem ser recolhidos individualmente.
+     Não alcança p3AviatorSlot nem altera o único WebView nativo do Aviator. -->
+<style id="mrg-p3-paineis-recolhiveis-pc-rev01">
+#mrgPagina3 .mrg-p3-painel-recolhivel{position:relative}
+#mrgPagina3 .mrg-p3-painel-recolhivel>.panel-title{display:flex!important;align-items:center!important;gap:8px!important}
+#mrgPagina3 .mrg-p3-painel-recolhivel .mrg-p3-toggle-painel{margin-left:auto!important;flex:0 0 auto!important;width:25px!important;height:25px!important;padding:0!important;border:1px solid currentColor!important;border-radius:7px!important;background:rgba(0,0,0,.28)!important;color:inherit!important;font:900 16px/1 Arial,sans-serif!important;cursor:pointer!important}
+#mrgPagina3 .mrg-p3-painel-recolhivel .mrg-p3-toggle-painel:hover{filter:brightness(1.35);box-shadow:0 0 10px currentColor!important}
+#mrgPagina3 .mrg-p3-painel-recolhivel.mrg-p3-painel-fechado{min-height:0!important}
+#mrgPagina3 .mrg-p3-painel-recolhivel.mrg-p3-painel-fechado>:not(.panel-title){display:none!important}
+/* Projeções fechada conserva o botão verde operacional, sem abrir conteúdo dentro do painel. */
+#mrgPagina3 .mrg-proj-panel.mrg-p3-painel-fechado>.mrg-btn-projecoes{display:block!important;width:100%!important;margin:8px 0 0!important}
+#mrgPagina3 .mrg-proj-panel.mrg-p3-painel-fechado #projecoesMercado{display:none!important}
+@media(max-width:650px){
+ #mrgPagina3 .mrg-p3-painel-recolhivel .mrg-p3-toggle-painel{width:28px!important;height:28px!important;font-size:18px!important}
+}
 </style>
-<script id="mrg-p3-projecao-compartilhada-teste-logica">
+<script id="mrg-p3-paineis-recolhiveis-pc-rev01-logica">
 (function(){
- function aplicar(){
-   const painel=document.querySelector('#mrgPagina3 .mrg-proj-panel');
-   const botao=painel?.querySelector('.mrg-btn-projecoes');
-   if(!painel||!botao)return;
-   painel.classList.add('mrg-projecao-compartilhada');
-   botao.textContent='PROJEÇÕES FUTURAS · ABRIR PROJEÇÃO COMPLETA';
-   botao.setAttribute('aria-label','Abrir projeções futuras completas');
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',aplicar,{once:true});else aplicar();
+  function montarPainel(painel){
+    if(!painel||painel.dataset.mrgPainelRecolhivel==='1')return;
+    const titulo=painel.querySelector(':scope > .panel-title');
+    if(!titulo)return;
+    painel.dataset.mrgPainelRecolhivel='1';
+    painel.classList.add('mrg-p3-painel-recolhivel');
+    const botao=document.createElement('button');
+    botao.type='button';botao.className='mrg-p3-toggle-painel';
+    botao.setAttribute('aria-expanded','true');botao.setAttribute('aria-label','Recolher painel');
+    botao.title='Recolher painel';botao.textContent='−';
+    function alternar(){
+      const fechado=painel.classList.toggle('mrg-p3-painel-fechado');
+      botao.textContent=fechado?'+':'−';
+      botao.title=fechado?'Abrir painel':'Recolher painel';
+      botao.setAttribute('aria-label',botao.title);
+      botao.setAttribute('aria-expanded',String(!fechado));
+    }
+    botao.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();alternar();});
+    titulo.appendChild(botao);
+  }
+  function iniciar(){
+    const p3=document.getElementById('mrgPagina3');if(!p3)return;
+    const seletores=[
+      '.p3-sinais-panel',
+      '.p3-left-real > .panel:nth-child(2)',
+      '.p3-left-real > .panel:nth-child(3)',
+      '.mrg-norte',
+      '.mrg-live-panel',
+      '.mrg-proj-panel',
+      '.p3-right-real > .panel:last-child',
+      '.p3-history'
+    ];
+    seletores.forEach(s=>montarPainel(p3.querySelector(s)));
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',iniciar,{once:true});else iniciar();
+  window.addEventListener('mrg-app-ready',iniciar);
 })();
 </script>
 
