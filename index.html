@@ -4739,6 +4739,82 @@ function mrgAbrirP4Online(){
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
 </script>
+
+<!-- MRG P3: lista online restaurada a partir do painel aprovado em 14/11. -->
+<style id="mrg-p3-lista-online-restaurada-rev14">
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-layout-real{display:flex!important;flex-direction:column!important;gap:9px!important;max-width:1180px!important;margin:0 auto!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-left-real,
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-center-real,
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-right-real{display:contents!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-sinais-panel{order:1!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-norte-horizontal{order:2!important;margin:0!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-live-panel{order:3!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-history{order:4!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-left-real>.panel:nth-child(2){order:5!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-left-real>.panel:nth-child(3){order:6!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-proj-panel{order:7!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-right-real>.panel:last-child{order:8!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 #p3AviatorSlot,
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .center-footer{display:none!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-sinais-panel{padding:10px!important;border-color:rgba(0,255,136,.5)!important;box-shadow:0 0 20px rgba(0,255,136,.10)!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 #ativosTopo{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))!important;gap:8px!important;max-height:none!important;overflow:visible!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .active-card{min-height:74px!important;padding:9px!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-norte-horizontal .mrg-norte-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important;max-height:none!important;overflow:visible!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-norte-horizontal .mrg-norte-cell{display:flex!important;min-height:58px!important;padding:8px!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-p3-norte10{display:grid!important;grid-template-columns:auto auto minmax(160px,1fr)!important;align-items:center!important;gap:8px!important;margin-top:7px!important;padding:8px!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-p3-norte10 small{grid-column:1/-1!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-p3-norte10-trilho{grid-column:1/-1!important;width:100%!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-live-panel{height:auto!important;max-height:none!important;padding:10px!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-live-panel .mrg-live-bloco,
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-live-panel #leituraAoVivo,
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-live-panel .mrg-live-resumos{display:block!important;visibility:visible!important;max-height:none!important;overflow:visible!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-live-panel .mrg-live-resumos{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-top:8px!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-history{display:block!important;padding:10px!important;max-height:none!important;overflow:visible!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-history-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(74px,1fr))!important;max-height:none!important;height:auto!important;overflow:visible!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-mobile-recolhivel .panel-title{pointer-events:none!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-mobile-recolhivel.mrg-mobile-fechado>*:not(.panel-title){display:block!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-history-tools{display:flex!important;flex-wrap:wrap!important;gap:7px!important;padding:7px 0!important}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-p3-filtro-select{flex:1 1 220px!important;min-height:34px!important;background:#080c12!important;border:1px solid #526172!important;border-radius:7px!important;color:#eaf5ff!important;padding:6px 8px!important;font-weight:800!important}
+@media(max-width:650px){
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-layout-real{gap:7px!important;padding:0 5px!important}
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-sinais-panel{order:1!important}
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-norte-horizontal{order:2!important}
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 #ativosTopo{grid-template-columns:1fr!important}
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-norte-horizontal .mrg-norte-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-p3-norte10{grid-template-columns:auto 1fr!important}
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-live-panel .mrg-live-resumos{grid-template-columns:1fr!important}
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-history-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px!important}
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-vela-card{min-height:58px!important}
+}
+</style>
+<script id="mrg-p3-lista-online-restaurada-logica-rev14">
+(function(){
+  function online(){return !document.documentElement.classList.contains('mrg-p3-host-aviator')}
+  function faixa(n){return n<10?'AZUL':n<50?'ROXO':n<100?'ROSA':n<200?'ROSA100':n<999999?'ROSA200':'TODAS'}
+  function instalar(){
+    if(!online())return;
+    const tools=document.querySelector('#mrgPagina3 .p3-history-tools');
+    if(!tools || tools.dataset.listaRev14)return;
+    tools.dataset.listaRev14='1';
+    tools.innerHTML='<select class="mrg-p3-filtro-select" id="mrgP3FiltroCorRev14" aria-label="Filtrar por cor"><option value="TODAS">TODAS AS CORES</option><option value="AZUL">AZUIS</option><option value="ROXO">ROXAS</option><option value="ROSA">ROSAS</option></select><select class="mrg-p3-filtro-select" id="mrgP3FiltroFaixaRev14" aria-label="Filtrar por multiplicador"><option value="TODAS">TODOS MULTIPLICADORES</option><option value="10-50">10x–50x</option><option value="50-100">50x–100x</option><option value="100-200">100x–200x</option><option value="200+">200x+</option></select><span id="p3HistoricoMeta" class="p3-history-meta">0 velas</span>';
+    const cor=document.getElementById('mrgP3FiltroCorRev14'), faixaSel=document.getElementById('mrgP3FiltroFaixaRev14');
+    const redesenhar=()=>{ if(typeof window.mrgP3RenderHistorico==='function') window.mrgP3RenderHistorico(); };
+    cor.addEventListener('change',redesenhar);faixaSel.addEventListener('change',redesenhar);
+    const filtroOriginal=window.mrgP3PassaFiltro;
+    window.mrgP3PassaFiltro=function(v){
+      if(!online())return filtroOriginal(v);
+      const n=Number(v&&v.multiplicador)||0;
+      const c=cor.value, f=faixaSel.value;
+      const corV=typeof window.mrgP2CorRegistro==='function'?window.mrgP2CorRegistro(v):faixa(n);
+      const corOk=c==='TODAS'||corV===c;
+      const faixaOk=f==='TODAS'||(f==='10-50'&&n>=10&&n<50)||(f==='50-100'&&n>=50&&n<100)||(f==='100-200'&&n>=100&&n<200)||(f==='200+'&&n>=200);
+      return corOk&&faixaOk;
+    };
+    redesenhar();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(instalar,60),{once:true});else setTimeout(instalar,60);
+})();
+</script>
 </body>
 </html>
 <!-- 09/11/2026 10:22 UTC — P2: Aviator compartilhado e histórico sem identificação de round. P1/P2/P3/P4: continuidade do céu da arte oficial no cabeçalho. Preparado; publicação e teste visual pendentes. -->
