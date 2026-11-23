@@ -918,7 +918,10 @@ html.mrg-p3-portal #mrgPagina3{display:block!important}
 #mrgPagina3 #mrgAviatorCore .game-area{position:relative}
 #mrgPagina3 #viewAviator{display:none!important}
 #mrgPagina3 #mrgP3JogoOnlineAviso{display:flex;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;padding:24px;background:#02060a;color:#b3c5c7;font-size:13px;line-height:1.5;pointer-events:none}
-html.mrg-p3-host-aviator #mrgPagina3 #mrgP3JogoOnlineAviso{display:none!important}
+/* Mesmo contrato da P2: o aplicativo sinaliza conexão sem trocar a P3
+   para uma versão visual local. O Aviator permanece exclusivamente no chassi. */
+html.mrg-p3-host-aviator #mrgPagina3 #mrgP3JogoOnlineAviso,
+html.mrg-app-connected #mrgPagina3 #mrgP3JogoOnlineAviso{display:none!important}
 @media(max-width:730px){#mrgPagina3 .mrg-p3-nav-mini{flex-wrap:wrap!important;justify-content:flex-start}}
 </style>
 <style id="mrg-p3-lista-online-responsiva-20261122">
@@ -4536,7 +4539,8 @@ function mrgAbrirP4Online(){
     const host=window.MRG_APP_SHELL;
     if(!host||typeof host.mountAviator!=='function')return;
     host.mountAviator({page:'P3',slotId:'p3AviatorSlot',shared:true});
-    document.documentElement.classList.add('mrg-p3-host-aviator');
+    // Mesmo estado da P2: o host reserva o Aviator, sem desligar a P3 online.
+    document.documentElement.classList.add('mrg-app-connected');
   };
   // Desabilitar carregamento do site de terceiro pelo próprio HTML. Único Aviator = host.
   window.mrgAbrirAviator=function(){window.mrgP3MontarAviatorHost();};
