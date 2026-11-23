@@ -1231,6 +1231,27 @@ html.mrg-p3-portal #mrgPagina3 #mrgP3AlertaUnicoMobile[aria-pressed="false"]{
  background:#1d2228!important;color:#fff!important;border-color:#707780!important;opacity:.45!important;
 }
 </style>
+
+<style id="mrg-p3-rev09-norte-tres-celular">
+/* Somente lista online no celular. A P3 do PC e o Aviator nativo permanecem intactos. */
+#mrgPagina3 .mrg-norte-gatilho-mobile{display:none!important}
+@media(max-width:900px){
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-norte-horizontal .mrg-norte-grid{
+   display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+   gap:4px!important;align-items:stretch!important;
+ }
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-norte-horizontal .mrg-norte-grid .mrg-norte-gatilho-mobile{
+   display:flex!important;flex-direction:column!important;justify-content:center!important;
+   align-items:flex-start!important;gap:2px!important;min-width:0!important;
+   padding:4px 5px!important;
+ }
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-norte-gatilho-mobile small{
+   color:#cbd5e1;font-size:clamp(7px,2.2vw,10px)!important;line-height:1.2!important;
+   overflow-wrap:anywhere!important;
+ }
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-norte-gatilho-mobile small strong{font-weight:800}
+}
+</style>
 </head>
 <body>
 <div id="mrgP3PortaP1" role="status" aria-live="polite"><b>MRG · P3 PRO</b><span id="mrgP3PortaTexto">Validando sessão e permissões da P1...</span><button type="button" onclick="location.assign('/p1.html')">Voltar para P1</button></div>
@@ -1388,6 +1409,7 @@ html.mrg-p3-portal #mrgPagina3 #mrgP3AlertaUnicoMobile[aria-pressed="false"]{
           <div class="mrg-norte-grid">
             <div class="mrg-norte-cell mrg-norte-principal"><span>Predominante</span><b id="p3AnalistaPrincipal">AGUARDANDO</b></div>
             <div class="mrg-norte-cell"><span>Alternativa</span><b id="p3AnalistaAlt">--</b></div>
+            <div class="mrg-norte-cell mrg-norte-gatilho-mobile" aria-label="Gatilho e última vela da leitura"><span>Gatilho</span><b id="p3GatilhoMobile">—</b><small>Última vela: <strong id="p3UltimaMobile">—</strong></small></div>
             <div class="mrg-norte-cell"><span>Convicção</span><b id="p3AnalistaConv">--</b></div>
             <div class="mrg-norte-cell"><span>Última vela</span><b id="p3AnalistaUltima">--</b></div>
             <div class="mrg-norte-cell p3-round"><span>Round</span><b id="p3AnalistaRound">--</b></div>
@@ -1721,7 +1743,7 @@ function mrgP3RotuloCompacto(valor){
   if(t.includes("ROXO")||t.includes("ROXA"))return "ROXO";
   return t.split(/\s+/)[0]||"--";
 }
-function mrgAtualizarNorteP3(s,tipo,conf,aud,altTipo,altForca){const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};set("p3AnalistaPrincipal",`${mrgP3RotuloCompacto(tipo)}${conf!==null?" · "+mrgP2Pct(conf):""}`);set("p3AnalistaAlt",altTipo==="--"?"--":`${mrgP3RotuloCompacto(altTipo)}${altForca!==null?" · "+mrgP2Pct(altForca):""}`);set("p3AnalistaConv",mrgP2Pct(mrgP2Primeiro(s,["conviccao"],conf)));const ultimaBruta=mrgP2Primeiro(s,["ultima","ultima_mult","ultima_vela"],null);set("p3AnalistaUltima",mrgP2Mult(ultimaBruta));const ultimaEl=document.getElementById("p3AnalistaUltima");if(ultimaEl)ultimaEl.style.color=mrgP3CorUltimaVela(ultimaBruta);set("p3AnalistaExato",mrgP2Pct(mrgP2Primeiro(aud,["exato_pct","exato30"],null)));set("p3AnalistaFamilia",mrgP2Pct(mrgP2Primeiro(aud,["familia_pct","familia30"],null)));mrgAplicarCorAnalistaGeral(tipo)}
+function mrgAtualizarNorteP3(s,tipo,conf,aud,altTipo,altForca){const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};set("p3AnalistaPrincipal",`${mrgP3RotuloCompacto(tipo)}${conf!==null?" · "+mrgP2Pct(conf):""}`);set("p3AnalistaAlt",altTipo==="--"?"--":`${mrgP3RotuloCompacto(altTipo)}${altForca!==null?" · "+mrgP2Pct(altForca):""}`);set("p3AnalistaConv",mrgP2Pct(mrgP2Primeiro(s,["conviccao"],conf)));const ultimaBruta=mrgP2Primeiro(s,["ultima","ultima_mult","ultima_vela"],null);set("p3AnalistaUltima",mrgP2Mult(ultimaBruta));const ultimaEl=document.getElementById("p3AnalistaUltima");if(ultimaEl)ultimaEl.style.color=mrgP3CorUltimaVela(ultimaBruta);const gatilhoPublico=mrgP2Primeiro(s,["proxima_gatilho","gatilho_entrada","gatilho_operacional","gatilho","entrada_apos","referencia_entrada"],null);set("p3GatilhoMobile",gatilhoPublico===null?"—":mrgP2Mult(gatilhoPublico));set("p3UltimaMobile",mrgP2Mult(ultimaBruta));const ultimaMobileEl=document.getElementById("p3UltimaMobile");if(ultimaMobileEl)ultimaMobileEl.style.color=mrgP3CorUltimaVela(ultimaBruta);set("p3AnalistaExato",mrgP2Pct(mrgP2Primeiro(aud,["exato_pct","exato30"],null)));set("p3AnalistaFamilia",mrgP2Pct(mrgP2Primeiro(aud,["familia_pct","familia30"],null)));mrgAplicarCorAnalistaGeral(tipo)}
 
 function mrgAbrirConteudoP1(titulo){
   const modal=document.getElementById("mrgModalConteudoP1");
