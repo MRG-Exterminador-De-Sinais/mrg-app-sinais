@@ -920,6 +920,52 @@ html.mrg-p3-portal #mrgPagina3{display:block!important}
 html.mrg-p3-host-aviator #mrgPagina3 #mrgP3JogoOnlineAviso{display:none!important}
 @media(max-width:730px){#mrgPagina3 .mrg-p3-nav-mini{flex-wrap:wrap!important;justify-content:flex-start}}
 </style>
+<style id="mrg-p3-lista-online-responsiva-20261122">
+/* Mesmo criterio da P2 oficial: jogo nativo somente com ponte do aplicativo.
+   O navegador exibe APENAS a lista PRO. Nenhum iframe, webview ou
+   placeholder consome altura/largura quando o jogo nao esta montado. */
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 #p3AviatorSlot,
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-footer-operacao {
+  display:none!important;
+}
+/* Os quadros e a leitura continuam online em qualquer sistema. */
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-layout-real {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) minmax(0,1fr)!important;
+  align-items:start!important;
+  gap:10px!important;
+}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-layout-real > * {
+  min-width:0!important;
+  width:100%!important;
+}
+@media (max-width: 900px) {
+  /* Lista online movel: o layout do PC NAO e comprimido para caber no celular. */
+  html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-layout-real {
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:10px!important;
+  }
+  html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-center-real {order:1!important;}
+  html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-left-real {order:2!important;}
+  html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-right-real {order:3!important;}
+  html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-left-real,
+  html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-right-real {
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    gap:10px!important;
+  }
+  html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 {
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-history-grid {
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  }
+}
+</style>
 </head>
 <body>
 <div id="mrgP3PortaP1" role="status" aria-live="polite"><b>MRG · P3 PRO</b><span id="mrgP3PortaTexto">Validando sessão e permissões da P1...</span><button type="button" onclick="location.assign('/p1.html')">Voltar para P1</button></div>
