@@ -310,6 +310,32 @@ html.modo-split .mrg-web-p2 .mrg-p2-acoes .p2-alerta-toggle{font-size:8px;min-he
              0 0 30px 13px rgba(var(--p2pred-rgb),.27)!important;
   transition:box-shadow .12s linear!important;
 }
+</style>
+<style id="mrg-p2-alerta-padrao-p3">
+/* Padrao de notificacao P3: contorno cinza e texto branco, independente da previsao. */
+.mrg-web-p2 .p2-alerta-area{gap:0}
+.mrg-web-p2 #p2AlertaEstado{display:none!important}
+.mrg-web-p2 #p2AlertaToggle,
+.mrg-web-p2 #p2AlertaToggle.on{
+  background:#22272d!important;
+  color:#fff!important;
+  border:1px solid #8b929c!important;
+  border-radius:7px!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+  font-weight:800!important;
+  transition:opacity .18s ease,background .18s ease,border-color .18s ease!important;
+}
+.mrg-web-p2 #p2AlertaToggle.on{
+  background:#353c45!important;
+  border-color:#aab2bd!important;
+  opacity:1!important;
+}
+.mrg-web-p2 #p2AlertaToggle:not(.on){
+  background:#1d2228!important;
+  border-color:#707780!important;
+  opacity:.45!important;
+}
 </style></head><body><section hidden="" id="mrgAcessoBloqueadoP2" style="margin:20vh auto;max-width:420px;padding:20px;border:1px solid #355349;border-radius:14px;background:#071414;text-align:center"><h3>Acesso pela Página Inicial</h3><p>Entre pela P1 e utilize suas permissões de acesso.</p><button onclick="mrgVoltarPaginaInicial()" style="padding:9px 14px;border-radius:7px;color:#0d241a;background:#28d59d;border:0;font-weight:bold" type="button">← Voltar à página inicial</button></section><div class="mrg-pagina mrg-pagina-2 mrg-pagina-base mrg-web-p2" id="mrgPagina2">
 <div class="mrg-faixa-seguranca-topo" aria-hidden="true"></div>
 <header class="mrg-identidade-pc mrg-identidade-compacta">
@@ -328,7 +354,7 @@ html.modo-split .mrg-web-p2 .mrg-p2-acoes .p2-alerta-toggle{font-size:8px;min-he
     <button type="button" onclick="mrgP2Navegar(1)" title="P1 Estudos">P1 · ESTUDOS</button>
     <button type="button" onclick="mrgP2Navegar(3)" title="P3 PRO">P3 · PRO</button>
     <button type="button" onclick="mrgP2Navegar(4)" title="P4 Mercado IQ">P4 · IQ</button>
-    <div class="p2-alerta-area"><div class="p2-live" id="p2AlertaEstado">ALERTAS OPCIONAIS</div><button aria-pressed="false" class="p2-alerta-toggle" id="p2AlertaToggle" onclick="mrgP2AlternarAlertas()" type="button">♩ Ativar alertas</button></div>
+    <div class="p2-alerta-area"><div class="p2-live" id="p2AlertaEstado">ALERTAS OPCIONAIS</div><button aria-pressed="false" class="p2-alerta-toggle" id="p2AlertaToggle" onclick="mrgP2AlternarAlertas()" type="button">Ativar notificações</button></div>
   </nav>
   <div class="p2-live" id="p2AtualizacaoTopo" hidden>AGUARDANDO LEITURA</div>
 </header>
@@ -394,8 +420,32 @@ function p2TextoHip(h){if(h===null||h===undefined)return'';if(typeof h==='number
 function p2PintarTipo(tipo){let rgb='40,229,155',hex='#28e59b';const t=String(tipo).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();if(t.includes('ROSA')){rgb='255,75,167';hex='#ff4ba7'}else if(t.includes('ROXA')||t.includes('ROXO')||t.includes('SURF')){rgb='173,105,255';hex='#ad69ff'}else if(t.includes('AZUL')||t.includes('VALA')){rgb='54,195,248';hex='#36c3f8'}const root=document.documentElement;root.style.setProperty('--p2pred',hex);root.style.setProperty('--p2pred-rgb',rgb)}
 function p2LerHora(d){if(!d)return'--';const str=String(d);if(/^\d{4}-/.test(str)){const v=new Date(str);if(!Number.isNaN(v.getTime()))return v.toLocaleTimeString('pt-BR',{hour12:false})}return str.match(/\d\d:\d\d:\d\d/)?.[0]||str.slice(-8)}
 function p2HoraAgora(){set('p2Relogio',new Date().toLocaleTimeString('pt-BR',{hour12:false}))}
-async function p2SessaoValida(){if(!db)return false;const{data:{session},error}=await db.auth.getSession();if(error||!session?.user?.email)return false;usuario=session.user;const token=localStorage.getItem(MRG_SESSAO_CHAVE);if(!token)return false;const{data:reg, error:e}=await db.from('sessoes_ativas').select('session_token,ativo').eq('email',usuario.email).maybeSingle();if(e||!reg||reg.ativo!==true||reg.session_token!==token)return false;return true}
-async function p2ConferirAcesso(){try{if(!await p2SessaoValida()){permitido=false;p2Aviso('SESSÃO ENCERRADA · RETORNE À P1');return false}const{data,error}=await db.rpc('obter_acesso_mrg');if(error)throw error;const c=Array.isArray(data)?(data[0]||{}):(data||{});contrato=c;permitido=c.pagina_1===true&&c.pagina_2===true;set('p2StatusAcesso',permitido?String(c.nivel_acesso||'LIBERADO').replaceAll('_',' '):'P2 NÃO LIBERADA');set('mrgFreeStatus',permitido?'ACESSO '+String(c.nivel_acesso||'LIBERADO').replaceAll('_',' ')+' · validado pelo Supabase':'ACESSO PENDENTE · retorne à P1');if(!permitido)p2Aviso('ACESSO RESTRITO · VOLTE À P1');return permitido}catch(e){console.warn('MRG P2 — validação:',e);permitido=false;p2Aviso('NÃO FOI POSSÍVEL VALIDAR A P2');return false}}
+let p2RedirecionandoSessao=false;
+function p2VoltarLoginPorSessao(){
+ if(p2RedirecionandoSessao)return;
+ p2RedirecionandoSessao=true;permitido=false;
+ const painel=byId('mrgPagina2');if(painel)painel.hidden=true;
+ p2Timers.forEach(clearInterval);p2Timers=[];
+ const aviso=byId('mrgAcessoBloqueadoP2');if(aviso){aviso.hidden=false;const par=aviso.querySelector('p');if(par)par.textContent='Esta conta foi aberta em outro aparelho. Faça login novamente.'}
+ // Nao eliminar o token local antes da P1 valida-lo: a P1 ja mostra a mensagem exata.
+ // Nao revogar a sessao do outro dispositivo.
+ try{location.replace('/p1.html')}catch(e){console.warn('[MRG P2] Falha ao retornar a P1:',e)}
+}
+async function p2SessaoValida(){
+ if(!db)return null;
+ const{data,error}=await db.auth.getSession();
+ if(error)return null;
+ const session=data?.session;
+ if(!session?.user?.email){p2VoltarLoginPorSessao();return false}
+ usuario=session.user;
+ const token=localStorage.getItem(MRG_SESSAO_CHAVE);
+ if(!token){p2VoltarLoginPorSessao();return false}
+ const{data:reg,error:e}=await db.from('sessoes_ativas').select('session_token,ativo').eq('email',usuario.email).maybeSingle();
+ if(e){console.warn('[MRG P2] Falha temporaria ao consultar sessao:',e);return null}
+ if(!reg||reg.ativo!==true||reg.session_token!==token){p2VoltarLoginPorSessao();return false}
+ return true;
+}
+async function p2ConferirAcesso(){try{const sessaoOk=await p2SessaoValida();if(sessaoOk===null)return permitido;if(sessaoOk===false){permitido=false;p2Aviso('SESSÃO ENCERRADA · RETORNE À P1');return false}const{data,error}=await db.rpc('obter_acesso_mrg');if(error)throw error;const c=Array.isArray(data)?(data[0]||{}):(data||{});contrato=c;permitido=c.pagina_1===true&&c.pagina_2===true;set('p2StatusAcesso',permitido?String(c.nivel_acesso||'LIBERADO').replaceAll('_',' '):'P2 NÃO LIBERADA');set('mrgFreeStatus',permitido?'ACESSO '+String(c.nivel_acesso||'LIBERADO').replaceAll('_',' ')+' · validado pelo Supabase':'ACESSO PENDENTE · retorne à P1');if(!permitido)p2Aviso('ACESSO RESTRITO · VOLTE À P1');return permitido}catch(e){console.warn('MRG P2 — validação:',e);permitido=false;p2Aviso('NÃO FOI POSSÍVEL VALIDAR A P2');return false}}
 async function p2Abrir(){const ok=await p2ConferirAcesso();if(!ok){byId('mrgPagina2').hidden=true;byId('mrgAcessoBloqueadoP2').hidden=false;return}byId('mrgPagina2').hidden=false;byId('mrgAcessoBloqueadoP2').hidden=true;await Promise.all([p2LerSnapshot(),p2LerHistorico(),p2LerProResumo(),p2NorteCarregar()]);p2IniciarTimers();p2TentarBridge()}
 async function p2LerSnapshot(){if(!p2Ativo()||p2Ocupado)return;p2Ocupado=true;try{const {data,error}=await db.from('mrg_analista_snapshot_app').select('snapshot_json,atualizado_em').eq('id',1).maybeSingle();if(error)throw error;if(!data?.snapshot_json){p2Aviso('AGUARDANDO PUBLICAÇÃO DO ANALISTA');return}const s=typeof data.snapshot_json==='string'?JSON.parse(data.snapshot_json):data.snapshot_json;const generated=first(s,['gerado_em','publicado_em','data_hora','atualizado_em'],data.atualizado_em);const nextKey=String(first(s,['numero_rodada'],'')||'')+'|'+String(generated||'');if(nextKey===p2SnapshotChave)return;p2SnapshotChave=nextKey;
  const tipo=String(first(s,['proxima_tipo','leitura_tipo','tipo','previsao_tipo'],'AGUARDANDO')).toUpperCase();const conf=first(s,['proxima_confianca','proxima_forca','leitura_confianca','confianca']);const aud=first(s,['auditoria30'],{})||{};const alt=String(first(s,['proxima_segundo_tipo','alternativa_tipo'],'--')).toUpperCase(),af=first(s,['proxima_segundo_forca','alternativa_confianca']);const ce=first(s,['convergencia_expansao']);let cv=first(s,['convergencia','forca','proxima_convergencia'],'--');if(ce&&typeof ce==='object'){const x=[ce.alvo?String(ce.alvo).toUpperCase():'',ce.score!=null?pct(ce.score):'',Number(ce.total_fontes)>0?String(ce.fontes||0)+'/'+ce.total_fontes+' FONTES':'',ce.nivel?String(ce.nivel).toUpperCase():''].filter(Boolean);if(x.length)cv=x.join(' · ')}
@@ -578,12 +628,14 @@ function p2GatilhoAtualizar(s){
   if(p2UltimaVelaFechada!==null){set('p2Gatilho',p2FormatarGatilho(p2UltimaVelaFechada));return}
   set('p2Gatilho',p2FormatarGatilho(first(s,['ultima','ultima_mult','ultima_vela'])));
 }
-function p2AlertasUI(){const b=byId('p2AlertaToggle');if(!b)return;b.classList.toggle('on',p2AlertaPreferencia);b.setAttribute('aria-pressed',String(p2AlertaPreferencia));b.textContent=p2AlertaPreferencia?'♪ Alertas ativados':'♩ Ativar alertas';set('p2AlertaEstado',p2AlertaPreferencia?'TELA + SOM · ALERTAS LIGADOS':'ALERTAS OPCIONAIS')}
+function p2AlertasUI(){const b=byId('p2AlertaToggle');if(!b)return;b.classList.toggle('on',p2AlertaPreferencia);b.setAttribute('aria-pressed',String(p2AlertaPreferencia));b.textContent=p2AlertaPreferencia?'Desativar notificações':'Ativar notificações';b.title=b.textContent;b.setAttribute('aria-label',b.textContent);set('p2AlertaEstado',p2AlertaPreferencia?'TELA + SOM · ALERTAS LIGADOS':'ALERTAS OPCIONAIS')}
 async function mrgP2AlternarAlertas(){
  p2AlertaPreferencia=!p2AlertaPreferencia;
  try{localStorage.setItem('mrg_p2_alertas_v2',p2AlertaPreferencia?'1':'0')}catch(e){}
  if(p2AlertaPreferencia){
   try{const C=window.AudioContext||window.webkitAudioContext;if(C){p2AlertaAudio=p2AlertaAudio||new C();await p2AlertaAudio.resume()}}catch(e){console.warn('Som do navegador indisponível',e)}
+  p2Triplo();
+  try{if(navigator.vibrate)navigator.vibrate([100,80,100,80,100])}catch(e){}
   try{if('Notification' in window&&Notification.permission==='default')await Notification.requestPermission()}catch(e){}
  }
  p2AlertasUI();
@@ -612,15 +664,23 @@ function p2NotificarNovaLeitura(s){
  if(chave===p2UltimoEventoNotificado)return;
  p2UltimoEventoNotificado=chave;
  if(!p2AlertaPreferencia)return;
+ const predominante=tipo.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+ const avisoRosaOuRoxa=predominante.includes('ROSA')||predominante.includes('ROXO')||predominante.includes('ROXA');
+ const raw=first(s,['proxima_confianca','proxima_forca','leitura_confianca','confianca']);
+ let conviccao=Number(String(raw??'').replace('%','').replace(',','.'));
+ if(!Number.isFinite(conviccao))return;
+ if(conviccao>0&&conviccao<=1)conviccao*=100;
+ if(!avisoRosaOuRoxa||conviccao<=48)return;
  const msg='MRG Analista · '+tipo+' · '+status;
  p2MostrarAlerta(msg);p2Triplo();
+ try{if(navigator.vibrate)navigator.vibrate([100,80,100,80,100])}catch(e){}
  try{if('Notification' in window&&Notification.permission==='granted')new Notification('MRG P2 · Nova previsão',{body:tipo+' · '+status,tag:'mrg-p2-previsao'})}catch(e){}
 }
 
 // Bridge preparada, sem criar segundo iframe nem iniciar sessão 1Win no browser.
 function p2TentarBridge(){if(!permitido||p2BridgeAtiva)return;const host=window.MRG_APP_SHELL;if(!host||typeof host.mountAviator!=='function')return;const platform=String(host.platform||'').toUpperCase();if(!['PC','WINDOWS','ELECTRON','ANDROID'].includes(platform))return;try{host.mountAviator({page:'P2',slotId:'p2AviatorSlot',shared:true});byId('mrgPagina2').classList.add('mrg-app-connected');p2BridgeAtiva=true;window.dispatchEvent(new CustomEvent('mrg:aviator:slot',{detail:{page:'P2',slotId:'p2AviatorSlot',shared:true}}))}catch(e){console.warn('MRG P2: encaixe do jogo depende da atualização do aplicativo:',e)}}
-function p2IniciarTimers(){p2Timers.forEach(clearInterval);p2Timers=[setInterval(p2HoraAgora,1000),setInterval(p2ChecarUltima,4500),setInterval(p2LerSnapshot,6000),setInterval(p2LerProResumo,30000),setInterval(p2NorteCarregar,20000),setInterval(async()=>{if(document.visibilityState==='visible')await p2ConferirAcesso()},60000)];}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&permitido){p2LerSnapshot();p2ChecarUltima();p2LerProResumo();p2NorteCarregar();p2TentarBridge()}});
+function p2IniciarTimers(){p2Timers.forEach(clearInterval);p2Timers=[setInterval(p2HoraAgora,1000),setInterval(p2ChecarUltima,4500),setInterval(p2LerSnapshot,6000),setInterval(p2LerProResumo,30000),setInterval(p2NorteCarregar,20000),setInterval(async()=>{if(document.visibilityState==='visible'&&!p2RedirecionandoSessao)await p2SessaoValida()},3000)];}
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&permitido&&!p2RedirecionandoSessao){const ok=await p2SessaoValida();if(ok!==true)return;p2LerSnapshot();p2ChecarUltima();p2LerProResumo();p2NorteCarregar();p2TentarBridge()}});
 window.addEventListener('mrg-app-ready',p2TentarBridge);
 window.addEventListener('pageshow',()=>{if(permitido)p2TentarBridge()});
 (async()=>{if(new URLSearchParams(location.search).get('modo')==='split')document.documentElement.classList.add('modo-split');p2HoraAgora();p2NorteRenderizar([]);p2AlertasUI();if(!window.supabase){p2Aviso('CONEXÃO COM AUTENTICAÇÃO INDISPONÍVEL');return}db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);await p2Abrir()})();
