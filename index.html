@@ -1209,6 +1209,28 @@ html.mrg-p3-portal #mrgPagina3 #mrgP3VibrarToggle{display:none!important}
  html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-live-panel #leituraAoVivo{display:block!important;visibility:visible!important}
 }
 </style>
+
+<style id="mrg-p3-rev08-scroll-e-alerta">
+/* Somente lista online movel: rolagem livre ate o ultimo quadro. */
+@media (max-width:900px){
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator){height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important;}
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) body{height:auto!important;min-height:100dvh!important;overflow-x:hidden!important;overflow-y:visible!important;-webkit-overflow-scrolling:touch!important;}
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgApp{height:auto!important;min-height:100dvh!important;max-height:none!important;overflow:visible!important;padding-bottom:calc(94px + env(safe-area-inset-bottom,0px))!important;}
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))!important;}
+ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .p3-layout-real{height:auto!important;max-height:none!important;overflow:visible!important;}
+}
+/* Botao de notificacoes: padrao cinza/branco, independente da cor do Analista. */
+html.mrg-p3-portal #mrgPagina3 #mrgP3AlertaUnicoMobile{
+ background:#22272d!important;color:#fff!important;border:1px solid #8b929c!important;
+ box-shadow:none!important;text-shadow:none!important;transition:opacity .18s ease,background .18s ease,border-color .18s ease!important;
+}
+html.mrg-p3-portal #mrgPagina3 #mrgP3AlertaUnicoMobile[aria-pressed="true"]{
+ background:#353c45!important;color:#fff!important;border-color:#aab2bd!important;opacity:1!important;
+}
+html.mrg-p3-portal #mrgPagina3 #mrgP3AlertaUnicoMobile[aria-pressed="false"]{
+ background:#1d2228!important;color:#fff!important;border-color:#707780!important;opacity:.45!important;
+}
+</style>
 </head>
 <body>
 <div id="mrgP3PortaP1" role="status" aria-live="polite"><b>MRG · P3 PRO</b><span id="mrgP3PortaTexto">Validando sessão e permissões da P1...</span><button type="button" onclick="location.assign('/p1.html')">Voltar para P1</button></div>
@@ -4527,6 +4549,26 @@ function mrgAbrirP4Online(){
       if(!a||!n||typeof window.mrgP3AlternarAviso!=='function')return;
       const som=a.getAttribute('aria-pressed')==='true',notif=n.getAttribute('aria-pressed')==='true';
       const enable=!(som&&notif);
+      // Confirmacao acionada diretamente pelo toque (antes de qualquer await).
+      if(enable){
+        try{
+          const Audio=window.AudioContext||window.webkitAudioContext;
+          if(Audio){
+            const ctx=window.mrgP3AudioConfirmacao||(window.mrgP3AudioConfirmacao=new Audio());
+            void ctx.resume();
+            const inicio=ctx.currentTime+.03;
+            for(let k=0;k<3;k++){
+              const osc=ctx.createOscillator(),gain=ctx.createGain(),at=inicio+k*.21;
+              osc.type='sine';osc.frequency.value=880;osc.connect(gain);gain.connect(ctx.destination);
+              gain.gain.setValueAtTime(.0001,at);
+              gain.gain.exponentialRampToValueAtTime(.075,at+.014);
+              gain.gain.exponentialRampToValueAtTime(.0001,at+.12);
+              osc.start(at);osc.stop(at+.14);
+            }
+          }
+        }catch(e){console.warn('[P3] Confirmacao sonora indisponivel:',e)}
+        try{if(navigator.vibrate)navigator.vibrate([110,70,110,70,110]);}catch(e){}
+      }
       if(som!==enable)await window.mrgP3AlternarAviso('som');
       if(notif!==enable)await window.mrgP3AlternarAviso('notificacao');
       update();
