@@ -1252,6 +1252,21 @@ html.mrg-p3-portal #mrgPagina3 #mrgP3AlertaUnicoMobile[aria-pressed="false"]{
  html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-norte-gatilho-mobile small strong{font-weight:800}
 }
 </style>
+<style id="mrg-p3-rev10-norte-fonte-uniforme">
+@media(max-width:900px){
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-norte-gatilho-mobile{
+ display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:3px!important;
+}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-norte-gatilho-mobile .mrg-gatilho-legenda{
+ display:block!important;font-size:clamp(9px,2.3vw,11px)!important;line-height:1.2!important;
+ font-weight:700!important;text-transform:uppercase!important;color:#f5eefe!important;
+}
+html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-norte-gatilho-mobile #p3UltimaMobile{
+ display:block!important;font-size:clamp(11px,3vw,14px)!important;line-height:1.2!important;
+ font-weight:900!important;white-space:nowrap!important;
+}
+}
+</style>
 </head>
 <body>
 <div id="mrgP3PortaP1" role="status" aria-live="polite"><b>MRG · P3 PRO</b><span id="mrgP3PortaTexto">Validando sessão e permissões da P1...</span><button type="button" onclick="location.assign('/p1.html')">Voltar para P1</button></div>
@@ -1409,7 +1424,7 @@ html.mrg-p3-portal #mrgPagina3 #mrgP3AlertaUnicoMobile[aria-pressed="false"]{
           <div class="mrg-norte-grid">
             <div class="mrg-norte-cell mrg-norte-principal"><span>Predominante</span><b id="p3AnalistaPrincipal">AGUARDANDO</b></div>
             <div class="mrg-norte-cell"><span>Alternativa</span><b id="p3AnalistaAlt">--</b></div>
-            <div class="mrg-norte-cell mrg-norte-gatilho-mobile" aria-label="Gatilho e última vela da leitura"><span>Gatilho</span><b id="p3GatilhoMobile">—</b><small>Última vela: <strong id="p3UltimaMobile">—</strong></small></div>
+            <div class="mrg-norte-cell mrg-norte-gatilho-mobile" aria-label="Gatilho e última vela utilizada na leitura"><span>GATILHO</span><small class="mrg-gatilho-legenda">ÚLTIMA VELA</small><b id="p3UltimaMobile">—</b></div>
             <div class="mrg-norte-cell"><span>Convicção</span><b id="p3AnalistaConv">--</b></div>
             <div class="mrg-norte-cell"><span>Última vela</span><b id="p3AnalistaUltima">--</b></div>
             <div class="mrg-norte-cell p3-round"><span>Round</span><b id="p3AnalistaRound">--</b></div>
@@ -1452,7 +1467,7 @@ html.mrg-p3-portal #mrgPagina3 #mrgP3AlertaUnicoMobile[aria-pressed="false"]{
       </aside>
     </main>
 
-    <div class="conn"><span>CONEXÃO: <b>ONLINE</b></span><span>GATILHOS: <b>REALTIME</b></span><span>ANALISTA: <b>REALTIME</b></span></div>
+    
   </div>
 </div>
 
@@ -1743,7 +1758,7 @@ function mrgP3RotuloCompacto(valor){
   if(t.includes("ROXO")||t.includes("ROXA"))return "ROXO";
   return t.split(/\s+/)[0]||"--";
 }
-function mrgAtualizarNorteP3(s,tipo,conf,aud,altTipo,altForca){const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};set("p3AnalistaPrincipal",`${mrgP3RotuloCompacto(tipo)}${conf!==null?" · "+mrgP2Pct(conf):""}`);set("p3AnalistaAlt",altTipo==="--"?"--":`${mrgP3RotuloCompacto(altTipo)}${altForca!==null?" · "+mrgP2Pct(altForca):""}`);set("p3AnalistaConv",mrgP2Pct(mrgP2Primeiro(s,["conviccao"],conf)));const ultimaBruta=mrgP2Primeiro(s,["ultima","ultima_mult","ultima_vela"],null);set("p3AnalistaUltima",mrgP2Mult(ultimaBruta));const ultimaEl=document.getElementById("p3AnalistaUltima");if(ultimaEl)ultimaEl.style.color=mrgP3CorUltimaVela(ultimaBruta);const gatilhoPublico=mrgP2Primeiro(s,["proxima_gatilho","gatilho_entrada","gatilho_operacional","gatilho","entrada_apos","referencia_entrada"],null);set("p3GatilhoMobile",gatilhoPublico===null?"—":mrgP2Mult(gatilhoPublico));set("p3UltimaMobile",mrgP2Mult(ultimaBruta));const ultimaMobileEl=document.getElementById("p3UltimaMobile");if(ultimaMobileEl)ultimaMobileEl.style.color=mrgP3CorUltimaVela(ultimaBruta);set("p3AnalistaExato",mrgP2Pct(mrgP2Primeiro(aud,["exato_pct","exato30"],null)));set("p3AnalistaFamilia",mrgP2Pct(mrgP2Primeiro(aud,["familia_pct","familia30"],null)));mrgAplicarCorAnalistaGeral(tipo)}
+function mrgAtualizarNorteP3(s,tipo,conf,aud,altTipo,altForca){const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};set("p3AnalistaPrincipal",`${mrgP3RotuloCompacto(tipo)}${conf!==null?" · "+mrgP2Pct(conf):""}`);set("p3AnalistaAlt",altTipo==="--"?"--":`${mrgP3RotuloCompacto(altTipo)}${altForca!==null?" · "+mrgP2Pct(altForca):""}`);set("p3AnalistaConv",mrgP2Pct(mrgP2Primeiro(s,["conviccao"],conf)));const ultimaBruta=mrgP2Primeiro(s,["ultima","ultima_mult","ultima_vela"],null);set("p3AnalistaUltima",mrgP2Mult(ultimaBruta));const ultimaEl=document.getElementById("p3AnalistaUltima");if(ultimaEl)ultimaEl.style.color=mrgP3CorUltimaVela(ultimaBruta);const gatilhoPublico=mrgP2Primeiro(s,["proxima_gatilho","gatilho_entrada","gatilho_operacional","gatilho","entrada_apos","referencia_entrada"],null);set("p3UltimaMobile",mrgP2Mult(ultimaBruta));const ultimaMobileEl=document.getElementById("p3UltimaMobile");if(ultimaMobileEl)ultimaMobileEl.style.color=mrgP3CorUltimaVela(ultimaBruta);set("p3AnalistaExato",mrgP2Pct(mrgP2Primeiro(aud,["exato_pct","exato30"],null)));set("p3AnalistaFamilia",mrgP2Pct(mrgP2Primeiro(aud,["familia_pct","familia30"],null)));mrgAplicarCorAnalistaGeral(tipo);if(typeof window.mrgP3AvaliarPrevisaoNotificacao==="function")window.mrgP3AvaliarPrevisaoNotificacao(s,tipo,conf)}
 
 function mrgAbrirConteudoP1(titulo){
   const modal=document.getElementById("mrgModalConteudoP1");
@@ -4400,8 +4415,9 @@ function mrgAbrirP4Online(){
     if(!token)throw Error('Sessão única da P1 indisponível.');
     const {data:registro,error:erroSessao}=await db.from('sessoes_ativas')
       .select('session_token,ativo').eq('email',email).maybeSingle();
-    if(erroSessao||!registro||registro.ativo!==true||registro.session_token!==token)
-      throw Error('Sessão única não validada. Retorne à P1.');
+    if(erroSessao)throw Error('Falha temporária ao verificar a sessão única da P1.');
+    if(!registro||registro.ativo!==true||registro.session_token!==token)
+      throw Error('SESSAO_SUBSTITUIDA_POR_OUTRO_DISPOSITIVO');
     const {data:res,error:erroContrato}=await db.rpc('obter_acesso_mrg');
     if(erroContrato)throw Error('Contrato de acesso indisponível.');
     const c=Array.isArray(res)?res[0]||{}:res||{};
@@ -4421,7 +4437,7 @@ function mrgAbrirP4Online(){
       MRG_ACESSO=mrgNormalizarContratoAcesso(p.contrato);
       mrgLogado=true;
       mrgUsuarioEmail=p.email;
-      MRG_AVISOS_ATIVOS=true; // preserva avisos originais da P3, sem novo login
+      MRG_AVISOS_ATIVOS=false; // Na P3 online, notificações são somente predominante ROSA/ROXA >48%.
       MRG_PAGINA_ATUAL=3;
       for(const i of [1,2,3,4]){
         const e=document.getElementById('mrgPagina'+i);
@@ -4443,6 +4459,9 @@ function mrgAbrirP4Online(){
     }catch(e){
       autorizado=false;
       document.documentElement.classList.remove('mrg-p3-autorizada');
+      if(e?.message==='SESSAO_SUBSTITUIDA_POR_OUTRO_DISPOSITIVO'){
+        await sessaoTomadaEmOutroDispositivo();return;
+      }
       porta.hidden=false;
       msg(e?.message||'Acesso à P3 indisponível. Retorne à P1.');
       console.warn('[MRG P3] Controle P1:',e);
@@ -4476,13 +4495,43 @@ function mrgAbrirP4Online(){
   window.mrgAbrirAviator=function(){window.mrgP3MontarAviatorHost();};
   window.buscarAviatorAgora=async function(){window.mrgP3MontarAviatorHost();};
   window.mrgAtualizarAviator=function(){/* único WebView não deve recarregar ao alternar páginas */};
-  // Revalidação leve; a P1 continua sendo a autoridade de acesso/assinatura.
-  setInterval(async()=>{if(!autorizado||document.hidden)return;try{
-    const p=await conferir();
-    if(!contratoBool(p.contrato,'pagina_1')||!contratoBool(p.contrato,'pagina_3')||p.email!==identificador){autorizado=false;irP1();return;}
-    MRG_ACESSO=mrgNormalizarContratoAcesso(p.contrato);
-    mrgAplicarPermissoesVisuais();
-  }catch(e){console.warn('[P3] Revalidação não concluída:',e.message);}},60000);
+  // Consulta a MESMA sessão única da P1. Nenhuma nova sessão é criada pela P3.
+  let sessaoP3Revalidando=false, redirecionandoSessao=false;
+  async function sessaoTomadaEmOutroDispositivo(){
+    if(redirecionandoSessao)return;
+    redirecionandoSessao=true;autorizado=false;MRG_AVISOS_ATIVOS=false;
+    document.documentElement.classList.remove('mrg-p3-autorizada');
+    document.getElementById('mrgPagina3')?.classList.remove('mrg-pagina-ativa');
+    try{localStorage.removeItem('mrg_session_token_unica')}catch(e){}
+    try{await db.auth.signOut({scope:'local'})}catch(e){console.warn('[P3] Encerramento local:',e)}
+    alert('O sistema foi aberto em outro dispositivo. Faça login novamente neste aparelho.');
+    irP1();
+  }
+  async function validarSessaoP3(){
+    if(!autorizado||redirecionandoSessao||sessaoP3Revalidando)return;
+    sessaoP3Revalidando=true;
+    try{
+      const {data:auth,error:authErro}=await db.auth.getSession();
+      const email=auth?.session?.user?.email;
+      const token=localStorage.getItem('mrg_session_token_unica')||'';
+      if(authErro||!email||!token||email!==identificador){await sessaoTomadaEmOutroDispositivo();return;}
+      const {data:registro,error:erro}=await db.from('sessoes_ativas')
+        .select('session_token,ativo').eq('email',email).maybeSingle();
+      if(erro){console.warn('[P3] Falha temporária de rede na sessão:',erro);return;}
+      if(!registro||registro.ativo!==true||registro.session_token!==token){await sessaoTomadaEmOutroDispositivo();return;}
+      // Contrato segue central na P1, verificado sem sobrescrever tokens.
+      const {data:acesso,error:erroContrato}=await db.rpc('obter_acesso_mrg');
+      if(erroContrato){console.warn('[P3] Falha temporária no contrato:',erroContrato);return;}
+      const contrato=Array.isArray(acesso)?acesso[0]||{}:acesso||{};
+      if(!contratoBool(contrato,'pagina_1')||!contratoBool(contrato,'pagina_3')){autorizado=false;irP1();return;}
+      MRG_ACESSO=mrgNormalizarContratoAcesso(contrato);
+      mrgAplicarPermissoesVisuais();
+    }catch(e){console.warn('[P3] Revalidação não concluída:',e);}
+    finally{sessaoP3Revalidando=false;}
+  }
+  setInterval(validarSessaoP3,10000);
+  window.addEventListener('focus',validarSessaoP3);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void validarSessaoP3()});
   // Alertas: mesmos dados PRO já exibidos no painel; nenhum sinal inventado.
   const storageSom='mrg_p3_alerta_som_v1',storageNotif='mrg_p3_alerta_notificacao_v1';
   let som=false,notificacao=false,primeiraLeitura=true,idsVistos=new Set(),audioCtx=null;
@@ -4518,19 +4567,38 @@ function mrgAbrirP4Online(){
       }
     }catch(e){console.warn('[P3] Som indisponível:',e);}
   }
-  // Chamado apenas sobre sinais ativos já calculados pela P3 original no carregarSinais().
-  window.mrgP3AlertarAtivos=function(ativos){
-    if(!autorizado)return;
-    const ids=new Set((ativos||[]).map(x=>String(x.id||'')).filter(Boolean));
-    if(primeiraLeitura){idsVistos=ids;primeiraLeitura=false;return;}
-    const novos=[...ids].filter(x=>!idsVistos.has(x));idsVistos=ids;
-    if(!novos.length)return;
-    tocar();
+  // O único evento que dispara notificação é o PREDOMINANTE do Analista.
+  // Vela azul, alternativas, sinais HYPER e SNARPY não disparam este alerta.
+  let referenciaAnterior=null;
+  function percentualExato(valor){
+    if(valor===null||valor===undefined||String(valor).trim()==='')return null;
+    let n=Number(String(valor).replace('%','').replace(',','.'));
+    if(!Number.isFinite(n))return null;
+    if(n>=0&&n<=1)n*=100;
+    return n;
+  }
+  window.mrgP3AvaliarPrevisaoNotificacao=function(snapshot,tipo,confianca){
+    if(!autorizado||MRG_PAGINA_ATUAL!==3)return;
+    const cor=String(tipo||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+    const pct=percentualExato(confianca);
+    const qualifica=(cor.includes('ROSA')||cor.includes('ROXO')||cor.includes('ROXA'))&&pct!==null&&pct>48;
+    const idPublicacao=String(snapshot?.gerado_em||snapshot?.atualizado_em||snapshot?.hora_site||snapshot?.timestamp||snapshot?.round||snapshot?.ultima||snapshot?.ultima_mult||'');
+    const chave=[idPublicacao,cor,pct].join('|');
+    // A primeira leitura apenas estabelece a referência; não notifica sinal antigo.
+    if(referenciaAnterior===null){referenciaAnterior=chave;return;}
+    if(chave===referenciaAnterior)return;
+    referenciaAnterior=chave;
+    if(!qualifica||(!som&&!notificacao)||document.hidden)return;
+    if(som)tocar();
     if(notificacao){
       try{if(navigator.vibrate)navigator.vibrate([180,100,180]);}catch(e){}
-      try{if('Notification' in window&&Notification.permission==='granted')new Notification('MRG P3 PRO',{body:'Novo sinal ativo publicado.'});}catch(e){}
+      try{if('Notification' in window&&Notification.permission==='granted')
+        new Notification('MRG P3 · Predominante '+(cor.includes('ROSA')?'ROSA':'ROXA'),{body:'Convicção '+mrgP2Pct(confianca)});
+      }catch(e){console.warn('[P3] Notificação não suportada:',e);}
     }
   };
+  // Compatibilidade com o carregador original; alertas de sinais ativos desativados.
+  window.mrgP3AlertarAtivos=function(){};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',entrar,{once:true});else entrar();
   window.addEventListener('mrg-app-ready',()=>{if(autorizado)mrgP3MontarAviatorHost();});
 })();</script>
