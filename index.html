@@ -4536,6 +4536,8 @@ function mrgAbrirP4Online(){
     const host=window.MRG_APP_SHELL;
     if(!host||typeof host.mountAviator!=='function')return;
     host.mountAviator({page:'P3',slotId:'p3AviatorSlot',shared:true});
+    // Mesmo sinal usado pela P2: o painel online está ligado ao único Aviator do PC.
+    document.getElementById('mrgPagina3')?.classList.add('mrg-app-connected');
     document.documentElement.classList.add('mrg-p3-host-aviator');
   };
   // Desabilitar carregamento do site de terceiro pelo próprio HTML. Único Aviator = host.
@@ -4827,6 +4829,74 @@ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgP3OnlineFlow #p3HistoricoGrid .
 })();
 </script>
 
+<!-- CONTROLES EXCLUSIVOS DO CHASSI PC 6.3.2: não executam na lista online/mobile. -->
+<style id="mrg-p3-controles-pc-632">
+@media (min-width:901px){
+  html.mrg-p3-host-aviator #mrgPagina3 .mrg-p3-pc-recolhivel{position:relative}
+  html.mrg-p3-host-aviator #mrgPagina3 .mrg-p3-pc-toggle{
+    margin-left:auto;width:28px;height:28px;border:1px solid var(--p3-accent,#ff4fa3);
+    border-radius:8px;background:#07080b;color:var(--p3-accent,#ff4fa3);font-size:18px;
+    font-weight:1000;line-height:1;cursor:pointer;flex:0 0 auto
+  }
+  html.mrg-p3-host-aviator #mrgPagina3 .mrg-p3-pc-toggle:hover{background:rgba(var(--p3-accent-rgb,255,79,163),.14)}
+  html.mrg-p3-host-aviator #mrgPagina3 .mrg-p3-pc-cabecalho:not(.p3-norte-top){display:flex!important;align-items:center!important;gap:8px!important;cursor:default!important}
+  html.mrg-p3-host-aviator #mrgPagina3 .p3-norte-top.mrg-p3-pc-cabecalho{position:relative!important}
+  html.mrg-p3-host-aviator #mrgPagina3 .p3-norte-top.mrg-p3-pc-cabecalho .mrg-p3-pc-toggle{position:absolute;right:5px;top:2px;z-index:3}
+  html.mrg-p3-host-aviator #mrgPagina3 .mrg-p3-pc-fechado>.mrg-p3-pc-corpo{display:none!important}
+  html.mrg-p3-host-aviator #mrgPagina3 .mrg-p3-pc-fechado{min-height:0!important;padding-bottom:8px!important}
+}
+</style>
+<script id="mrg-p3-controles-pc-632">
+/*
+ * PC somente. A lista online não recebe classes, botões ou alterações de DOM.
+ * Cada quadro inicia aberto; o botão recolhe apenas o conteúdo daquele quadro.
+ */
+(function(){
+  function noPC(){return !window.MRG_APP_SHELL||!document.getElementById('mrgPagina3')?.classList.contains('mrg-app-connected')||!matchMedia('(min-width:901px)').matches}
+  function tituloDo(card){
+    if(card.classList.contains('p3-norte-horizontal'))return card.querySelector('.p3-norte-top');
+    return card.querySelector(':scope > .panel-title');
+  }
+  function preparar(card,chave){
+    if(!card||card.dataset.mrgPcControle==='1')return;
+    const titulo=tituloDo(card);if(!titulo)return;
+    const corpo=document.createElement('div');corpo.className='mrg-p3-pc-corpo';
+    const filhos=[...card.children].filter(el=>el!==titulo);
+    for(const filho of filhos)corpo.appendChild(filho);
+    card.appendChild(corpo);
+    card.dataset.mrgPcControle='1';card.dataset.mrgPcChave=chave;
+    card.classList.add('mrg-p3-pc-recolhivel');titulo.classList.add('mrg-p3-pc-cabecalho');
+    const botao=document.createElement('button');botao.type='button';botao.className='mrg-p3-pc-toggle';
+    botao.setAttribute('aria-label','Recolher '+chave);botao.setAttribute('aria-expanded','true');botao.textContent='−';
+    botao.addEventListener('click',function(e){
+      e.preventDefault();e.stopPropagation();
+      const fechado=card.classList.toggle('mrg-p3-pc-fechado');
+      botao.textContent=fechado?'+':'−';
+      botao.setAttribute('aria-expanded',String(!fechado));
+      botao.setAttribute('aria-label',(fechado?'Abrir ':'Recolher ')+chave);
+    });
+    titulo.appendChild(botao);
+  }
+  function iniciar(){
+    if(noPC())return;
+    const p3=document.getElementById('mrgPagina3');if(!p3)return;
+    const esquerdo=p3.querySelector('.p3-left-real');
+    const direito=p3.querySelector('.p3-right-real');
+    [
+      [esquerdo?.querySelector(':scope > .panel:nth-child(1)'),'Sinais ativos'],
+      [esquerdo?.querySelector(':scope > .panel:nth-child(2)'),'Últimos 5 fechados'],
+      [esquerdo?.querySelector(':scope > .panel:nth-child(3)'),'Histórico recente'],
+      [p3.querySelector('.p3-norte-horizontal'),'Norte do analista'],
+      [p3.querySelector('.mrg-live-panel'),'Minha leitura ao vivo'],
+      [p3.querySelector('.mrg-proj-panel'),'Projeções futuras'],
+      [p3.querySelector('.p3-history'),'Histórico ao vivo'],
+      [direito?.querySelector(':scope > .panel:last-child'),'Rosas por hora']
+    ].forEach(([card,chave])=>preparar(card,chave));
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',iniciar,{once:true});else iniciar();
+  window.addEventListener('mrg-app-ready',iniciar);
+})();
+</script>
 </body>
 </html>
 <!-- 09/11/2026 10:22 UTC — P2: Aviator compartilhado e histórico sem identificação de round. P1/P2/P3/P4: continuidade do céu da arte oficial no cabeçalho. Preparado; publicação e teste visual pendentes. -->
