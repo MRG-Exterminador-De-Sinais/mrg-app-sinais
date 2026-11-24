@@ -4114,7 +4114,7 @@ setInterval(()=>{if(mrgLogado&&MRG_PAGINA_ATUAL===3){mrgCarregarAnalistaP2();mrg
  function aplicar(){
   const v=document.getElementById('viewAviator');if(!v)return;
   // No inicializador Electron manter o jogo ORIGINAL intacto e sem overlay.
-  if(/Electron\/\d+/i.test(navigator.userAgent))return;
+  if(/Electron\/\d+/i.test(navigator.userAgent)||!window.MRG_APP_SHELL)return;
   // Chrome comum nao aceita WebView do Electron; abrir o aplicativo por link unico.
   v.style.display='none';
   const wrap=v.closest('.game-area');
