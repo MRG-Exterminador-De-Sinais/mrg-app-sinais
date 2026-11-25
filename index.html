@@ -4828,10 +4828,48 @@ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgP3OnlineFlow #p3HistoricoGrid .
 })();
 </script>
 
+
+<!-- TESTE TEMPORÁRIO: prova de atualização online da P3 no Electron. Somente Projeções Futuras. -->
+<style id="mrg-p3-teste-projecoes-recolhivel">
+html.mrg-p3-portal #mrgPagina3 .mrg-proj-panel.mrg-proj-teste-recolhida{
+  min-height:0!important; flex:0 0 auto!important; padding:7px 9px!important;
+}
+html.mrg-p3-portal #mrgPagina3 .mrg-proj-panel.mrg-proj-teste-recolhida>.panel-title{
+  display:flex!important; align-items:center!important; justify-content:space-between!important;
+  margin:0!important; min-height:26px!important; cursor:pointer!important; user-select:none!important;
+}
+html.mrg-p3-portal #mrgPagina3 .mrg-proj-panel.mrg-proj-teste-recolhida>.panel-title::after{
+  content:'▸'; color:#19ff19; font-size:18px; line-height:1; margin-left:auto;
+}
+html.mrg-p3-portal #mrgPagina3 .mrg-proj-panel.mrg-proj-teste-recolhida.mrg-proj-teste-aberta>.panel-title::after{content:'▾'}
+html.mrg-p3-portal #mrgPagina3 .mrg-proj-panel.mrg-proj-teste-recolhida:not(.mrg-proj-teste-aberta)>:not(.panel-title){display:none!important}
+html.mrg-p3-portal #mrgPagina3 .mrg-proj-panel.mrg-proj-teste-recolhida.mrg-proj-teste-aberta>.mrg-btn-projecoes{
+  display:block!important; width:100%!important; margin:8px 0!important;
+}
+html.mrg-p3-portal #mrgPagina3 .mrg-proj-panel.mrg-proj-teste-recolhida.mrg-proj-teste-aberta>#projecoesMercado{
+  display:block!important; min-height:0!important; max-height:520px!important;
+}
+</style>
+<script id="mrg-p3-teste-projecoes-recolhivel-logica">
+(function(){
+  function iniciar(){
+    const painel=document.querySelector('#mrgPagina3 .mrg-proj-panel');
+    const titulo=painel?.querySelector(':scope > .panel-title');
+    if(!painel||!titulo||painel.dataset.mrgTesteProjecoes==='1')return;
+    painel.dataset.mrgTesteProjecoes='1';
+    painel.classList.add('mrg-proj-teste-recolhida');
+    titulo.setAttribute('role','button');titulo.setAttribute('tabindex','0');titulo.setAttribute('aria-expanded','false');
+    const alternar=()=>{
+      const aberto=painel.classList.toggle('mrg-proj-teste-aberta');
+      titulo.setAttribute('aria-expanded',String(aberto));
+    };
+    titulo.addEventListener('click',alternar);
+    titulo.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();alternar();}});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(iniciar,350),{once:true});
+  else setTimeout(iniciar,350);
+})();
+</script>
+
 </body>
 </html>
-<!-- 09/11/2026 10:22 UTC — P2: Aviator compartilhado e histórico sem identificação de round. P1/P2/P3/P4: continuidade do céu da arte oficial no cabeçalho. Preparado; publicação e teste visual pendentes. -->
-
-<!-- Espelho dos originais: somente posicao e tamanho dos botoes P2. 14/11/2026 17:58:08 Brasilia. -->
-
-<!-- 14/11/2026 — P2 com geometria do jogo P3; P4 usa HTML online integral; chassi preservado. -->
