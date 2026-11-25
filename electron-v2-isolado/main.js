@@ -34,42 +34,34 @@ function hideAviator() {
 
 function forceAviatorZoom() {
   if (!aviatorView) return;
-  // A 1Win pode ignorar o zoom interno após redraws. Em vez de depender desse
-  // comportamento, a própria página nativa recebe escala fixa de 80%, com
-  // largura/altura compensadas. O resultado e a tela completa do jogo dentro
-  // da mesma moldura, incluindo apostas e jogadores laterais.
-  try { aviatorView.webContents.setZoomFactor(1); } catch (_) {}
-  try { aviatorView.webContents.setZoomLevel(0); } catch (_) {}
-  const css80 = `
-    (() => {
-      const id = 'mrg-aviator-zoom-80';
-      let style = document.getElementById(id);
-      if (!style) {
-        style = document.createElement('style');
-        style.id = id;
-        (document.head || document.documentElement).appendChild(style);
-      }
-      style.textContent = 'html{overflow:hidden!important}html,body{width:125%!important;min-width:125%!important;height:125%!important;min-height:125%!important}body{transform:scale(.8)!important;transform-origin:top left!important}';
-    })();
-  `;
-  aviatorView.webContents.executeJavaScript(css80, true).catch(() => {});
+  // Zoom nativo do Chromium: preserva o fluxo real do Aviator. A tentativa de
+  // escala CSS foi removida porque deformava a página interna do jogo.
+  try { aviatorView.webContents.setZoomFactor(AVIATOR_ZOOM); } catch (_) {}
+  try { aviatorView.webContents.setZoomLevel(Math.log(AVIATOR_ZOOM) / Math.log(1.2)); } catch (_) {}
 }
 
 function setAviatorBounds(payload) {
   if (!win || !aviatorView || !payload || !payload.visible || ![2, 3].includes(currentPage)) return hideAviator();
   const bounds = payload.bounds || {};
-  const x = Math.max(0, Number(bounds.x) || 0);
-  const y = Math.max(0, Number(bounds.y) || 0);
+  const x = Number(bounds.x) || 0;
+  const y = Number(bounds.y) || 0;
   const width = Math.max(1, Number(bounds.width) || 0);
   const height = Math.max(1, Number(bounds.height) || 0);
   const inset = Math.max(0, Math.min(18, Number(payload.frameInset) || 0));
   const content = win.getContentBounds();
-  if (x >= content.width || y >= content.height || width < 80 || height < 80) return hideAviator();
+  // O BrowserView não possui overflow próprio. Por isso o recorte precisa ser
+  // calculado aqui: ao rolar a página, a parte do jogo acima/abaixo da janela
+  // é reduzida e desaparece junto com a página, sem ficar presa em y=0.
+  const left = Math.max(0, x + inset);
+  const top = Math.max(0, y + inset);
+  const right = Math.min(content.width, x + width - inset);
+  const bottom = Math.min(content.height, y + height - inset);
+  if (right - left < 1 || bottom - top < 1 || width < 80 || height < 80) return hideAviator();
   aviatorView.setBounds({
-    x: x + inset,
-    y: y + inset,
-    width: Math.max(1, Math.min(width - inset * 2, content.width - x - inset)),
-    height: Math.max(1, Math.min(height - inset * 2, content.height - y - inset))
+    x: Math.round(left),
+    y: Math.round(top),
+    width: Math.max(1, Math.round(right - left)),
+    height: Math.max(1, Math.round(bottom - top))
   });
 }
 
