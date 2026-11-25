@@ -18,7 +18,9 @@ function applyP2Geometry(element) {
   const layout = document.querySelector('.p2-layout');
   // Mesmo desenho-base da P3: 280px | JOGO | 300px, com 9px de espaço.
   const frame = storedP3Frame();
-  const width = frame ? frame.width : Math.max(560, Math.min(700, window.innerWidth - 280 - 300 - 36));
+  // Referência aprovada da P3 no notebook: 670 x 500. Ao abrir a P3,
+  // a medida real dela substitui esta referência para qualquer resolução.
+  const width = frame ? frame.width : 670;
   const height = frame ? frame.height : 500;
   element.style.setProperty('width', `${width}px`, 'important');
   element.style.setProperty('height', `${height}px`, 'important');
