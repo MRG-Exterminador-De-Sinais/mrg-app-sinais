@@ -1,0 +1,26 @@
+{
+  "name": "mrg-electron-v2-isolado",
+  "version": "7.0.0-test",
+  "private": true,
+  "description": "Teste isolado: Aviator nativo + paineis oficiais online MRG",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "check": "node --check main.js && node --check preload.js",
+    "build": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "36.0.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.mrg.exterminador.v2isolado",
+    "productName": "MRG Aviator - Teste Isolado",
+    "artifactName": "MRG.Aviator.Teste.Isolado.${version}.${ext}",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "preload.js", "package.json", "soldado_mrg.ico"],
+    "win": { "target": [{ "target": "nsis", "arch": ["x64"] }], "icon": "soldado_mrg.ico" },
+    "nsis": { "oneClick": true, "perMachine": false, "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true, "createStartMenuShortcut": true }
+  }
+}
