@@ -9,6 +9,15 @@ let scrollTrackingInstalled = false;
 let scrollTrackingFrame = null;
 const FRAME_KEY = 'mrg:v2:aviator-frame';
 
+function corDaMoldura() {
+  const estilo = getComputedStyle(document.documentElement);
+  // P2 publica --p2pred; P3 publica --mrg-analista-cor. A leitura da P3
+  // também herda a variável P2 como reserva durante a primeira atualização.
+  const p3 = estilo.getPropertyValue('--mrg-analista-cor').trim();
+  const p2 = estilo.getPropertyValue('--p2pred').trim();
+  return (activeSlot?.page === 'P3' ? (p3 || p2) : (p2 || p3)) || '#38bdf8';
+}
+
 function storedP3Frame() {
   try {
     const value = JSON.parse(sessionStorage.getItem(FRAME_KEY) || 'null');
@@ -51,11 +60,12 @@ function publishSlot() {
   if (element.dataset.mrgV2Frame !== '1') {
     element.dataset.mrgV2Frame = '1';
     element.classList.add('mrg-v2-aviator-frame');
-    element.style.setProperty('background', 'linear-gradient(135deg,#16d9ff 0%,#385cff 42%,#b55cff 70%,#ff5ab9 100%)', 'important');
     element.style.setProperty('padding', '12px', 'important');
     element.style.setProperty('border', '0', 'important');
-    element.style.setProperty('border-radius', '0', 'important');
-    element.style.setProperty('box-shadow', '0 0 18px rgba(43,202,255,.70),0 0 26px rgba(202,79,255,.50)', 'important');
+    // Arredondamento somente do lado externo. O Aviator interno continua
+    // quadrado, pois é um BrowserView nativo encaixado após a faixa da moldura.
+    element.style.setProperty('border-radius', '16px', 'important');
+    element.style.setProperty('overflow', 'visible', 'important');
     const styleId = 'mrg-v2-native-frame-style';
     if (!document.getElementById(styleId)) {
       const style = document.createElement('style');
@@ -63,6 +73,14 @@ function publishSlot() {
       style.textContent = '.mrg-v2-aviator-frame::before{display:none!important;background:transparent!important}';
       document.head.appendChild(style);
     }
+  }
+  const cor = corDaMoldura();
+  if (element.dataset.mrgV2FrameColor !== cor) {
+    element.dataset.mrgV2FrameColor = cor;
+    // A cor vem do mesmo Norte do Analista que colore os painéis: roxo, azul,
+    // rosa ou branco. O degradê usa a própria cor entre luz e sombra.
+    element.style.setProperty('background', `linear-gradient(135deg,#f5fbff 0%,${cor} 18%,${cor} 64%,#05070b 100%)`, 'important');
+    element.style.setProperty('box-shadow', `0 0 13px ${cor},0 0 25px ${cor}`, 'important');
   }
   ipcRenderer.send('mrg:aviator-slot', {
     visible,
