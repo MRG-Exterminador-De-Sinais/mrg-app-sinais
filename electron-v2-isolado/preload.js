@@ -30,7 +30,16 @@ function mountAviator(options) {
   observer = new ResizeObserver(publishSlot);
   const start = () => {
     const el = document.getElementById(activeSlot.slotId);
-    if (el) observer.observe(el);
+    if (el) {
+      // A P2 publica um slot flexível para celular. No PC nativo ele deve
+      // ter a mesma altura útil da moldura aprovada da P3.
+      if (activeSlot.page === 'P2') {
+        el.style.setProperty('height', '500px', 'important');
+        el.style.setProperty('min-height', '500px', 'important');
+        el.style.setProperty('max-height', '500px', 'important');
+      }
+      observer.observe(el);
+    }
     publishSlot();
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true }); else start();
