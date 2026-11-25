@@ -683,6 +683,42 @@ document.addEventListener('visibilitychange',async()=>{if(document.visibilitySta
 window.addEventListener('mrg-app-ready',p2TentarBridge);
 window.addEventListener('pageshow',()=>{if(permitido)p2TentarBridge()});
 (async()=>{if(new URLSearchParams(location.search).get('modo')==='split')document.documentElement.classList.add('modo-split');p2HoraAgora();p2NorteRenderizar([]);p2AlertasUI();if(!window.supabase){p2Aviso('CONEXÃO COM AUTENTICAÇÃO INDISPONÍVEL');return}db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);await p2Abrir()})();
-</script><div aria-live="assertive" class="p2-alerta-toast" hidden="" id="p2AlertaToast" role="alert"></div></body></html>
+</script><div aria-live="assertive" class="p2-alerta-toast" hidden="" id="p2AlertaToast" role="alert"></div>
+<!-- TESTE TEMPORÁRIO: P2 responsiva. Somente Hipóteses de Curto Prazo. -->
+<style id="mrg-p2-teste-hipoteses-recolhivel">
+#p2Hipoteses.mrg-p2-hipoteses-teste{display:block}
+.p2-panel.mrg-p2-hipoteses-recolhivel>.p2-panel-title{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  cursor:pointer!important;user-select:none!important;
+}
+.p2-panel.mrg-p2-hipoteses-recolhivel>.p2-panel-title::after{
+  content:'▾';color:var(--p2pred,#28e59b);font-size:18px;line-height:1;margin-left:auto;
+}
+.p2-panel.mrg-p2-hipoteses-recolhivel.mrg-p2-hipoteses-fechada>.p2-panel-title::after{content:'▸'}
+.p2-panel.mrg-p2-hipoteses-recolhivel.mrg-p2-hipoteses-fechada>.p2-panel-title{
+  margin-bottom:0!important;padding-bottom:0!important;border-bottom:0!important;
+}
+.p2-panel.mrg-p2-hipoteses-recolhivel.mrg-p2-hipoteses-fechada>:not(.p2-panel-title){display:none!important}
+</style>
+<script id="mrg-p2-teste-hipoteses-recolhivel-logica">
+(function(){
+ function iniciar(){
+   const conteudo=document.getElementById('p2Hipoteses');
+   const painel=conteudo?.closest('.p2-panel');
+   const titulo=painel?.querySelector(':scope > .p2-panel-title');
+   if(!painel||!titulo||painel.dataset.mrgHipotesesTeste==='1')return;
+   painel.dataset.mrgHipotesesTeste='1';
+   painel.classList.add('mrg-p2-hipoteses-recolhivel');
+   titulo.setAttribute('role','button');titulo.setAttribute('tabindex','0');titulo.setAttribute('aria-expanded','true');
+   const alternar=()=>{
+     const fechado=painel.classList.toggle('mrg-p2-hipoteses-fechada');
+     titulo.setAttribute('aria-expanded',String(!fechado));
+   };
+   titulo.addEventListener('click',alternar);
+   titulo.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();alternar();}});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',iniciar,{once:true});else iniciar();
+})();
+</script>
 
-
+</body></html>
