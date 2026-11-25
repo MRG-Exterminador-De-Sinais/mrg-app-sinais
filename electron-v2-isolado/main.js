@@ -32,6 +32,14 @@ function hideAviator() {
   if (aviatorView) aviatorView.setBounds({ x: 0, y: 0, width: 0, height: 0 });
 }
 
+function forceAviatorZoom() {
+  if (!aviatorView) return;
+  // A 1Win refaz a interface após redirects internos. Reaplicamos o zoom
+  // aprovado em todos os carregamentos para nunca voltar a 100%.
+  try { aviatorView.webContents.setZoomFactor(AVIATOR_ZOOM); } catch (_) {}
+  try { aviatorView.webContents.setZoomLevel(Math.log(AVIATOR_ZOOM) / Math.log(1.2)); } catch (_) {}
+}
+
 function setAviatorBounds(payload) {
   if (!win || !aviatorView || !payload || !payload.visible || ![2, 3].includes(currentPage)) return hideAviator();
   const bounds = payload.bounds || {};
@@ -69,9 +77,12 @@ function createWindow() {
     return { action: 'deny' };
   });
   aviatorView.webContents.on('will-navigate', (event, url) => { if (!isAllowedAviatorUrl(url)) event.preventDefault(); });
+  aviatorView.webContents.on('dom-ready', forceAviatorZoom);
   aviatorView.webContents.on('did-finish-load', () => {
-    // O slot muda de tamanho conforme a página; o zoom do jogo não muda.
-    aviatorView.webContents.setZoomFactor(AVIATOR_ZOOM);
+    forceAviatorZoom();
+    setTimeout(forceAviatorZoom, 400);
+    setTimeout(forceAviatorZoom, 1500);
+    setTimeout(forceAviatorZoom, 3500);
   });
   aviatorView.webContents.loadURL(AVIATOR_URL).catch((error) => console.error('[MRG V2] Falha no Aviator:', error.message));
 
