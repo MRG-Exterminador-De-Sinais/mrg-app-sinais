@@ -46,15 +46,24 @@ function publishSlot() {
     try { sessionStorage.setItem(FRAME_KEY, JSON.stringify({ width: Math.round(rect.width), height: Math.round(rect.height) })); } catch (_) {}
   }
   const visible = rect.width > 40 && rect.height > 40 && document.visibilityState === 'visible';
-  // Esta classe e este acabamento existem somente dentro do Electron. A lista
-  // online permanece intacta; aqui ela apenas recebe uma moldura para o jogo
-  // nativo, que e desenhado por uma camada separada.
-  element.classList.add('mrg-v2-aviator-frame');
-  element.style.setProperty('background', 'linear-gradient(135deg,#16d9ff 0%,#385cff 42%,#b55cff 70%,#ff5ab9 100%)', 'important');
-  element.style.setProperty('padding', '12px', 'important');
-  element.style.setProperty('border', '0', 'important');
-  element.style.setProperty('border-radius', '0', 'important');
-  element.style.setProperty('box-shadow', '0 0 18px rgba(43,202,255,.70),0 0 26px rgba(202,79,255,.50)', 'important');
+  // Esta moldura existe somente no aplicativo. Ela e preparada uma vez, sem
+  // redesenhar o DOM a cada quadro de rolagem.
+  if (element.dataset.mrgV2Frame !== '1') {
+    element.dataset.mrgV2Frame = '1';
+    element.classList.add('mrg-v2-aviator-frame');
+    element.style.setProperty('background', 'linear-gradient(135deg,#16d9ff 0%,#385cff 42%,#b55cff 70%,#ff5ab9 100%)', 'important');
+    element.style.setProperty('padding', '12px', 'important');
+    element.style.setProperty('border', '0', 'important');
+    element.style.setProperty('border-radius', '0', 'important');
+    element.style.setProperty('box-shadow', '0 0 18px rgba(43,202,255,.70),0 0 26px rgba(202,79,255,.50)', 'important');
+    const styleId = 'mrg-v2-native-frame-style';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = '.mrg-v2-aviator-frame::before{display:none!important;background:transparent!important}';
+      document.head.appendChild(style);
+    }
+  }
   ipcRenderer.send('mrg:aviator-slot', {
     visible,
     page: activeSlot.page,
