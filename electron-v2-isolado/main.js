@@ -9,7 +9,7 @@ const OFFICIAL_ORIGIN = 'https://mrg-app-sinais.vercel.app';
 const AVIATOR_URL = 'https://1wxbwl.com/casino/play/v_spribe:aviator';
 // Geometria aprovada: o Aviator interno trabalha sempre em 80%,
 // independentemente de estar encaixado na P2 ou na P3.
-const AVIATOR_ZOOM = 0.7;
+const AVIATOR_ZOOM = 0.65;
 const PAGE_URLS = {
   1: `${OFFICIAL_ORIGIN}/p1.html`,
   2: `${OFFICIAL_ORIGIN}/p2.html`,
