@@ -34,10 +34,25 @@ function hideAviator() {
 
 function forceAviatorZoom() {
   if (!aviatorView) return;
-  // A 1Win refaz a interface após redirects internos. Reaplicamos o zoom
-  // aprovado em todos os carregamentos para nunca voltar a 100%.
-  try { aviatorView.webContents.setZoomFactor(AVIATOR_ZOOM); } catch (_) {}
-  try { aviatorView.webContents.setZoomLevel(Math.log(AVIATOR_ZOOM) / Math.log(1.2)); } catch (_) {}
+  // A 1Win pode ignorar o zoom interno após redraws. Em vez de depender desse
+  // comportamento, a própria página nativa recebe escala fixa de 80%, com
+  // largura/altura compensadas. O resultado e a tela completa do jogo dentro
+  // da mesma moldura, incluindo apostas e jogadores laterais.
+  try { aviatorView.webContents.setZoomFactor(1); } catch (_) {}
+  try { aviatorView.webContents.setZoomLevel(0); } catch (_) {}
+  const css80 = `
+    (() => {
+      const id = 'mrg-aviator-zoom-80';
+      let style = document.getElementById(id);
+      if (!style) {
+        style = document.createElement('style');
+        style.id = id;
+        (document.head || document.documentElement).appendChild(style);
+      }
+      style.textContent = 'html{overflow:hidden!important}html,body{width:125%!important;min-width:125%!important;height:125%!important;min-height:125%!important}body{transform:scale(.8)!important;transform-origin:top left!important}';
+    })();
+  `;
+  aviatorView.webContents.executeJavaScript(css80, true).catch(() => {});
 }
 
 function setAviatorBounds(payload) {
