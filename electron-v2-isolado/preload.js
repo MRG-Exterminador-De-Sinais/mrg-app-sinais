@@ -5,6 +5,30 @@ const { contextBridge, ipcRenderer } = require('electron');
 let activeSlot = null;
 let observer = null;
 let resizeHookInstalled = false;
+const FRAME_KEY = 'mrg:v2:aviator-frame';
+
+function storedP3Frame() {
+  try {
+    const value = JSON.parse(sessionStorage.getItem(FRAME_KEY) || 'null');
+    return value && value.width >= 400 && value.height >= 300 ? value : null;
+  } catch (_) { return null; }
+}
+
+function applyP2Geometry(element) {
+  const layout = document.querySelector('.p2-layout');
+  // Mesmo desenho-base da P3: 280px | JOGO | 300px, com 9px de espaço.
+  const frame = storedP3Frame();
+  const width = frame ? frame.width : Math.max(560, Math.min(700, window.innerWidth - 280 - 300 - 36));
+  const height = frame ? frame.height : 500;
+  element.style.setProperty('width', `${width}px`, 'important');
+  element.style.setProperty('height', `${height}px`, 'important');
+  element.style.setProperty('min-height', `${height}px`, 'important');
+  element.style.setProperty('max-height', `${height}px`, 'important');
+  if (layout) {
+    layout.style.setProperty('grid-template-columns', `280px ${width}px minmax(300px, 1fr)`, 'important');
+    layout.style.setProperty('gap', '9px', 'important');
+  }
+}
 
 function publishSlot() {
   if (!activeSlot) return;
@@ -14,11 +38,17 @@ function publishSlot() {
     return;
   }
   const rect = element.getBoundingClientRect();
+  if (activeSlot.page === 'P3' && rect.width >= 400 && rect.height >= 300) {
+    try { sessionStorage.setItem(FRAME_KEY, JSON.stringify({ width: Math.round(rect.width), height: Math.round(rect.height) })); } catch (_) {}
+  }
   const visible = rect.width > 40 && rect.height > 40 && document.visibilityState === 'visible';
   ipcRenderer.send('mrg:aviator-slot', {
     visible,
     page: activeSlot.page,
     slotId: activeSlot.slotId,
+    // BrowserView fica alguns pixels dentro do slot. Assim a moldura da página
+    // continua na frente/ao redor do jogo, sem ser coberta pelo conteúdo nativo.
+    frameInset: 10,
     bounds: { x: Math.round(rect.left), y: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height) }
   });
 }
@@ -31,13 +61,7 @@ function mountAviator(options) {
   const start = () => {
     const el = document.getElementById(activeSlot.slotId);
     if (el) {
-      // A P2 publica um slot flexível para celular. No PC nativo ele deve
-      // ter a mesma altura útil da moldura aprovada da P3.
-      if (activeSlot.page === 'P2') {
-        el.style.setProperty('height', '500px', 'important');
-        el.style.setProperty('min-height', '500px', 'important');
-        el.style.setProperty('max-height', '500px', 'important');
-      }
+      if (activeSlot.page === 'P2') applyP2Geometry(el);
       observer.observe(el);
     }
     publishSlot();
