@@ -7,6 +7,9 @@ const path = require('path');
 // Este aplicativo conserva somente UM navegador nativo do Aviator.
 const OFFICIAL_ORIGIN = 'https://mrg-app-sinais.vercel.app';
 const AVIATOR_URL = 'https://1wxbwl.com/casino/play/v_spribe:aviator';
+// Geometria aprovada: o Aviator interno trabalha sempre em 80%,
+// independentemente de estar encaixado na P2 ou na P3.
+const AVIATOR_ZOOM = 0.8;
 const PAGE_URLS = {
   1: `${OFFICIAL_ORIGIN}/p1.html`,
   2: `${OFFICIAL_ORIGIN}/p2.html`,
@@ -66,6 +69,10 @@ function createWindow() {
     return { action: 'deny' };
   });
   aviatorView.webContents.on('will-navigate', (event, url) => { if (!isAllowedAviatorUrl(url)) event.preventDefault(); });
+  aviatorView.webContents.on('did-finish-load', () => {
+    // O slot muda de tamanho conforme a página; o zoom do jogo não muda.
+    aviatorView.webContents.setZoomFactor(AVIATOR_ZOOM);
+  });
   aviatorView.webContents.loadURL(AVIATOR_URL).catch((error) => console.error('[MRG V2] Falha no Aviator:', error.message));
 
   win.webContents.setWindowOpenHandler(({ url }) => {
