@@ -47,9 +47,15 @@ function setAviatorBounds(payload) {
   const y = Math.max(0, Number(bounds.y) || 0);
   const width = Math.max(1, Number(bounds.width) || 0);
   const height = Math.max(1, Number(bounds.height) || 0);
+  const inset = Math.max(0, Math.min(18, Number(payload.frameInset) || 0));
   const content = win.getContentBounds();
   if (x >= content.width || y >= content.height || width < 80 || height < 80) return hideAviator();
-  aviatorView.setBounds({ x, y, width: Math.min(width, content.width - x), height: Math.min(height, content.height - y) });
+  aviatorView.setBounds({
+    x: x + inset,
+    y: y + inset,
+    width: Math.max(1, Math.min(width - inset * 2, content.width - x - inset)),
+    height: Math.max(1, Math.min(height - inset * 2, content.height - y - inset))
+  });
 }
 
 function openPage(page) {
