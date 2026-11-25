@@ -1,0 +1,13 @@
+MRG AVIATOR - TESTE ISOLADO V2
+
+Este pacote NAO altera nem inclui copias da lista online.
+
+O aplicativo abre diretamente:
+- P1: https://mrg-app-sinais.vercel.app/p1.html
+- P2: https://mrg-app-sinais.vercel.app/p2.html
+- P3: https://mrg-app-sinais.vercel.app/
+- P4: https://mrg-app-sinais.vercel.app/p4.html
+
+Ele mantem somente um Aviator nativo. Quando P2 ou P3 informa seu slot, o mesmo Aviator e posicionado nele sem ser recarregado.
+
+O aplicativo anterior deve continuar instalado. Este e apenas o teste isolado.
