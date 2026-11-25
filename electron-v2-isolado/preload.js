@@ -70,7 +70,22 @@ function publishSlot() {
     if (!document.getElementById(styleId)) {
       const style = document.createElement('style');
       style.id = styleId;
-      style.textContent = '.mrg-v2-aviator-frame::before{display:none!important;background:transparent!important}';
+      style.textContent = `
+        .mrg-v2-aviator-frame::before{display:none!important;background:transparent!important}
+        /* P3 possuía duas molduras históricas próprias. No Electron elas não
+           podem coexistir com a moldura única nativa da P2. */
+        html.mrg-p3-host-aviator #p3AviatorSlot.mrg-v2-aviator-frame,
+        html.mrg-p3-portal #p3AviatorSlot.mrg-v2-aviator-frame{
+          border-radius:16px!important; overflow:visible!important;
+        }
+        html.mrg-p3-host-aviator #p3AviatorSlot.mrg-v2-aviator-frame #mrgAviatorCore,
+        html.mrg-p3-portal #p3AviatorSlot.mrg-v2-aviator-frame #mrgAviatorCore,
+        html.mrg-p3-host-aviator #p3AviatorSlot.mrg-v2-aviator-frame #mrgAviatorCore .game-area,
+        html.mrg-p3-portal #p3AviatorSlot.mrg-v2-aviator-frame #mrgAviatorCore .game-area{
+          border:0!important; border-radius:0!important; box-shadow:none!important;
+          background:transparent!important; overflow:visible!important;
+        }
+      `;
       document.head.appendChild(style);
     }
   }
