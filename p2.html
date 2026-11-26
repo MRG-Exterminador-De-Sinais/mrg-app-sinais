@@ -721,4 +721,15 @@ window.addEventListener('pageshow',()=>{if(permitido)p2TentarBridge()});
 })();
 </script>
 
+<!-- MRG P2: apenas Leitura Publicada passa a ser recolhível; Mapa Prospectivo permanece sempre aberto. -->
+<style id="mrg-p2-leitura-recolhivel-v01">
+#mrgPagina2 .p2-leitura-publicada.mrg-operador-recolhivel>.p2-panel-title{cursor:pointer!important;user-select:none!important;display:flex!important;align-items:center!important}
+#mrgPagina2 .p2-leitura-publicada.mrg-operador-recolhivel>.p2-panel-title::after{content:'▾';margin-left:auto;color:var(--p2pred,#38bdf8);font-size:16px!important}
+#mrgPagina2 .p2-leitura-publicada.mrg-operador-recolhivel.mrg-operador-fechado>.p2-panel-title::after{content:'▸'}
+#mrgPagina2 .p2-leitura-publicada.mrg-operador-recolhivel.mrg-operador-fechado>:not(.p2-panel-title){display:none!important}
+#mrgPagina2 .p2-leitura-publicada.mrg-operador-recolhivel.mrg-operador-fechado{min-height:0!important;padding-bottom:8px!important}
+</style>
+<script id="mrg-p2-leitura-recolhivel-v01-logica">
+(()=>{function iniciar(){const painel=document.querySelector('#mrgPagina2 .p2-leitura-publicada');const titulo=painel?.querySelector(':scope > .p2-panel-title');if(!painel||!titulo||painel.dataset.mrgLeituraDobrav==='1')return;painel.dataset.mrgLeituraDobrav='1';painel.classList.add('mrg-operador-recolhivel');const chave='mrg.p2.leitura.publicada';const fechado=()=>{try{return localStorage.getItem(chave)==='1'}catch(_){return false}};const aplicar=()=>{painel.classList.toggle('mrg-operador-fechado',fechado());titulo.setAttribute('aria-expanded',String(!fechado()))};const alternar=()=>{try{localStorage.setItem(chave,fechado()?'0':'1')}catch(_){};aplicar()};titulo.setAttribute('role','button');titulo.setAttribute('tabindex','0');titulo.addEventListener('click',alternar);titulo.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();alternar()}});aplicar()}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(iniciar,300),{once:true});else setTimeout(iniciar,300)})();
+</script>
 </body></html>
