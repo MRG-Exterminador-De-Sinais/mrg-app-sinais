@@ -4903,5 +4903,56 @@ html.mrg-p3-portal.mrg-p3-host-aviator #mrgPagina3 .mrg-p3-painel-recolhivel.mrg
 })();
 </script>
 
+<!-- PC: detalhes operacionais ficam na coluna direita; nunca em modal atrás do Aviator. -->
+<style id="mrg-p3-detalhes-laterais-pc">
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgModalAoVivo,
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgModalRosas,
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgModalRosasDetalhes{display:none!important}
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateral{display:none!important;min-height:0!important}
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateral.mrg-p3-detalhe-aberto{display:block!important}
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateral .panel-title button{width:auto!important;margin:0!important;padding:5px 8px!important;border-radius:7px!important;border:1px solid rgba(var(--p3-accent-rgb),.55)!important;background:#101319!important;color:#fff!important;font-size:10px!important;font-weight:900!important;cursor:pointer!important}
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateralConteudo{display:grid!important;gap:7px!important;max-height:500px!important;overflow:auto!important;padding-right:3px!important}
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateralConteudo .mrg-hora-rosa{cursor:pointer!important}
+</style>
+<script id="mrg-p3-detalhes-laterais-pc-logica">
+(function(){
+  function ehPC(){return !!window.MRG_APP_SHELL||document.documentElement.classList.contains('mrg-p3-host-aviator')}
+  function criarPainel(){
+    let painel=document.getElementById('mrgP3DetalheLateral');if(painel)return painel;
+    const coluna=document.querySelector('#mrgPagina3 .p3-right-real');
+    const antes=coluna&&coluna.querySelector('.mrg-proj-panel');if(!coluna)return null;
+    painel=document.createElement('section');painel.id='mrgP3DetalheLateral';painel.className='panel';
+    painel.innerHTML='<div class="panel-title"><span id="mrgP3DetalheTitulo">DETALHES</span><button type="button" id="mrgP3DetalheFechar">FECHAR</button></div><div id="mrgP3DetalheLateralConteudo" class="mrg-lista-extra"></div>';
+    (antes?antes.parentNode:coluna).insertBefore(painel,antes||null);
+    painel.querySelector('#mrgP3DetalheFechar').addEventListener('click',function(){painel.classList.remove('mrg-p3-detalhe-aberto')});
+    return painel;
+  }
+  function abrir(titulo,html){const painel=criarPainel();if(!painel)return null;painel.querySelector('#mrgP3DetalheTitulo').textContent=titulo;painel.querySelector('#mrgP3DetalheLateralConteudo').innerHTML=html||"<div class='mrg-vazio-extra'>Carregando...</div>";painel.classList.add('mrg-p3-detalhe-aberto');return painel;}
+  function copiar(origem,titulo){const painel=criarPainel();if(!painel)return;abrir(titulo,origem.innerHTML);}
+  function iniciar(){
+    if(!ehPC()||window.mrgP3DetalhesLateraisAtivo)return;window.mrgP3DetalhesLateraisAtivo=true;
+    const carregarHistoricoOriginal=window.mrgCarregarHistorico;
+    const carregarRosasOriginal=window.mrgCarregarRosasPorHora;
+    const detalhesRosasOriginal=window.mrgAbrirDetalhesRosas;
+    window.mrgAbrirHistorico=async function(tipo){
+      const rosa=tipo==='ROSA',titulo=rosa?'🌹 RESULTADOS DO EXECUTOR ROSA':'🟣 RESULTADOS DO SURF ROXO';
+      abrir(titulo,"<div class='mrg-vazio-extra'>Carregando resultados...</div>");
+      await carregarHistoricoOriginal(tipo);copiar(document.getElementById('mrgConteudoAoVivo'),titulo);
+    };
+    window.mrgAbrirRosas=async function(){
+      const titulo='🌹 ROSAS POR HORA · HOJE';abrir(titulo,"<div class='mrg-vazio-extra'>Carregando horas...</div>");
+      await carregarRosasOriginal();copiar(document.getElementById('mrgConteudoRosas'),titulo);
+    };
+    window.mrgAbrirDetalhesRosas=async function(indice){
+      const selecionada=(window.MRG_ROSAS_HORAS||[])[indice],titulo=selecionada?'🌹 ROSAS DAS '+selecionada._hora:'🌹 DETALHES DAS ROSAS';
+      abrir(titulo,"<div class='mrg-vazio-extra'>Carregando detalhes...</div>");
+      const modal=document.getElementById('mrgModalRosasDetalhes');modal.style.display='none';
+      await detalhesRosasOriginal(indice);modal.style.display='';copiar(document.getElementById('mrgConteudoDetalhesRosas'),titulo);
+    };
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(iniciar,500)},{once:true});else setTimeout(iniciar,500);
+})();
+</script>
+
 </body>
 </html>
