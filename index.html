@@ -4871,5 +4871,37 @@ html.mrg-p3-portal #mrgPagina3 .mrg-proj-panel.mrg-proj-teste-recolhida.mrg-proj
 })();
 </script>
 
+<!-- PC: mesmos controles de recolher já aprovados na P2/P3; não move nem recria painel algum. -->
+<style id="mrg-p3-paineis-pc-recolhiveis">
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgPagina3 .mrg-p3-painel-recolhivel>.panel-title{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  cursor:pointer!important;user-select:none!important;
+}
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgPagina3 .mrg-p3-painel-recolhivel>.panel-title::after{
+  content:'▾';color:var(--p3-accent,#19ff19);font-size:18px;line-height:1;margin-left:auto;
+}
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgPagina3 .mrg-p3-painel-recolhivel.mrg-p3-painel-fechado>.panel-title::after{content:'▸'}
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgPagina3 .mrg-p3-painel-recolhivel.mrg-p3-painel-fechado>:not(.panel-title){display:none!important}
+</style>
+<script id="mrg-p3-paineis-pc-recolhiveis-logica">
+(function(){
+  function iniciar(){
+    ['resumoFechados','historicoRecente','p3RosasHoraLista'].forEach(function(id){
+      const conteudo=document.getElementById(id);
+      const painel=conteudo&&conteudo.closest('.panel');
+      const titulo=painel&&painel.querySelector(':scope > .panel-title');
+      if(!painel||!titulo||painel.dataset.mrgP3Recolhivel==='1')return;
+      painel.dataset.mrgP3Recolhivel='1';
+      painel.classList.add('mrg-p3-painel-recolhivel');
+      titulo.setAttribute('role','button');titulo.setAttribute('tabindex','0');titulo.setAttribute('aria-expanded','true');
+      const alternar=function(){const fechado=painel.classList.toggle('mrg-p3-painel-fechado');titulo.setAttribute('aria-expanded',String(!fechado));};
+      titulo.addEventListener('click',alternar);
+      titulo.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();alternar();}});
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(iniciar,350)},{once:true});else setTimeout(iniciar,350);
+})();
+</script>
+
 </body>
 </html>
