@@ -1430,7 +1430,7 @@ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-norte-gatilho-mobi
             <div class="mrg-norte-cell p3-round"><span>Round</span><b id="p3AnalistaRound">--</b></div>
             <div class="mrg-norte-cell"><span>Exato 30</span><b id="p3AnalistaExato">--</b></div>
             <div class="mrg-norte-cell"><span>Família 30</span><b id="p3AnalistaFamilia">--</b></div>
-            <div class="mrg-norte-cell mrg-espelho-cell"><span>Possibilidade de Rosa</span><b id="p3AnalistaEspelho">Observando</b><small>Somatória histórica</small></div>
+            <div class="mrg-norte-cell mrg-espelho-cell"><span>Possível Rosa</span><b id="p3AnalistaEspelho">Observando</b><small>Hist. — · 0/5</small></div>
           </div>
           <div id="mrgP3Norte10" class="mrg-p3-norte10" aria-live="polite">
             <strong>ÚLTIMAS 10 · ANALISTA</strong>
@@ -1678,7 +1678,20 @@ function mrgP3EspelhoCalcular(rosa){
   if(!rosa||!Number.isFinite(rosa.ms)||!Number.isSafeInteger(rosa.round))return null;
   return Math.floor(rosa.ms/60000)*60000+(rosa.round%10||1)*60000;
 }
-let MRG_ESPELHO_ULTIMA_ROSA=null,MRG_ESPELHO_ULTIMA_LEITURA=0;
+// Conferência histórica, sem previsão de probabilidade: somente a rosa imediatamente seguinte.
+function mrgP3EspelhoConferencias(rodadas){
+  const rosas=rodadas.filter(r=>r.mult>=10);
+  const resultados=[];
+  const ultima=rodadas.at(-1);
+  for(let i=0;i<rosas.length;i++){
+    const r=rosas[i],prox=rosas[i+1],alvo=mrgP3EspelhoCalcular(r);
+    const inicio=alvo-40000,fim=alvo+100000;
+    if(prox&&prox.ms>=inicio&&prox.ms<fim)resultados.push(true);
+    else if(prox||ultima?.ms>=fim)resultados.push(false);
+  }
+  return resultados.slice(-5);
+}
+let MRG_ESPELHO_ULTIMA_ROSA=null,MRG_ESPELHO_ULTIMA_LEITURA=0,MRG_ESPELHO_REGISTROS=[],MRG_ESPELHO_CONFERENCIAS=[];
 function mrgP3EspelhoExibir(){
   const el=document.getElementById('p3AnalistaEspelho');if(!el)return;
   const nota=el.parentElement.querySelector('small');
@@ -1688,23 +1701,37 @@ function mrgP3EspelhoExibir(){
   const texto=valido?fmt(referencia):'Observando';
   if(el.textContent!==texto)el.textContent=texto;
   el.style.color='#cbd5e1';
-  const status=valido?(agora-MRG_ESPELHO_ULTIMA_LEITURA>=120000?'Histórico desatualizado':agora>=referencia+60000?'Referência anterior':'Somatória histórica'):'Aguardando rosa';
+  const n=MRG_ESPELHO_CONFERENCIAS.length,k=MRG_ESPELHO_CONFERENCIAS.filter(Boolean).length;
+  const status=valido&&n?'Hist. '+Math.round(100*k/n)+'% · '+k+'/'+n:valido?'Hist. — · 0/5':'Aguardando rosa';
   if(nota&&nota.textContent!==status)nota.textContent=status;
-  el.title='Resultado aritmético da última rosa registrada; não estima a probabilidade da próxima rodada.';
+  if(nota)nota.title='Coincidências históricas nas últimas até cinco conferências; tolerância de 40 segundos antes e após o minuto. Não é probabilidade futura.';
+  el.title='Somatória da última rosa registrada; não estima a probabilidade da próxima rodada.'+(agora-MRG_ESPELHO_ULTIMA_LEITURA>=120000?' Histórico desatualizado.':'');
   el.closest('.mrg-espelho-cell')?.classList.remove('mrg-espelho-referencia');
 }
 function mrgP3EspelhoAtualizar(dados){
   if(!mrgLogado||MRG_PAGINA_ATUAL!==3||!Array.isArray(dados)||!dados.length)return;
-  const agora=Date.now();
+  const agora=Date.now(),novas=[];
   for(const v of dados){
     const ms=Date.parse(String(v.data_hora||'').replace(' ','T').replace(/([+-]\d{2})$/,'$1:00'));
     if(!Number.isFinite(ms)||ms>agora+60000||ms<agora-86400000)continue;
     MRG_ESPELHO_ULTIMA_LEITURA=Math.max(MRG_ESPELHO_ULTIMA_LEITURA,ms);
-    const r=String(mrgNumeroRodada(v)).match(/(\d+)$/);
-    if(!r||!Number.isSafeInteger(Number(r[1]))||!(Number(v.multiplicador)>=10))continue;
-    const rosa={round:Number(r[1]),ms};
+    const r=String(mrgNumeroRodada(v)).match(/(\d+)$/),mult=Number(v.multiplicador);
+    if(!r||!Number.isSafeInteger(Number(r[1]))||!Number.isFinite(mult)||mult<1)continue;
+    const rosa={round:Number(r[1]),ms,mult};novas.push(rosa);
     const anterior=MRG_ESPELHO_ULTIMA_ROSA;
-    if(!anterior||ms>anterior.ms||(ms===anterior.ms&&rosa.round>=anterior.round))MRG_ESPELHO_ULTIMA_ROSA=rosa;
+    if(mult>=10&&(!anterior||ms>anterior.ms||(ms===anterior.ms&&rosa.round>=anterior.round)))MRG_ESPELHO_ULTIMA_ROSA=rosa;
+  }
+  if(novas.length){
+    const chave=r=>r.round+'|'+r.ms;
+    const chaves=new Set(novas.map(chave));
+    const overlap=MRG_ESPELHO_REGISTROS.some(r=>chaves.has(chave(r)));
+    const mapa=new Map((overlap?MRG_ESPELHO_REGISTROS:[]).map(r=>[chave(r),r]));
+    novas.forEach(r=>mapa.set(chave(r),r));
+    const ordenadas=[...mapa.values()].filter(r=>r.ms>=agora-86400000).sort((x,y)=>x.ms-y.ms||x.round-y.round);
+    let inicio=ordenadas.length-1;
+    while(inicio>0&&ordenadas[inicio].round===ordenadas[inicio-1].round+1)inicio--;
+    MRG_ESPELHO_REGISTROS=ordenadas.slice(Math.max(0,inicio)).slice(-5000);
+    MRG_ESPELHO_CONFERENCIAS=mrgP3EspelhoConferencias(MRG_ESPELHO_REGISTROS);
   }
   mrgP3EspelhoExibir();
 }
@@ -5107,7 +5134,7 @@ html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-ranking .mrg-modal-s
     ['p3AnalistaConv','Convicção',true],['p3AnalistaUltima','Última vela',true],
     ['p3AnalistaRound','Round',true],['p3AnalistaExato','Exato 30',true],
     ['p3AnalistaFamilia','Família 30',true],['p3UltimaMobile','Gatilho (última vela)',false],
-    ['p3AnalistaEspelho','Possibilidade de Rosa',false],
+    ['p3AnalistaEspelho','Possível Rosa',false],
     ['mrgMinutoBomMini','Minuto bom — Rosa',true],['mrgP3Norte10','Últimas 10 — barra de assertividade',true]
   ].map(([id,nome,padrao],i)=>({id,nome,padrao,el:i<9?document.getElementById(id)?.closest('.mrg-norte-cell'):document.getElementById(id),celula:i<9})).filter(x=>x.el);
   const chave='mrg.p3.norte.pc.preferencias.v1';
@@ -5167,6 +5194,10 @@ html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-ranking .mrg-modal-s
 })();
 </script>
 <style id="mrg-p3-norte-online-personalizar">
+#mrgPagina3 .mrg-espelho-cell #p3AnalistaEspelho{font-size:12px!important;font-weight:900;line-height:1.2!important}
+#mrgPagina3 .mrg-espelho-cell small{font-size:9px!important;line-height:1.2!important;white-space:normal!important}
+@media(max-width:900px){html.mrg-p3-norte-online-personalizar #mrgPagina3 .p3-norte-horizontal .mrg-norte-grid .mrg-espelho-cell #p3AnalistaEspelho{font-size:clamp(11px,3.2vw,14px)!important}}
+
 #mrgPagina3 .mrg-espelho-cell.mrg-espelho-referencia{border-color:#ff4fa3!important;background:#25101e!important}
 #mrgPagina3 .mrg-espelho-cell small{white-space:normal!important}
 @media(max-width:900px){html.mrg-p3-norte-online-personalizar #mrgPagina3 .p3-norte-horizontal .mrg-norte-grid{grid-template-columns:repeat(var(--mrg-norte-online-cols,3),minmax(0,1fr))!important}}
@@ -5200,7 +5231,7 @@ html.mrg-p3-host-aviator.mrg-p3-norte-online-personalizar #mrgPagina3 .mrg-norte
   const itens=[
     ['p3AnalistaPrincipal','Predominante'],['p3AnalistaAlt','Alternativa'],['p3UltimaMobile','Gatilho (última vela)'],
     ['p3AnalistaConv','Convicção'],['p3AnalistaUltima','Última vela'],['p3AnalistaRound','Round'],['p3AnalistaExato','Exato 30'],
-    ['p3AnalistaFamilia','Família 30'],['p3AnalistaEspelho','Possibilidade de Rosa'],
+    ['p3AnalistaFamilia','Família 30'],['p3AnalistaEspelho','Possível Rosa'],
     ['mrgMinutoBomMini','Minuto Bom — Rosa'],['mrgP3Norte10','Últimas 10 — assertividade']
   ].map(([id,nome],i)=>({id,nome,celula:i<9,el:i<9?document.getElementById(id)?.closest('.mrg-norte-cell'):document.getElementById(id)})).filter(x=>x.el);
   const limite=()=>mobile.matches?6:8;
