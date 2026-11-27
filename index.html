@@ -3006,14 +3006,14 @@ function mrgLinhaPertenceHora(row,chaveSelecionada){
   return false;
 }
 
-async function mrgAbrirDetalhesRosas(indice){
-  const selecionada=MRG_ROSAS_HORAS[indice];
+async function mrgAbrirDetalhesRosas(indice,destinoPC,selecionadaPC){
+  const selecionada=selecionadaPC||MRG_ROSAS_HORAS[indice];
   if(!selecionada)return;
 
-  document.getElementById("mrgTituloDetalhesRosas").textContent=`🌹 ROSAS DAS ${selecionada._hora}`;
-  const alvo=document.getElementById("mrgConteudoDetalhesRosas");
+  const alvo=destinoPC||document.getElementById("mrgConteudoDetalhesRosas");
+  if(!destinoPC)document.getElementById("mrgTituloDetalhesRosas").textContent=`🌹 ROSAS DAS ${selecionada._hora}`;
   alvo.innerHTML="<div class='mrg-vazio-extra'>Carregando detalhes...</div>";
-  document.getElementById("mrgModalRosasDetalhes").classList.remove("escondido");
+  if(!destinoPC)document.getElementById("mrgModalRosasDetalhes").classList.remove("escondido");
 
   try{
     const {data,error}=await db
@@ -3770,7 +3770,7 @@ function mrgStatusSurfValido(linha){const t=String(linha||"").toUpperCase();retu
 function mrgSelecionarEntradas(rows){const atuais={ROXA:null,ROSA:null};MRG_STATUS_ROXA=null;let roxaEncerradaPorStatus=false;for(const row of rows||[]){if(!mrgRegistroRecente(row))continue;const todas=String(row.mensagem||"").split(/\n+/).map(x=>x.trim()).filter(Boolean);for(const linha of todas){if(mrgStatusSurfValido(linha)&&!MRG_STATUS_ROXA){MRG_STATUS_ROXA=`🟣 ${String(linha).replace(/^(?:🟣|🔵|🟢|🌹|🩷)\s*/u,"").trim()}`;roxaEncerradaPorStatus=true;atuais.ROXA=null;MRG_ENTRADAS_RETIDAS.ROXA=null;continue}if(mrgLinhaEntrada(linha)){const tipo=mrgTipoEntrada(linha);if(tipo==="ROXA"&&roxaEncerradaPorStatus)continue;if(tipo&&!atuais[tipo])atuais[tipo]=mrgNormalizarLinhaEntrada(linha,tipo)}}if(atuais.ROSA&&MRG_STATUS_ROXA)break}return[atuais.ROXA,atuais.ROSA].filter(Boolean)}
 function mrgItemHistoricoRoxo(row,i){const resultado=mrgNormalizarResultado(row),hora=mrgExtrairHoraMinuto(mrgDataResultado(row)),gatilho=mrgFormatarMult(mrgValorGatilho(row)),casa1=mrgFormatarMult(mrgValorCasa(row,1)),casa2=mrgFormatarMult(mrgValorCasa(row,2));return`<div class="mrg-surf-item"><div class="mrg-surf-topo"><div class="mrg-surf-num">${i+1}</div><div class="mrg-surf-hora">🟣 ${mrgEscaparHtml(resultado)} · ${mrgEscaparHtml(hora)}</div><div class="mrg-surf-status ${mrgClasseResultado(resultado)}">${mrgEscaparHtml(resultado)}</div></div><div class="mrg-surf-info"><b>Gatilho:</b> ${mrgEscaparHtml(gatilho)}<br><b>1ª casa:</b> ${mrgEscaparHtml(casa1)}<br><b>2ª casa:</b> ${mrgEscaparHtml(casa2)}<br><b>Saída:</b> ${mrgEscaparHtml(mrgFaixaSaida(row,2,3))}</div></div>`}
 function mrgItemHistoricoRosa(row,i){const resultado=mrgNormalizarResultado(row),hora=mrgExtrairHoraMinuto(mrgDataResultado(row)),gatilho=mrgFormatarMult(mrgValorGatilho(row)),maiores=mrgCasasRosa(row),m1=maiores[0]||{casa:"-",valor:"-"},m2=maiores[1]||{casa:"-",valor:"-"};return`<div class="mrg-surf-item rosa"><div class="mrg-surf-topo"><div class="mrg-surf-num">${i+1}</div><div class="mrg-surf-hora">🌹 ${mrgEscaparHtml(resultado)} · ${mrgEscaparHtml(hora)}</div><div class="mrg-surf-status ${mrgClasseResultado(resultado)}">${mrgEscaparHtml(resultado)}</div></div><div class="mrg-surf-info"><b>Gatilho:</b> ${mrgEscaparHtml(gatilho)}<br><b>Saída:</b> ${mrgEscaparHtml(mrgFaixaSaida(row,5,10))}<br><b>1ª maior:</b> ${mrgEscaparHtml(m1.casa)} · ${mrgEscaparHtml(mrgFormatarMult(m1.valor))}<br><b>2ª maior:</b> ${mrgEscaparHtml(m2.casa)} · ${mrgEscaparHtml(mrgFormatarMult(m2.valor))}</div></div>`}
-async function mrgCarregarHistorico(tipo){const alvo=document.getElementById("mrgConteudoAoVivo"),rosa=tipo==="ROSA";alvo.innerHTML="<div class='mrg-vazio-extra'>Carregando resultados...</div>";try{let exibiveis=[];if(rosa){const r=await db.from("executor_rosa_resultados_app").select("*").order("data_hora_resultado",{ascending:false}).limit(60);if(r.error||!r.data){alvo.innerHTML="<div class='mrg-vazio-extra'>Erro ao carregar resultados Rosa.</div>";return}exibiveis=r.data.filter(mrgResultadoFinal).slice(0,20)}else{exibiveis=(await mrgBuscarResultadosRoxos(60)).slice(0,20)}if(!exibiveis.length){alvo.innerHTML="<div class='mrg-vazio-extra'>Nenhum resultado finalizado encontrado.</div>";return}alvo.innerHTML=exibiveis.map(rosa?mrgItemHistoricoRosa:mrgItemHistoricoRoxo).join("")}catch(e){console.error("[MRG] Falha no histórico AO VIVO:",e);alvo.innerHTML="<div class='mrg-vazio-extra'>Erro ao carregar resultados.</div>"}}
+async function mrgCarregarHistorico(tipo,destinoPC){const alvo=destinoPC||document.getElementById("mrgConteudoAoVivo"),rosa=tipo==="ROSA";alvo.innerHTML="<div class='mrg-vazio-extra'>Carregando resultados...</div>";try{let exibiveis=[];if(rosa){const r=await db.from("executor_rosa_resultados_app").select("*").order("data_hora_resultado",{ascending:false}).limit(60);if(r.error||!r.data){alvo.innerHTML="<div class='mrg-vazio-extra'>Erro ao carregar resultados Rosa.</div>";return}exibiveis=r.data.filter(mrgResultadoFinal).slice(0,20)}else{exibiveis=(await mrgBuscarResultadosRoxos(60)).slice(0,20)}if(!exibiveis.length){alvo.innerHTML="<div class='mrg-vazio-extra'>Nenhum resultado finalizado encontrado.</div>";return}alvo.innerHTML=exibiveis.map(rosa?mrgItemHistoricoRosa:mrgItemHistoricoRoxo).join("")}catch(e){console.error("[MRG] Falha no histórico AO VIVO:",e);alvo.innerHTML="<div class='mrg-vazio-extra'>Erro ao carregar resultados.</div>"}}
 function mrgAbrirHistorico(tipo){const rosa=tipo==="ROSA",caixa=document.getElementById("mrgCaixaAoVivo");caixa.classList.toggle("rosa",rosa);document.getElementById("mrgTituloAoVivo").textContent=rosa?"🌹 RESULTADOS DO EXECUTOR ROSA":"🟣 RESULTADOS DO SURF ROXO";document.getElementById("mrgModalAoVivo").classList.remove("escondido");mrgCarregarHistorico(tipo)}
 function mrgAbrirAoVivo(){mrgAbrirHistorico("ROXA")}
 async function carregarLeitura(){if(!mrgLogado)return;if(MRG_LEITURA_EM_CURSO){MRG_LEITURA_REPETIR=true;return}MRG_LEITURA_EM_CURSO=true;try{const{data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(12),entradas=!error&&data?mrgSelecionarEntradas(data):[];mrgAtualizarRetencao(entradas);await mrgCarregarResumos();mrgRenderizarEntradas()}catch(e){console.warn("[MRG] Falha na leitura AO VIVO:",e)}finally{MRG_LEITURA_EM_CURSO=false;if(MRG_LEITURA_REPETIR){MRG_LEITURA_REPETIR=false;setTimeout(carregarLeitura,60)}}}
@@ -4895,7 +4895,7 @@ html.mrg-p3-portal.mrg-p3-host-aviator #mrgPagina3 .mrg-p3-painel-recolhivel.mrg
       painel.classList.add('mrg-p3-painel-recolhivel');
       titulo.setAttribute('role','button');titulo.setAttribute('tabindex','0');titulo.setAttribute('aria-expanded','true');
       const alternar=function(){const fechado=painel.classList.toggle('mrg-p3-painel-fechado');titulo.setAttribute('aria-expanded',String(!fechado));};
-      titulo.addEventListener('click',alternar);
+      titulo.addEventListener('click',function(e){if((window.MRG_APP_SHELL||document.documentElement.classList.contains('mrg-p3-host-aviator'))&&e.target.closest?.('#mrgRosasMini'))return;alternar()});
       titulo.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();alternar();}});
     });
   }
@@ -4913,10 +4913,16 @@ html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateral.mrg-p3-detalhe-abert
 html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateral .panel-title button{width:auto!important;margin:0!important;padding:5px 8px!important;border-radius:7px!important;border:1px solid rgba(var(--p3-accent-rgb),.55)!important;background:#101319!important;color:#fff!important;font-size:10px!important;font-weight:900!important;cursor:pointer!important}
 html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateralConteudo{display:grid!important;gap:7px!important;max-height:500px!important;overflow:auto!important;padding-right:3px!important}
 html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateralConteudo .mrg-hora-rosa{cursor:pointer!important}
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateral{position:relative!important}
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateral .mrg-p3-rosas-sobrejanela{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;gap:7px;box-sizing:border-box;padding:inherit;border:1px solid rgba(255,80,190,.78);border-radius:inherit;background:#080808;overflow:hidden}
+html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateral .mrg-p3-rosas-sobreconteudo{display:grid;align-content:start;gap:7px;flex:1 1 auto;min-height:0;overflow:auto;max-height:500px}
 </style>
 <script id="mrg-p3-detalhes-laterais-pc-logica">
 (function(){
+  let horasAtivas=null,detalhesRosasOriginal=null;
   function ehPC(){return !!window.MRG_APP_SHELL||document.documentElement.classList.contains('mrg-p3-host-aviator')}
+  function fecharSobrejanela(painel){painel.querySelector('.mrg-p3-rosas-sobrejanela')?.remove()}
+  function fecharPainel(painel){fecharSobrejanela(painel);horasAtivas=null;painel.classList.remove('mrg-p3-detalhe-aberto')}
   function criarPainel(){
     let painel=document.getElementById('mrgP3DetalheLateral');if(painel)return painel;
     const coluna=document.querySelector('#mrgPagina3 .p3-right-real');
@@ -4924,31 +4930,71 @@ html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateralConteudo .mrg-hora-ro
     painel=document.createElement('section');painel.id='mrgP3DetalheLateral';painel.className='panel';
     painel.innerHTML='<div class="panel-title"><span id="mrgP3DetalheTitulo">DETALHES</span><button type="button" id="mrgP3DetalheFechar">FECHAR</button></div><div id="mrgP3DetalheLateralConteudo" class="mrg-lista-extra"></div>';
     (antes?antes.parentNode:coluna).insertBefore(painel,antes||null);
-    painel.querySelector('#mrgP3DetalheFechar').addEventListener('click',function(){painel.classList.remove('mrg-p3-detalhe-aberto')});
+    painel.querySelector('#mrgP3DetalheFechar').addEventListener('click',function(){fecharPainel(painel)});
     return painel;
   }
-  function abrir(titulo,html){const painel=criarPainel();if(!painel)return null;painel.querySelector('#mrgP3DetalheTitulo').textContent=titulo;painel.querySelector('#mrgP3DetalheLateralConteudo').innerHTML=html||"<div class='mrg-vazio-extra'>Carregando...</div>";painel.classList.add('mrg-p3-detalhe-aberto');return painel;}
-  function copiar(origem,titulo){const painel=criarPainel();if(!painel)return;abrir(titulo,origem.innerHTML);}
+  function abrir(titulo,mensagem){
+    const painel=criarPainel();if(!painel)return null;
+    fecharSobrejanela(painel);horasAtivas=null;
+    painel.querySelector('#mrgP3DetalheTitulo').textContent=titulo;
+    const alvo=document.createElement('div');alvo.id='mrgP3DetalheLateralConteudo';alvo.className='mrg-lista-extra';
+    alvo.innerHTML="<div class='mrg-vazio-extra'>"+mensagem+"</div>";
+    painel.querySelector('#mrgP3DetalheLateralConteudo').replaceWith(alvo);
+    painel.classList.add('mrg-p3-detalhe-aberto');return alvo;
+  }
+  function renderHoras(){
+    const alvo=horasAtivas;if(!alvo)return;
+    const pos=alvo.scrollTop;
+    alvo.replaceChildren();
+    if(!MRG_ROSAS_HORAS.length){alvo.innerHTML="<div class='mrg-vazio-extra'>Nenhuma hora registrada em rosas_por_hora_app.</div>";return}
+    MRG_ROSAS_HORAS.forEach(function(r){
+      const escolha={...r};
+      const linha=document.createElement('div');linha.className='mrg-hora-rosa';
+      linha.innerHTML='<div class="hora">'+mrgEscaparHtml(escolha._hora)+'</div><div class="seta">➜</div><div class="qtd">🌹 '+escolha._qtd+'</div>';
+      linha.addEventListener('click',function(){abrirDetalhe(escolha)});
+      alvo.appendChild(linha);
+    });
+    alvo.scrollTop=pos;
+  }
+  function abrirLista(){
+    const alvo=abrir('🌹 ROSAS POR HORA · HOJE','Carregando horas...');
+    if(!alvo)return null;horasAtivas=alvo;
+    if(MRG_ROSAS_HORAS.length)renderHoras();
+    return alvo;
+  }
+  async function abrirDetalhe(selecionada){
+    if(!selecionada)return;
+    const escolha={...selecionada};
+    if(!horasAtivas&&!abrirLista())return;
+    const painel=criarPainel();if(!painel)return;
+    fecharSobrejanela(painel);
+    const sobre=document.createElement('div');sobre.className='mrg-p3-rosas-sobrejanela';
+    sobre.innerHTML='<div class="panel-title"><span></span><button type="button">VOLTAR</button></div><div class="mrg-lista-extra mrg-p3-rosas-sobreconteudo"></div>';
+    sobre.querySelector('.panel-title span').textContent='🌹 ROSAS DAS '+escolha._hora;
+    sobre.querySelector('button').addEventListener('click',function(){sobre.remove()});
+    const alvo=sobre.querySelector('.mrg-p3-rosas-sobreconteudo');
+    painel.appendChild(sobre);
+    return detalhesRosasOriginal(null,alvo,escolha);
+  }
   function iniciar(){
-    if(!ehPC()||window.mrgP3DetalhesLateraisAtivo)return;window.mrgP3DetalhesLateraisAtivo=true;
+    if(!ehPC()||window.mrgP3DetalhesLateraisAtivo)return;
     const carregarHistoricoOriginal=window.mrgCarregarHistorico;
     const carregarRosasOriginal=window.mrgCarregarRosasPorHora;
-    const detalhesRosasOriginal=window.mrgAbrirDetalhesRosas;
+    const renderRosasOriginal=window.mrgRenderizarHorasRosas;
+    detalhesRosasOriginal=window.mrgAbrirDetalhesRosas;
+    if(!carregarHistoricoOriginal||!carregarRosasOriginal||!renderRosasOriginal||!detalhesRosasOriginal)return;
+    window.mrgP3DetalhesLateraisAtivo=true;
+    window.mrgRenderizarHorasRosas=function(){const r=renderRosasOriginal.apply(this,arguments);if(horasAtivas)renderHoras();return r};
     window.mrgAbrirHistorico=async function(tipo){
       const rosa=tipo==='ROSA',titulo=rosa?'🌹 RESULTADOS DO EXECUTOR ROSA':'🟣 RESULTADOS DO SURF ROXO';
-      abrir(titulo,"<div class='mrg-vazio-extra'>Carregando resultados...</div>");
-      await carregarHistoricoOriginal(tipo);copiar(document.getElementById('mrgConteudoAoVivo'),titulo);
+      const alvo=abrir(titulo,'Carregando resultados...');if(alvo)return carregarHistoricoOriginal(tipo,alvo);
     };
     window.mrgAbrirRosas=async function(){
-      const titulo='🌹 ROSAS POR HORA · HOJE';abrir(titulo,"<div class='mrg-vazio-extra'>Carregando horas...</div>");
-      await carregarRosasOriginal();copiar(document.getElementById('mrgConteudoRosas'),titulo);
+      const alvo=abrirLista();if(!alvo)return;
+      await carregarRosasOriginal();
+      if(horasAtivas===alvo)renderHoras();
     };
-    window.mrgAbrirDetalhesRosas=async function(indice){
-      const selecionada=(window.MRG_ROSAS_HORAS||[])[indice],titulo=selecionada?'🌹 ROSAS DAS '+selecionada._hora:'🌹 DETALHES DAS ROSAS';
-      abrir(titulo,"<div class='mrg-vazio-extra'>Carregando detalhes...</div>");
-      const modal=document.getElementById('mrgModalRosasDetalhes');modal.style.display='none';
-      await detalhesRosasOriginal(indice);modal.style.display='';copiar(document.getElementById('mrgConteudoDetalhesRosas'),titulo);
-    };
+    window.mrgAbrirDetalhesRosas=function(indice){return abrirDetalhe(MRG_ROSAS_HORAS[indice])};
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(iniciar,500)},{once:true});else setTimeout(iniciar,500);
 })();
