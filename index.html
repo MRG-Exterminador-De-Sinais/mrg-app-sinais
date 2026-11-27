@@ -3739,7 +3739,7 @@ function mrgNorteRenderizar(){
   const nota2=document.getElementById('p2RoxoStatus');if(nota2)nota2.textContent=resumoTotal;
   const p3Numero=document.getElementById('p3Norte10Pct');if(p3Numero){p3Numero.textContent=pct===null?'—':pct+'%';p3Numero.style.color=cor;}
   const p3Ultimo=document.getElementById('p3Norte10Ultimo');if(p3Ultimo)p3Ultimo.textContent=resumoAtual;
-  const p3Resumo=document.getElementById('p3Norte10Resumo');if(p3Resumo)p3Resumo.textContent=linhas.length?`${acertos}A · ${protecoes}P · ${erros}E`:'Fonte: Analista central';
+  const p3Resumo=document.getElementById('p3Norte10Resumo');if(p3Resumo)p3Resumo.textContent=linhas.length?(document.documentElement.classList.contains('mrg-p3-norte-pc-personalizar')?`${acertos} ${acertos===1?'acerto':'acertos'} · ${protecoes} ${protecoes===1?'proteção':'proteções'} · ${erros} ${erros===1?'erro':'erros'}`:`${acertos}A · ${protecoes}P · ${erros}E`):'Fonte: Analista central';
   const barra3=document.getElementById('p3Norte10Barra');if(barra3){barra3.style.width=(pct??0)+'%';barra3.style.backgroundSize=(pct>0?(10000/pct).toFixed(3):100)+'% 100%';}
 }
 
@@ -5016,6 +5016,74 @@ html.mrg-p3-portal.mrg-p3-host-aviator.mrg-p3-grade-pc #mrgPagina3 #p3HistoricoG
 </style>
 <script id="mrg-p3-pc-grade-8-colunas-init">
 if(/Electron\/\d+/i.test(navigator.userAgent)){document.documentElement.classList.add('mrg-p3-grade-pc');mrgP3AgendarFonteGrade()}
+</script>
+<style id="mrg-p3-norte-pc-personalizar-css">
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .p3-norte-horizontal{position:relative;cursor:pointer}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .p3-norte-horizontal .mrg-norte-cell.mrg-norte-pc-oculto{display:none!important}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .p3-norte-horizontal .mrg-norte-gatilho-mobile.mrg-norte-pc-visivel{display:block!important}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .p3-norte-horizontal .mrg-norte-grid.mrg-norte-pc-custom{grid-template-columns:repeat(var(--mrg-norte-pc-colunas),minmax(0,1fr))!important}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .p3-norte-horizontal .mrg-norte-pc-reserva{visibility:hidden!important}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 #p3Norte10Resumo{display:block!important;font-size:9px!important;white-space:normal!important}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-config{position:absolute;inset:0;z-index:10;box-sizing:border-box;background:#080b12;border:1px solid #6459ad;border-radius:inherit;padding:8px;overflow:auto;cursor:default;color:#e2e8f0;font-size:11px}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-config[hidden]{display:none!important}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-config-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-config button{width:auto!important;padding:3px 7px!important;margin:0!important;font-size:10px!important;cursor:pointer}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-opcoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:4px}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-config label{display:flex;align-items:center;gap:4px;cursor:pointer}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-config input{width:auto!important;margin:0!important;accent-color:#38bdf8}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-config-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:5px;margin-top:6px}
+</style>
+<script id="mrg-p3-norte-pc-personalizar-js">
+(function(){
+  if(!/Electron\/\d+/i.test(navigator.userAgent)||!window.MRG_APP_SHELL)return;
+  const painel=document.querySelector('#mrgPagina3 .p3-norte-horizontal');
+  const grade=painel?.querySelector('.mrg-norte-grid');
+  if(!painel||!grade||painel.dataset.mrgNortePC)return;
+  painel.dataset.mrgNortePC='1';
+  const itens=[
+    ['p3AnalistaPrincipal','Predominante',true],['p3AnalistaAlt','Alternativa',true],
+    ['p3AnalistaConv','Convicção',true],['p3AnalistaUltima','Última vela',true],
+    ['p3AnalistaRound','Round',true],['p3AnalistaExato','Exato 30',true],
+    ['p3AnalistaFamilia','Família 30',true],['p3UltimaMobile','Gatilho (última vela)',false],
+    ['mrgMinutoBomMini','Minuto bom — Rosa',true],['mrgP3Norte10','Últimas 10 — barra de assertividade',true]
+  ].map(([id,nome,padrao],i)=>({id,nome,padrao,el:i<8?document.getElementById(id)?.closest('.mrg-norte-cell'):document.getElementById(id),celula:i<8})).filter(x=>x.el);
+  const chave='mrg.p3.norte.pc.preferencias.v1';
+  const padrao=()=>Object.fromEntries(itens.map(x=>[x.id,x.padrao]));
+  let estado=padrao();
+  try{const s=JSON.parse(localStorage.getItem(chave)||'null');if(s)for(const x of itens)if(typeof s[x.id]==='boolean')estado[x.id]=s[x.id]}catch(_){}
+  const salvar=()=>{try{localStorage.setItem(chave,JSON.stringify(estado))}catch(_){}};
+  const config=document.createElement('div');config.className='mrg-norte-pc-config';config.hidden=true;
+  config.setAttribute('role','dialog');config.setAttribute('aria-label','Personalizar Norte do Analista');
+  config.innerHTML='<div class="mrg-norte-pc-config-head"><b>Altere da melhor forma que você gostaria.</b><button type="button" data-fechar>FECHAR</button></div><div class="mrg-norte-pc-opcoes"></div><div class="mrg-norte-pc-config-footer"><label><input type="checkbox" data-restaurar> Restaurar ao padrão inicial</label><button type="button" data-minutos>VER MINUTOS FAVORÁVEIS</button></div>';
+  const lista=config.querySelector('.mrg-norte-pc-opcoes');
+  for(const x of itens){const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.dataset.metrica=x.id;label.append(input,document.createTextNode(x.nome));lista.appendChild(label)}
+  painel.appendChild(config);
+  function aplicar(){
+    let n=0;for(const x of itens){const on=estado[x.id];if(x.celula){x.el.classList.toggle('mrg-norte-pc-oculto',!on);x.el.classList.toggle('mrg-norte-pc-visivel',on);if(on)n++}else x.el.classList.toggle('mrg-norte-pc-reserva',!on)}
+    const custom=itens.some(x=>x.celula&&estado[x.id]!==x.padrao);
+    grade.classList.toggle('mrg-norte-pc-custom',custom);grade.style.setProperty('--mrg-norte-pc-colunas',String(Math.max(1,n)));
+    config.querySelectorAll('[data-metrica]').forEach(i=>i.checked=!!estado[i.dataset.metrica]);
+    config.querySelector('[data-restaurar]').checked=itens.every(x=>estado[x.id]===x.padrao);
+  }
+  function fechar(){config.hidden=true}
+  config.addEventListener('click',e=>e.stopPropagation());
+  config.addEventListener('change',e=>{const i=e.target;if(i.matches('[data-restaurar]')){estado=padrao()}else if(i.matches('[data-metrica]')){estado[i.dataset.metrica]=i.checked}else return;salvar();aplicar()});
+  config.querySelector('[data-fechar]').addEventListener('click',fechar);
+  config.querySelector('[data-minutos]').addEventListener('click',()=>{fechar();if(typeof window.mrgAbrirMinutoBom==='function')window.mrgAbrirMinutoBom()});
+  painel.addEventListener('click',e=>{if(config.contains(e.target))return;e.preventDefault();e.stopPropagation();config.hidden=false;aplicar()},true);
+  config.addEventListener('keydown',e=>{if(e.key==='Escape')fechar()});
+  function iniciar(){
+    if(!document.documentElement.classList.contains('mrg-p3-host-aviator'))return;
+    const altura=grade.getBoundingClientRect().height;if(altura>0)grade.style.minHeight=altura+'px';
+    document.documentElement.classList.add('mrg-p3-norte-pc-personalizar');aplicar();
+    if(typeof mrgNorteRenderizar==='function')mrgNorteRenderizar();
+  }
+  iniciar();
+  if(!document.documentElement.classList.contains('mrg-p3-norte-pc-personalizar')){
+    const obs=new MutationObserver(()=>{if(document.documentElement.classList.contains('mrg-p3-host-aviator')){obs.disconnect();iniciar()}});
+    obs.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+  }
+})();
 </script>
 </body>
 </html>
