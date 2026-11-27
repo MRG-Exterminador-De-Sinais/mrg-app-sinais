@@ -1691,7 +1691,7 @@ function mrgP3AjustarFonteGrade(){
     texto.style.setProperty('width','max-content','important');
     texto.style.setProperty('max-width','none','important');
     texto.style.setProperty('letter-spacing','-.2px','important');
-    let tamanho=10;
+    let tamanho=document.documentElement.classList.contains('mrg-p3-host-aviator')&&/Electron\/\d+/i.test(navigator.userAgent)?14:10;
     const largura=Math.max(8,card.clientWidth-4);
     texto.style.setProperty('font-size',tamanho+'px','important');
     while(tamanho>4 && texto.getBoundingClientRect().width>largura){
@@ -5000,5 +5000,19 @@ html.mrg-p3-portal.mrg-p3-host-aviator #mrgP3DetalheLateral .mrg-p3-rosas-sobrec
 })();
 </script>
 
+<style id="mrg-p3-pc-grade-8-colunas">
+html.mrg-p3-portal.mrg-p3-host-aviator.mrg-p3-grade-pc #mrgPagina3 #p3HistoricoGrid{
+  grid-template-columns:repeat(8,minmax(0,1fr))!important;
+  max-height:560px!important;
+}
+html.mrg-p3-portal.mrg-p3-host-aviator.mrg-p3-grade-pc #mrgPagina3 #p3HistoricoGrid .mrg-vela-card{
+  min-height:52px!important;
+}
+html.mrg-p3-portal.mrg-p3-host-aviator.mrg-p3-grade-pc #mrgPagina3 #p3HistoricoGrid .mrg-vela-hora{font-size:10px!important}
+html.mrg-p3-portal.mrg-p3-host-aviator.mrg-p3-grade-pc #mrgPagina3 #p3HistoricoGrid .mrg-vela-round{font-size:clamp(7px,.72vw,10px)!important}
+</style>
+<script id="mrg-p3-pc-grade-8-colunas-init">
+if(/Electron\/\d+/i.test(navigator.userAgent)){document.documentElement.classList.add('mrg-p3-grade-pc');mrgP3AgendarFonteGrade()}
+</script>
 </body>
 </html>
