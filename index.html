@@ -1836,6 +1836,7 @@ let MRG_ROSAS_HORAS=[];
 let MRG_ULTIMAS_VELAS=[];
 let MRG_RESULTADOS_RESUMO={ROXA:[],ROSA:[]};
 let MRG_ULTIMA_ATUALIZACAO_RESUMOS=0;
+let MRG_RESUMOS_REALTIME_OK=false,MRG_RESUMOS_EM_CURSO=false,MRG_RESUMOS_PENDENTE=false;
 let MRG_LEITURA_EM_CURSO=false;
 let MRG_LEITURA_REPETIR=false;
 let MRG_CANAL_AO_VIVO=null;
@@ -2755,7 +2756,19 @@ function mrgP2MostrarFechadosP3(h){
 }
 function montarHistorico(h){const itens=h.slice(0,10);if(!itens.length){document.getElementById("historicoRecente").innerHTML="<div class='empty'>Nenhum sinal encerrado ainda</div>";return}document.getElementById("historicoRecente").innerHTML=itens.map(i=>{const cls=resultadoClasse(i),cat=nomeCategoria(i);return `<div class="hist-item"><div class="hist-icon">${cat.substring(0,1)}</div><div class="hist-main"><b>${i.alvo||"-"} <span class="${cls}">${textoResultado(i)}</span></b><small>${cat} • ${i.horario||"-"} • ${textoMultiplicador(i)}</small></div><div class="hist-result ${cls}">${i.multiplicador_real||"-"}</div></div>`}).join("")}
 
-async function carregarControleEnvio(){
+let MRG_CONTROLE_CONSULTA=null,MRG_CONTROLE_ULTIMO_OK=0;
+async function carregarControleEnvio(permitirCache=false){
+  if(MRG_CONTROLE_CONSULTA)return MRG_CONTROLE_CONSULTA;
+  if(permitirCache&&MRG_CONTROLE_ULTIMO_OK&&Date.now()-MRG_CONTROLE_ULTIMO_OK<5000)return true;
+  const consulta=(async()=>{
+    const ok=await mrgConsultarControleEnvioOriginal();
+    MRG_CONTROLE_ULTIMO_OK=ok?Date.now():0;
+    return ok;
+  })();
+  MRG_CONTROLE_CONSULTA=consulta;
+  try{return await consulta}finally{if(MRG_CONTROLE_CONSULTA===consulta)MRG_CONTROLE_CONSULTA=null}
+}
+async function mrgConsultarControleEnvioOriginal(){
   // Controle operacional legado (sinais/atualização). A chave mestra PC NÃO é lida aqui.
   const {data,error}=await db.from("controle_envio").select("snarpy_ativo,hyper_ativo,mensagem,atualizacao_pc,versao_minima_pc,link_pc,mensagem_atualizacao").eq("id",1).single();
   if(error||!data)return false;
@@ -3149,7 +3162,7 @@ async function carregarProjecoes(){if(!mrgLogado)return;try{const{data,error}=aw
 
 async function carregarSinais(){
   if(!mrgLogado)return;
-  await carregarControleEnvio();
+  await carregarControleEnvio(true);
   const mrgAtualizacaoObrigatoriaAtiva=mrgPrecisaAtualizarPc();
   if(mrgAtualizacaoObrigatoriaAtiva){
     document.getElementById("ativosTopo").innerHTML=cardAtualizacaoPc();
@@ -3761,7 +3774,7 @@ async function mrgNorteConsultarVelas(){
     }
   }finally{MRG_NORTE_CENTRAL_632.consultando=false}
 }
-async function mrgCarregarResumos(forcar=false){const agora=Date.now();if(!forcar&&agora-MRG_ULTIMA_ATUALIZACAO_RESUMOS<3000)return;MRG_ULTIMA_ATUALIZACAO_RESUMOS=agora;try{const[roxos,rosa]=await Promise.all([mrgBuscarResultadosRoxos(20),db.from("executor_rosa_resultados_app").select("*").order("data_hora_resultado",{ascending:false}).limit(30)]);const roxosFinais=roxos.filter(mrgResultadoFinal),rosasFinais=!rosa.error&&rosa.data?rosa.data.filter(mrgResultadoFinal):[];mrgAtualizarChaveResultado("ROXA",roxosFinais[0]);mrgAtualizarChaveResultado("ROSA",rosasFinais[0]);MRG_RESULTADOS_RESUMO.ROXA=roxosFinais.map(mrgNormalizarResultado).filter(r=>r==="WIN"||r==="LOSS").slice(0,10);if(!rosa.error&&rosa.data)MRG_RESULTADOS_RESUMO.ROSA=rosasFinais.map(mrgNormalizarResultado).slice(0,10);mrgRenderizarResumos();mrgNorteRenderizar()}catch(e){console.warn("[MRG] Falha ao atualizar resumos AO VIVO:",e)}}
+async function mrgCarregarResumos(forcar=false){const agora=Date.now();if(MRG_RESUMOS_EM_CURSO){if(forcar||MRG_ULTIMA_ATUALIZACAO_RESUMOS===0)MRG_RESUMOS_PENDENTE=true;return}if(!forcar&&agora-MRG_ULTIMA_ATUALIZACAO_RESUMOS<(MRG_RESUMOS_REALTIME_OK?10000:3000))return;MRG_RESUMOS_EM_CURSO=true;MRG_ULTIMA_ATUALIZACAO_RESUMOS=agora;try{const[roxos,rosa]=await Promise.all([mrgBuscarResultadosRoxos(20),db.from("executor_rosa_resultados_app").select("*").order("data_hora_resultado",{ascending:false}).limit(30)]);const roxosFinais=roxos.filter(mrgResultadoFinal),rosasFinais=!rosa.error&&rosa.data?rosa.data.filter(mrgResultadoFinal):[];mrgAtualizarChaveResultado("ROXA",roxosFinais[0]);mrgAtualizarChaveResultado("ROSA",rosasFinais[0]);MRG_RESULTADOS_RESUMO.ROXA=roxosFinais.map(mrgNormalizarResultado).filter(r=>r==="WIN"||r==="LOSS").slice(0,10);if(!rosa.error&&rosa.data)MRG_RESULTADOS_RESUMO.ROSA=rosasFinais.map(mrgNormalizarResultado).slice(0,10);mrgRenderizarResumos();mrgNorteRenderizar()}catch(e){MRG_ULTIMA_ATUALIZACAO_RESUMOS=0;console.warn("[MRG] Falha ao atualizar resumos AO VIVO:",e)}finally{MRG_RESUMOS_EM_CURSO=false;if(MRG_RESUMOS_PENDENTE){MRG_RESUMOS_PENDENTE=false;if(mrgLogado)mrgCarregarResumos(true)}}}
 function mrgLinhaEntrada(linha){const t=String(linha||"").toUpperCase();return t.includes("APÓS")&&t.includes("SAIR")&&(t.includes("2C")||t.includes("4C"))}
 function mrgTipoEntrada(linha){const t=String(linha||"").toUpperCase();if(t.includes("🌹")||t.includes("🩷")||t.includes("🟢")||t.includes("ROSA")||t.includes("4C"))return"ROSA";if(t.includes("🟣")||t.includes("ROXA")||t.includes("2C"))return"ROXA";return""}
 function mrgRegistroRecente(row){const bruto=mrgValorPrimeiro(row,["data_hora_entrada","criado_em","data_hora","atualizado_em"],"");if(!bruto)return true;const d=mrgDataValida(bruto);if(!d)return true;const idade=Date.now()-d.getTime();return idade>=-300000&&idade<=1200000}
@@ -3775,8 +3788,8 @@ function mrgAbrirHistorico(tipo){const rosa=tipo==="ROSA",caixa=document.getElem
 function mrgAbrirAoVivo(){mrgAbrirHistorico("ROXA")}
 async function carregarLeitura(){if(!mrgLogado)return;if(MRG_LEITURA_EM_CURSO){MRG_LEITURA_REPETIR=true;return}MRG_LEITURA_EM_CURSO=true;try{const{data,error}=await db.from("leituras_ao_vivo").select("*").eq("ativo",true).order("id",{ascending:false}).limit(12),entradas=!error&&data?mrgSelecionarEntradas(data):[];mrgAtualizarRetencao(entradas);await mrgCarregarResumos();mrgRenderizarEntradas()}catch(e){console.warn("[MRG] Falha na leitura AO VIVO:",e)}finally{MRG_LEITURA_EM_CURSO=false;if(MRG_LEITURA_REPETIR){MRG_LEITURA_REPETIR=false;setTimeout(carregarLeitura,60)}}}
 function mrgAtualizarAoVivoAgora(forcarResumo=false){if(!mrgLogado)return;if(forcarResumo)MRG_ULTIMA_ATUALIZACAO_RESUMOS=0;clearTimeout(MRG_TIMER_AO_VIVO);MRG_TIMER_AO_VIVO=setTimeout(carregarLeitura,40)}
-function mrgIniciarRealtimeAoVivo(){if(MRG_CANAL_AO_VIVO)return;try{MRG_CANAL_AO_VIVO=db.channel("mrg-pc-ao-vivo-310").on("postgres_changes",{event:"*",schema:"public",table:"leituras_ao_vivo"},()=>mrgAtualizarAoVivoAgora(false)).on("postgres_changes",{event:"*",schema:"public",table:"surf_roxo_resultados_v2_app"},()=>mrgAtualizarAoVivoAgora(true)).on("postgres_changes",{event:"*",schema:"public",table:"executor_rosa_resultados_app"},()=>mrgAtualizarAoVivoAgora(true)).subscribe()}catch(e){console.warn("[MRG] Realtime indisponível; mantendo consulta de segurança.",e)}}
-function mrgPararRealtimeAoVivo(){clearTimeout(MRG_TIMER_AO_VIVO);MRG_TIMER_AO_VIVO=null;if(!MRG_CANAL_AO_VIVO)return;try{db.removeChannel(MRG_CANAL_AO_VIVO)}catch(e){}MRG_CANAL_AO_VIVO=null}
+function mrgIniciarRealtimeAoVivo(){if(MRG_CANAL_AO_VIVO)return;try{MRG_CANAL_AO_VIVO=db.channel("mrg-pc-ao-vivo-310").on("postgres_changes",{event:"*",schema:"public",table:"leituras_ao_vivo"},()=>mrgAtualizarAoVivoAgora(false)).on("postgres_changes",{event:"*",schema:"public",table:"surf_roxo_resultados_v2_app"},()=>mrgAtualizarAoVivoAgora(true)).on("postgres_changes",{event:"*",schema:"public",table:"executor_rosa_resultados_app"},()=>mrgAtualizarAoVivoAgora(true)).subscribe(status=>{MRG_RESUMOS_REALTIME_OK=status==="SUBSCRIBED";MRG_ULTIMA_ATUALIZACAO_RESUMOS=0;if(mrgLogado)mrgAtualizarAoVivoAgora(true)})}catch(e){MRG_RESUMOS_REALTIME_OK=false;console.warn("[MRG] Realtime indisponível; mantendo consulta de segurança.",e)}}
+function mrgPararRealtimeAoVivo(){MRG_RESUMOS_REALTIME_OK=false;MRG_ULTIMA_ATUALIZACAO_RESUMOS=0;MRG_RESUMOS_PENDENTE=false;MRG_CONTROLE_ULTIMO_OK=0;clearTimeout(MRG_TIMER_AO_VIVO);MRG_TIMER_AO_VIVO=null;if(!MRG_CANAL_AO_VIVO)return;try{db.removeChannel(MRG_CANAL_AO_VIVO)}catch(e){}MRG_CANAL_AO_VIVO=null}
 
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)mrgAtualizarAoVivoAgora(true)});
 window.addEventListener("online",()=>mrgAtualizarAoVivoAgora(true));
