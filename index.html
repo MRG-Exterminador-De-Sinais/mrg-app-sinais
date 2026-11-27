@@ -1430,7 +1430,7 @@ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-norte-gatilho-mobi
             <div class="mrg-norte-cell p3-round"><span>Round</span><b id="p3AnalistaRound">--</b></div>
             <div class="mrg-norte-cell"><span>Exato 30</span><b id="p3AnalistaExato">--</b></div>
             <div class="mrg-norte-cell"><span>Família 30</span><b id="p3AnalistaFamilia">--</b></div>
-            <div class="mrg-norte-cell mrg-espelho-cell"><span>Espelho experimental</span><b id="p3AnalistaEspelho">Observando</b><small id="p3EspelhoNota">0A · 0E</small></div>
+            <div class="mrg-norte-cell mrg-espelho-cell"><span>Possibilidade de Rosa</span><b id="p3AnalistaEspelho">Observando</b><small>Hipótese em observação</small></div>
           </div>
           <div id="mrgP3Norte10" class="mrg-p3-norte10" aria-live="polite">
             <strong>ÚLTIMAS 10 · ANALISTA</strong>
@@ -1675,20 +1675,32 @@ let MRG_P3_HIST_LIMITE=50;
 let MRG_P3_HIST_FILTRO="TODAS";
 let MRG_P3_HIST_DADOS=[];
 function mrgP3EspelhoCalcular(rosas,agora){
-  const amostra=rosas.slice(-10);
-  const alvo=r=>Math.floor(r.ms/60000)*60000+(r.round%10||1)*60000;
-  let acertos=0,erros=0,sequenciaA=0,sequenciaE=0,ativo=false;
-  for(let i=1;i<amostra.length;i++){
-    const certo=Math.floor(amostra[i].ms/60000)*60000===alvo(amostra[i-1]);
-    if(certo){acertos++;sequenciaA++;sequenciaE=0;if(sequenciaA>=3)ativo=true}
-    else{erros++;sequenciaE++;sequenciaA=0;if(sequenciaE>=2)ativo=false}
-  }
-  const ultima=amostra.at(-1),referencia=ultima?alvo(ultima):null;
-  if(amostra.length<10)ativo=false;
-  if(referencia!==null&&agora>=referencia+60000)ativo=false;
-  return {n:amostra.length,acertos,erros,ativo,referencia};
+  const amostra=rosas.slice(-5);
+  const minuto=r=>Math.floor(r.ms/60000)*60000;
+  const alvo=r=>minuto(r)+(r.round%10||1)*60000;
+  const desvios=amostra.slice(1).map((r,i)=>(minuto(r)-alvo(amostra[i]))/60000);
+  const frequencias=new Map();
+  for(const d of desvios)if(Math.abs(d)<=3)frequencias.set(d,(frequencias.get(d)||0)+1);
+  const candidatos=[...frequencias].filter(([d,n])=>n>=3&&desvios.at(-1)===d);
+  const desvio=candidatos.length===1?candidatos[0][0]:null;
+  const ultima=amostra.at(-1);
+  const referencia=ultima&&desvio!==null?alvo(ultima)+desvio*60000:null;
+  const ativo=amostra.length===5&&referencia!==null&&referencia>minuto(ultima)&&agora>=referencia-60000&&agora<referencia+75000;
+  return {n:amostra.length,ativo,referencia,desvio};
 }
 let MRG_ESPELHO_HIST_LOCAL=[];
+let MRG_ESPELHO_ROSAS_LOCAL=[];
+function mrgP3EspelhoExibir(){
+  const el=document.getElementById('p3AnalistaEspelho');if(!el)return;
+  const agora=Date.now(),ultima=MRG_ESPELHO_HIST_LOCAL.at(-1);
+  const res=mrgP3EspelhoCalcular(MRG_ESPELHO_ROSAS_LOCAL,agora);
+  const ativo=!!(mrgLogado&&MRG_PAGINA_ATUAL===3&&ultima&&agora-ultima.ms<120000&&res.ativo);
+  const fmt=t=>new Date(t).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',hour12:false});
+  el.textContent=ativo?'🌹 '+fmt(res.referencia):'Observando';
+  el.style.color=ativo?'#ff70b5':'#cbd5e1';
+  el.title='Hipótese estatística experimental, sem capacidade preditiva comprovada. Amostra: '+res.n+'/5 rosas.';
+  el.closest('.mrg-espelho-cell')?.classList.toggle('mrg-espelho-referencia',ativo);
+}
 function mrgP3EspelhoAtualizar(dados){
   const el=document.getElementById('p3AnalistaEspelho');
   if(!el||!mrgLogado||MRG_PAGINA_ATUAL!==3||!Array.isArray(dados)||!dados.length)return;
@@ -1699,7 +1711,7 @@ function mrgP3EspelhoAtualizar(dados){
     const mult=Number(v.multiplicador);
     return r&&Number.isSafeInteger(Number(r[1]))&&Number.isFinite(ms)&&Number.isFinite(mult)&&mult>=1?{round:Number(r[1]),ms,mult}:null;
   }).filter(Boolean).sort((a,b)=>a.ms-b.ms||a.round-b.round);
-  if(!novas.length){MRG_ESPELHO_HIST_LOCAL=[];el.textContent='Sem dados';el.title='Histórico sem rounds válidos';return}
+  if(!novas.length){MRG_ESPELHO_HIST_LOCAL=[];MRG_ESPELHO_ROSAS_LOCAL=[];mrgP3EspelhoExibir();return}
   const ch=r=>r.round+'|'+r.ms;
   const chaves=new Set(novas.map(ch));
   const overlap=MRG_ESPELHO_HIST_LOCAL.some(r=>chaves.has(ch(r)));
@@ -1710,14 +1722,8 @@ function mrgP3EspelhoAtualizar(dados){
   let inicio=ordenadas.length-1;
   while(inicio>0&&ordenadas[inicio].round===ordenadas[inicio-1].round+1)inicio--;
   MRG_ESPELHO_HIST_LOCAL=ordenadas.slice(Math.max(0,inicio)).slice(-5000);
-  const rosas=MRG_ESPELHO_HIST_LOCAL.filter(r=>r.mult>=10).slice(-10);
-  const res=mrgP3EspelhoCalcular(rosas,agora);
-  const fmt=t=>new Date(t).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',hour12:false});
-  const amostra=res.n<10?'Amostra '+res.n+'/10':'Observando';
-  el.textContent=res.ativo?'🌹 '+fmt(res.referencia):amostra;
-  el.style.color=res.ativo?'#ff70b5':'#cbd5e1';
-  el.title='Experimental · '+res.acertos+' coincidências e '+res.erros+' divergências em '+(res.acertos+res.erros)+' transições completas. Não comprova previsão.';
-  const nota=document.getElementById('p3EspelhoNota');if(nota)nota.textContent=res.acertos+'A · '+res.erros+'E';
+  MRG_ESPELHO_ROSAS_LOCAL=MRG_ESPELHO_HIST_LOCAL.filter(r=>r.mult>=10).slice(-5);
+  mrgP3EspelhoExibir();
 }
 function mrgP3PassaFiltro(v){const f=MRG_P3_HIST_FILTRO;const n=Number(v?.multiplicador)||0;if(f==="TODAS")return true;if(["AZUL","ROXO","ROSA"].includes(f))return mrgP2CorRegistro(v)===f;if(f==="10-50")return n>=10&&n<50;if(f==="50-100")return n>=50&&n<100;if(f==="100-200")return n>=100&&n<200;if(f==="200+")return n>=200;return true}
 function mrgP3RoundSomenteNumeros(v){
@@ -3651,7 +3657,7 @@ async function carregarTudo(){
   await carregarUltimas50Velas();
   await mrgCarregarRosasPorHora();
 }
-function atualizarRelogio(){const h=new Date().toLocaleTimeString("pt-BR");const r=document.getElementById("relogio");const rd=document.getElementById("mrgRelogioDireito");const rn=document.getElementById("p3RelogioNorte");if(r)r.textContent="HORÁRIO: "+h;if(rd)rd.textContent=h;if(rn)rn.textContent=h}
+function atualizarRelogio(){const h=new Date().toLocaleTimeString("pt-BR");const r=document.getElementById("relogio");const rd=document.getElementById("mrgRelogioDireito");const rn=document.getElementById("p3RelogioNorte");if(r)r.textContent="HORÁRIO: "+h;if(rd)rd.textContent=h;if(rn)rn.textContent=h;try{mrgP3EspelhoExibir()}catch(e){}}
 
 viewAviator.addEventListener("dom-ready",()=>setStatus("Aviator pronto no núcleo compartilhado P2/P3"));
 atualizarRelogio();
@@ -5118,7 +5124,7 @@ html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-ranking .mrg-modal-s
     ['p3AnalistaConv','Convicção',true],['p3AnalistaUltima','Última vela',true],
     ['p3AnalistaRound','Round',true],['p3AnalistaExato','Exato 30',true],
     ['p3AnalistaFamilia','Família 30',true],['p3UltimaMobile','Gatilho (última vela)',false],
-    ['p3AnalistaEspelho','Espelho — Round + Minuto (experimental)',false],
+    ['p3AnalistaEspelho','Possibilidade de Rosa',false],
     ['mrgMinutoBomMini','Minuto bom — Rosa',true],['mrgP3Norte10','Últimas 10 — barra de assertividade',true]
   ].map(([id,nome,padrao],i)=>({id,nome,padrao,el:i<9?document.getElementById(id)?.closest('.mrg-norte-cell'):document.getElementById(id),celula:i<9})).filter(x=>x.el);
   const chave='mrg.p3.norte.pc.preferencias.v1';
@@ -5178,6 +5184,9 @@ html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-ranking .mrg-modal-s
 })();
 </script>
 <style id="mrg-p3-norte-online-personalizar">
+#mrgPagina3 .mrg-espelho-cell.mrg-espelho-referencia{border-color:#ff4fa3!important;background:#25101e!important}
+#mrgPagina3 .mrg-espelho-cell small{white-space:normal!important}
+@media(max-width:900px){html.mrg-p3-norte-online-personalizar #mrgPagina3 .p3-norte-horizontal .mrg-norte-grid{grid-template-columns:repeat(var(--mrg-norte-online-cols,3),minmax(0,1fr))!important}}
 #mrgPagina3 .mrg-espelho-cell:not(.mrg-norte-pc-visivel):not(.mrg-norte-online-visivel){display:none!important}
 #mrgPagina3 .mrg-espelho-cell small{display:block;color:#aab5c2;font-size:8px;white-space:nowrap}
 #mrgPagina3 #p3Norte10Resumo em{font-style:normal;font-weight:800;white-space:nowrap}
@@ -5208,10 +5217,10 @@ html.mrg-p3-host-aviator.mrg-p3-norte-online-personalizar #mrgPagina3 .mrg-norte
   const itens=[
     ['p3AnalistaPrincipal','Predominante'],['p3AnalistaAlt','Alternativa'],['p3UltimaMobile','Gatilho (última vela)'],
     ['p3AnalistaConv','Convicção'],['p3AnalistaUltima','Última vela'],['p3AnalistaRound','Round'],['p3AnalistaExato','Exato 30'],
-    ['p3AnalistaFamilia','Família 30'],['p3AnalistaEspelho','Espelho experimental'],
+    ['p3AnalistaFamilia','Família 30'],['p3AnalistaEspelho','Possibilidade de Rosa'],
     ['mrgMinutoBomMini','Minuto Bom — Rosa'],['mrgP3Norte10','Últimas 10 — assertividade']
   ].map(([id,nome],i)=>({id,nome,celula:i<9,el:i<9?document.getElementById(id)?.closest('.mrg-norte-cell'):document.getElementById(id)})).filter(x=>x.el);
-  const limite=()=>mobile.matches?4:8;
+  const limite=()=>mobile.matches?6:8;
   const padrao=()=>Object.fromEntries(itens.map(x=>[x.id,!x.celula||(mobile.matches?['p3AnalistaPrincipal','p3AnalistaAlt','p3UltimaMobile'].includes(x.id):!['p3UltimaMobile','p3AnalistaEspelho'].includes(x.id))]));
   const chave=()=> 'mrg.p3.norte.online.v1.'+(mobile.matches?'compacto':'amplo');
   let estado;
@@ -5224,7 +5233,7 @@ html.mrg-p3-host-aviator.mrg-p3-norte-online-personalizar #mrgPagina3 .mrg-norte
   painel.appendChild(config);
   function aplicar(){
     let n=0;for(const x of itens){const on=!!estado[x.id];x.el.classList.toggle('mrg-norte-online-oculto',!on);if(x.celula){x.el.classList.toggle('mrg-norte-online-visivel',on);if(on)n++}}
-    grade.style.setProperty('--mrg-norte-online-cols',String(Math.max(1,n)));
+    grade.style.setProperty('--mrg-norte-online-cols',String(Math.max(1,mobile.matches?Math.min(3,n):n)));
     config.querySelector('[data-limite]').textContent='Caixinhas: '+n+'/'+limite()+' · desmarque uma para trocar.';
     config.querySelectorAll('[data-metrica]').forEach(i=>{const x=itens.find(x=>x.id===i.dataset.metrica);i.checked=!!estado[x.id];i.disabled=x.celula&&!i.checked&&n>=limite()});
     const p=padrao();config.querySelector('[data-restaurar]').checked=itens.every(x=>estado[x.id]===p[x.id]);
