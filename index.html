@@ -1430,7 +1430,7 @@ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-norte-gatilho-mobi
             <div class="mrg-norte-cell p3-round"><span>Round</span><b id="p3AnalistaRound">--</b></div>
             <div class="mrg-norte-cell"><span>Exato 30</span><b id="p3AnalistaExato">--</b></div>
             <div class="mrg-norte-cell"><span>Família 30</span><b id="p3AnalistaFamilia">--</b></div>
-            <div class="mrg-norte-cell mrg-espelho-cell"><span>Possibilidade de Rosa</span><b id="p3AnalistaEspelho">Observando</b><small>Hipótese em observação</small></div>
+            <div class="mrg-norte-cell mrg-espelho-cell"><span>Possibilidade de Rosa</span><b id="p3AnalistaEspelho">Observando</b><small>Somatória histórica</small></div>
           </div>
           <div id="mrgP3Norte10" class="mrg-p3-norte10" aria-live="polite">
             <strong>ÚLTIMAS 10 · ANALISTA</strong>
@@ -1674,55 +1674,38 @@ function mrgP2VoltarInicio(){MRG_P2_HIST_LIMITE=50;mrgP2CarregarHistorico24h()}
 let MRG_P3_HIST_LIMITE=50;
 let MRG_P3_HIST_FILTRO="TODAS";
 let MRG_P3_HIST_DADOS=[];
-function mrgP3EspelhoCalcular(rosas,agora){
-  const amostra=rosas.slice(-5);
-  const minuto=r=>Math.floor(r.ms/60000)*60000;
-  const alvo=r=>minuto(r)+(r.round%10||1)*60000;
-  const desvios=amostra.slice(1).map((r,i)=>(minuto(r)-alvo(amostra[i]))/60000);
-  const frequencias=new Map();
-  for(const d of desvios)if(Math.abs(d)<=3)frequencias.set(d,(frequencias.get(d)||0)+1);
-  const candidatos=[...frequencias].filter(([d,n])=>n>=3&&desvios.at(-1)===d);
-  const desvio=candidatos.length===1?candidatos[0][0]:null;
-  const ultima=amostra.at(-1);
-  const referencia=ultima&&desvio!==null?alvo(ultima)+desvio*60000:null;
-  const ativo=amostra.length===5&&referencia!==null&&referencia>minuto(ultima)&&agora>=referencia-60000&&agora<referencia+75000;
-  return {n:amostra.length,ativo,referencia,desvio};
+function mrgP3EspelhoCalcular(rosa){
+  if(!rosa||!Number.isFinite(rosa.ms)||!Number.isSafeInteger(rosa.round))return null;
+  return Math.floor(rosa.ms/60000)*60000+(rosa.round%10||1)*60000;
 }
-let MRG_ESPELHO_HIST_LOCAL=[];
-let MRG_ESPELHO_ROSAS_LOCAL=[];
+let MRG_ESPELHO_ULTIMA_ROSA=null,MRG_ESPELHO_ULTIMA_LEITURA=0;
 function mrgP3EspelhoExibir(){
   const el=document.getElementById('p3AnalistaEspelho');if(!el)return;
-  const agora=Date.now(),ultima=MRG_ESPELHO_HIST_LOCAL.at(-1);
-  const res=mrgP3EspelhoCalcular(MRG_ESPELHO_ROSAS_LOCAL,agora);
-  const ativo=!!(mrgLogado&&MRG_PAGINA_ATUAL===3&&ultima&&agora-ultima.ms<120000&&res.ativo);
+  const nota=el.parentElement.querySelector('small');
+  const agora=Date.now(),referencia=mrgP3EspelhoCalcular(MRG_ESPELHO_ULTIMA_ROSA);
+  const valido=mrgLogado&&MRG_PAGINA_ATUAL===3&&referencia!==null;
   const fmt=t=>new Date(t).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',hour12:false});
-  el.textContent=ativo?'🌹 '+fmt(res.referencia):'Observando';
-  el.style.color=ativo?'#ff70b5':'#cbd5e1';
-  el.title='Hipótese estatística experimental, sem capacidade preditiva comprovada. Amostra: '+res.n+'/5 rosas.';
-  el.closest('.mrg-espelho-cell')?.classList.toggle('mrg-espelho-referencia',ativo);
+  const texto=valido?fmt(referencia):'Observando';
+  if(el.textContent!==texto)el.textContent=texto;
+  el.style.color='#cbd5e1';
+  const status=valido?(agora-MRG_ESPELHO_ULTIMA_LEITURA>=120000?'Histórico desatualizado':agora>=referencia+60000?'Referência anterior':'Somatória histórica'):'Aguardando rosa';
+  if(nota&&nota.textContent!==status)nota.textContent=status;
+  el.title='Resultado aritmético da última rosa registrada; não estima a probabilidade da próxima rodada.';
+  el.closest('.mrg-espelho-cell')?.classList.remove('mrg-espelho-referencia');
 }
 function mrgP3EspelhoAtualizar(dados){
-  const el=document.getElementById('p3AnalistaEspelho');
-  if(!el||!mrgLogado||MRG_PAGINA_ATUAL!==3||!Array.isArray(dados)||!dados.length)return;
+  if(!mrgLogado||MRG_PAGINA_ATUAL!==3||!Array.isArray(dados)||!dados.length)return;
   const agora=Date.now();
-  const novas=dados.map(v=>{
-    const r=String(mrgNumeroRodada(v)).match(/(\d+)$/);
+  for(const v of dados){
     const ms=Date.parse(String(v.data_hora||'').replace(' ','T').replace(/([+-]\d{2})$/,'$1:00'));
-    const mult=Number(v.multiplicador);
-    return r&&Number.isSafeInteger(Number(r[1]))&&Number.isFinite(ms)&&Number.isFinite(mult)&&mult>=1?{round:Number(r[1]),ms,mult}:null;
-  }).filter(Boolean).sort((a,b)=>a.ms-b.ms||a.round-b.round);
-  if(!novas.length){MRG_ESPELHO_HIST_LOCAL=[];MRG_ESPELHO_ROSAS_LOCAL=[];mrgP3EspelhoExibir();return}
-  const ch=r=>r.round+'|'+r.ms;
-  const chaves=new Set(novas.map(ch));
-  const overlap=MRG_ESPELHO_HIST_LOCAL.some(r=>chaves.has(ch(r)));
-  const mapa=new Map((overlap?MRG_ESPELHO_HIST_LOCAL:[]).map(r=>[ch(r),r]));
-  novas.forEach(r=>mapa.set(ch(r),r));
-  const ordenadas=[...mapa.values()].filter(r=>r.ms>=agora-86400000&&r.ms<=agora+60000).sort((a,b)=>a.ms-b.ms||a.round-b.round);
-  // Apenas trecho contínuo; não interpretar lacuna de coleta como ausência de rosa.
-  let inicio=ordenadas.length-1;
-  while(inicio>0&&ordenadas[inicio].round===ordenadas[inicio-1].round+1)inicio--;
-  MRG_ESPELHO_HIST_LOCAL=ordenadas.slice(Math.max(0,inicio)).slice(-5000);
-  MRG_ESPELHO_ROSAS_LOCAL=MRG_ESPELHO_HIST_LOCAL.filter(r=>r.mult>=10).slice(-5);
+    if(!Number.isFinite(ms)||ms>agora+60000||ms<agora-86400000)continue;
+    MRG_ESPELHO_ULTIMA_LEITURA=Math.max(MRG_ESPELHO_ULTIMA_LEITURA,ms);
+    const r=String(mrgNumeroRodada(v)).match(/(\d+)$/);
+    if(!r||!Number.isSafeInteger(Number(r[1]))||!(Number(v.multiplicador)>=10))continue;
+    const rosa={round:Number(r[1]),ms};
+    const anterior=MRG_ESPELHO_ULTIMA_ROSA;
+    if(!anterior||ms>anterior.ms||(ms===anterior.ms&&rosa.round>=anterior.round))MRG_ESPELHO_ULTIMA_ROSA=rosa;
+  }
   mrgP3EspelhoExibir();
 }
 function mrgP3PassaFiltro(v){const f=MRG_P3_HIST_FILTRO;const n=Number(v?.multiplicador)||0;if(f==="TODAS")return true;if(["AZUL","ROXO","ROSA"].includes(f))return mrgP2CorRegistro(v)===f;if(f==="10-50")return n>=10&&n<50;if(f==="50-100")return n>=50&&n<100;if(f==="100-200")return n>=100&&n<200;if(f==="200+")return n>=200;return true}
