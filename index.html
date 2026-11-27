@@ -5032,6 +5032,10 @@ html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-opcoes{display:grid;
 html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-config label{display:flex;align-items:center;gap:4px;cursor:pointer}
 html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-config input{width:auto!important;margin:0!important;accent-color:#38bdf8}
 html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-config-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:5px;margin-top:6px}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 #mrgMinutoBomMini{cursor:pointer;outline-offset:2px}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-ranking .mrg-ranking-minutos{gap:3px}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-ranking .mrg-ranking-minuto{padding:3px 7px!important;min-height:0!important}
+html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-ranking .mrg-modal-sub{margin:0 0 4px!important;font-size:10px!important}
 </style>
 <script id="mrg-p3-norte-pc-personalizar-js">
 (function(){
@@ -5054,7 +5058,7 @@ html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-config-footer{displa
   const salvar=()=>{try{localStorage.setItem(chave,JSON.stringify(estado))}catch(_){}};
   const config=document.createElement('div');config.className='mrg-norte-pc-config';config.hidden=true;
   config.setAttribute('role','dialog');config.setAttribute('aria-label','Personalizar Norte do Analista');
-  config.innerHTML='<div class="mrg-norte-pc-config-head"><b>Altere da melhor forma que você gostaria.</b><button type="button" data-fechar>FECHAR</button></div><div class="mrg-norte-pc-opcoes"></div><div class="mrg-norte-pc-config-footer"><label><input type="checkbox" data-restaurar> Restaurar ao padrão inicial</label><button type="button" data-minutos>VER MINUTOS FAVORÁVEIS</button></div>';
+  config.innerHTML='<div class="mrg-norte-pc-config-head"><b>Altere da melhor forma que você gostaria.</b><button type="button" data-fechar>FECHAR</button></div><div class="mrg-norte-pc-opcoes"></div><div class="mrg-norte-pc-config-footer"><label><input type="checkbox" data-restaurar> Restaurar ao padrão inicial</label></div>';
   const lista=config.querySelector('.mrg-norte-pc-opcoes');
   for(const x of itens){const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.dataset.metrica=x.id;label.append(input,document.createTextNode(x.nome));lista.appendChild(label)}
   painel.appendChild(config);
@@ -5069,8 +5073,26 @@ html.mrg-p3-norte-pc-personalizar #mrgPagina3 .mrg-norte-pc-config-footer{displa
   config.addEventListener('click',e=>e.stopPropagation());
   config.addEventListener('change',e=>{const i=e.target;if(i.matches('[data-restaurar]')){estado=padrao()}else if(i.matches('[data-metrica]')){estado[i.dataset.metrica]=i.checked}else return;salvar();aplicar()});
   config.querySelector('[data-fechar]').addEventListener('click',fechar);
-  config.querySelector('[data-minutos]').addEventListener('click',()=>{fechar();if(typeof window.mrgAbrirMinutoBom==='function')window.mrgAbrirMinutoBom()});
-  painel.addEventListener('click',e=>{if(config.contains(e.target))return;e.preventDefault();e.stopPropagation();config.hidden=false;aplicar()},true);
+  const minuto=document.getElementById('mrgMinutoBomMini');
+  const ranking=document.createElement('div');ranking.className='mrg-norte-pc-config mrg-norte-pc-ranking';ranking.hidden=true;
+  ranking.setAttribute('role','dialog');ranking.setAttribute('aria-label','Minutos mais favoráveis');
+  ranking.innerHTML='<div class="mrg-norte-pc-config-head"><b>🌹 MINUTOS MAIS FAVORÁVEIS</b><button type="button">FECHAR</button></div><div class="mrg-modal-sub">Amostra das últimas 10 rosas</div><div class="mrg-ranking-minutos"></div>';
+  painel.appendChild(ranking);
+  const fecharRanking=()=>{ranking.hidden=true};
+  const renderRanking=()=>{const fonte=document.getElementById('mrgConteudoMinutoBom');if(fonte&&!ranking.hidden)ranking.querySelector('.mrg-ranking-minutos').innerHTML=fonte.innerHTML};
+  const abrirRanking=()=>{fechar();ranking.hidden=false;mrgP3RenderMinutoBom();renderRanking()};
+  const fonteRanking=document.getElementById('mrgConteudoMinutoBom');
+  if(fonteRanking)new MutationObserver(renderRanking).observe(fonteRanking,{childList:true,subtree:true});
+  ranking.querySelector('button').addEventListener('click',fecharRanking);
+  ranking.addEventListener('click',e=>e.stopPropagation());
+  ranking.addEventListener('keydown',e=>{if(e.key==='Escape')fecharRanking()});
+  if(minuto){minuto.setAttribute('role','button');minuto.setAttribute('tabindex','0');minuto.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();abrirRanking()}})}
+  painel.addEventListener('click',e=>{
+    if(!document.documentElement.classList.contains('mrg-p3-norte-pc-personalizar')||config.contains(e.target)||ranking.contains(e.target))return;
+    e.preventDefault();e.stopPropagation();
+    if(minuto?.contains(e.target)){abrirRanking();return}
+    fecharRanking();config.hidden=false;aplicar();
+  },true);
   config.addEventListener('keydown',e=>{if(e.key==='Escape')fechar()});
   function iniciar(){
     if(!document.documentElement.classList.contains('mrg-p3-host-aviator'))return;
