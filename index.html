@@ -1678,20 +1678,32 @@ function mrgP3EspelhoCalcular(rosa){
   if(!rosa||!Number.isFinite(rosa.ms)||!Number.isSafeInteger(rosa.round))return null;
   return Math.floor(rosa.ms/60000)*60000+(rosa.round%10||1)*60000;
 }
-// Conferência histórica, sem previsão de probabilidade: somente a ocorrência de 9x ou superior imediatamente seguinte.
+// Conferência histórica: rosa real prioritária; pagamento baixo confirmado após quatro rodadas adicionais.
 function mrgP3EspelhoConferencias(rodadas){
-  const rosas=rodadas.filter(r=>r.mult>=9);
-  const resultados=[];
-  const ultima=rodadas.at(-1);
-  for(let i=0;i<rosas.length;i++){
-    const r=rosas[i],prox=rosas[i+1],alvo=mrgP3EspelhoCalcular(r);
-    const inicio=alvo-40000,fim=alvo+100000;
-    if(prox&&prox.ms>=inicio&&prox.ms<fim)resultados.push(true);
-    else if(prox||ultima?.ms>=fim)resultados.push(false);
+  let referencia=null,candidato=-1,extras=0,encerrada=false;
+  const resultados=[],adaptativos=[];
+  for(let i=0;i<rodadas.length;i++){
+    const r=rodadas[i];
+    if(!referencia){if(r.mult>=10)referencia=r;continue;}
+    const alvo=mrgP3EspelhoCalcular(referencia),inicio=alvo-40000,fim=alvo+100000;
+    const dentro=r.ms>=inicio&&r.ms<fim;
+    if(r.mult>=10){
+      if(!encerrada){resultados.push(dentro);adaptativos.push(false);}
+      referencia=r;candidato=-1;extras=0;encerrada=false;continue;
+    }
+    if(encerrada)continue;
+    if(dentro&&r.mult>=7&&(candidato<0||r.mult>=rodadas[candidato].mult))candidato=i;
+    if(r.ms>=fim){
+      if(candidato<0){resultados.push(false);adaptativos.push(false);encerrada=true;continue;}
+      if(++extras>=4){
+        resultados.push(false);adaptativos.push(true);
+        referencia=rodadas[candidato];i=candidato;candidato=-1;extras=0;encerrada=false;
+      }
+    }
   }
-  return resultados.slice(-5);
+  return {referencia,resultados:resultados.slice(-5),adaptativos:adaptativos.slice(-5)};
 }
-let MRG_ESPELHO_ULTIMA_ROSA=null,MRG_ESPELHO_ULTIMA_LEITURA=0,MRG_ESPELHO_REGISTROS=[],MRG_ESPELHO_CONFERENCIAS=[];
+let MRG_ESPELHO_ULTIMA_ROSA=null,MRG_ESPELHO_ULTIMA_LEITURA=0,MRG_ESPELHO_REGISTROS=[],MRG_ESPELHO_CONFERENCIAS=[],MRG_ESPELHO_ADAPTATIVOS=[];
 function mrgP3EspelhoExibir(){
   const el=document.getElementById('p3AnalistaEspelho');if(!el)return;
   const nota=el.parentElement.querySelector('small');
@@ -1705,7 +1717,7 @@ function mrgP3EspelhoExibir(){
   const status=valido&&n?'Hist. '+Math.round(100*k/n)+'% · '+k+'/'+n:valido?'Hist. — · 0/5':'Aguardando rosa';
   if(nota&&nota.textContent!==status)nota.textContent=status;
   if(nota)nota.title='Coincidências históricas nas últimas até cinco conferências; tolerância de 40 segundos antes e após o minuto. Não é probabilidade futura.';
-  el.title='Somatória da última ocorrência de 9x ou superior; não estima a probabilidade da próxima rodada.'+(agora-MRG_ESPELHO_ULTIMA_LEITURA>=120000?' Histórico desatualizado.':'');
+  el.title='Somatória da última referência confirmada; não estima a probabilidade da próxima rodada.'+(agora-MRG_ESPELHO_ULTIMA_LEITURA>=120000?' Histórico desatualizado.':'');
   el.closest('.mrg-espelho-cell')?.classList.remove('mrg-espelho-referencia');
 }
 function mrgP3EspelhoAtualizar(dados){
@@ -1718,8 +1730,6 @@ function mrgP3EspelhoAtualizar(dados){
     const r=String(mrgNumeroRodada(v)).match(/(\d+)$/),mult=Number(v.multiplicador);
     if(!r||!Number.isSafeInteger(Number(r[1]))||!Number.isFinite(mult)||mult<1)continue;
     const rosa={round:Number(r[1]),ms,mult};novas.push(rosa);
-    const anterior=MRG_ESPELHO_ULTIMA_ROSA;
-    if(mult>=9&&(!anterior||ms>anterior.ms||(ms===anterior.ms&&rosa.round>=anterior.round)))MRG_ESPELHO_ULTIMA_ROSA=rosa;
   }
   if(novas.length){
     const chave=r=>r.round+'|'+r.ms;
@@ -1731,7 +1741,10 @@ function mrgP3EspelhoAtualizar(dados){
     let inicio=ordenadas.length-1;
     while(inicio>0&&ordenadas[inicio].round===ordenadas[inicio-1].round+1)inicio--;
     MRG_ESPELHO_REGISTROS=ordenadas.slice(Math.max(0,inicio)).slice(-5000);
-    MRG_ESPELHO_CONFERENCIAS=mrgP3EspelhoConferencias(MRG_ESPELHO_REGISTROS);
+    const analise=mrgP3EspelhoConferencias(MRG_ESPELHO_REGISTROS);
+    MRG_ESPELHO_ULTIMA_ROSA=analise.referencia;
+    MRG_ESPELHO_CONFERENCIAS=analise.resultados;
+    MRG_ESPELHO_ADAPTATIVOS=analise.adaptativos;
   }
   mrgP3EspelhoExibir();
 }
