@@ -1455,7 +1455,7 @@ html.mrg-p3-portal:not(.mrg-p3-host-aviator) #mrgPagina3 .mrg-norte-gatilho-mobi
           </section>
         </div>
         <div class="center-footer mrg-footer-operacao"><span>MRG EXTERMINADOR DE SINAIS · AVIATOR 1WIN</span><div class="mrg-footer-botoes"><button type="button" class="mrg-btn-depositar" onclick="mrgDepositarAviator()">DEPOSITAR</button><button type="button" class="mrg-btn-atualizar" onclick="mrgAtualizarAviator()" title="Atualizar Aviator">↻</button></div></div>
-    <section class="panel p3-history mrg-analise-pausavel"><div class="panel-title">📊 HISTÓRICO AO VIVO · ÚLTIMAS 24H</div><div class="p3-history-tools"><button type="button" class="ativo" data-p3f="TODAS" onclick="mrgP3Filtro('TODAS',this)">TODAS</button><button type="button" data-p3f="AZUL" onclick="mrgP3Filtro('AZUL',this)">AZUIS</button><button type="button" data-p3f="ROXO" onclick="mrgP3Filtro('ROXO',this)">ROXAS</button><button type="button" data-p3f="ROSA" onclick="mrgP3Filtro('ROSA',this)">ROSAS</button><button type="button" data-p3f="10-50" onclick="mrgP3Filtro('10-50',this)">10–50x</button><button type="button" data-p3f="50-100" onclick="mrgP3Filtro('50-100',this)">50–100x</button><button type="button" data-p3f="100-200" onclick="mrgP3Filtro('100-200',this)">100–200x</button><button type="button" data-p3f="200+" onclick="mrgP3Filtro('200+',this)">200x+</button><span id="p3HistoricoMeta" class="p3-history-meta">0 velas</span></div><div id="p3HistoricoGrid" class="p3-history-grid"><div class="empty">Aguardando histórico...</div></div><div class="p3-history-actions"><button type="button" onclick="mrgP3CarregarMais()">CARREGAR +100</button><button type="button" onclick="mrgP3VoltarInicio()">VOLTAR AO INÍCIO (50)</button></div></section>
+    <section class="panel p3-history mrg-analise-pausavel"><div class="panel-title">📊 HISTÓRICO AO VIVO · ÚLTIMAS 24H</div><div class="p3-history-tools"><button type="button" class="ativo" data-p3f="TODAS" onclick="mrgP3Filtro('TODAS',this)">TODAS</button><button type="button" data-p3f="AZUL" onclick="mrgP3Filtro('AZUL',this)">AZUIS</button><button type="button" data-p3f="ROXO" onclick="mrgP3Filtro('ROXO',this)">ROXAS</button><button type="button" data-p3f="ROSA" onclick="mrgP3Filtro('ROSA',this)">ROSAS</button><button type="button" data-p3f="10-50" onclick="mrgP3Filtro('10-50',this)">10–50x</button><button type="button" data-p3f="50-100" onclick="mrgP3Filtro('50-100',this)">50–100x</button><button type="button" data-p3f="100-200" onclick="mrgP3Filtro('100-200',this)">100–200x</button><button type="button" data-p3f="200+" onclick="mrgP3Filtro('200+',this)">200x+</button><label style="display:inline-flex;align-items:center;gap:3px;font-size:9px;color:inherit">Colunas <select id="mrgP3HistoricoColunas" aria-label="Colunas do histórico" style="width:auto;min-width:0;margin:0;padding:3px;background:#080808;color:#ccc;border:1px solid #303030;border-radius:5px;font-size:10px"><option value="12">12</option><option value="10">10</option><option value="8" selected>8</option><option value="6">6</option></select></label><span id="p3HistoricoMeta" class="p3-history-meta">0 velas</span></div><div id="p3HistoricoGrid" class="p3-history-grid"><div class="empty">Aguardando histórico...</div></div><div class="p3-history-actions"><button type="button" onclick="mrgP3CarregarMais()">CARREGAR +100</button><button type="button" onclick="mrgP3VoltarInicio()">VOLTAR AO INÍCIO (50)</button></div></section>
       </section>
 
       <aside class="side right-side mrg-right-clean p3-right-real mrg-analise-pausavel">
@@ -1767,6 +1767,9 @@ function mrgP3AjustarFonteGrade(){
     texto.style.setProperty('max-width','none','important');
     texto.style.setProperty('letter-spacing','-.2px','important');
     let tamanho=document.documentElement.classList.contains('mrg-p3-host-aviator')&&/Electron\/\d+/i.test(navigator.userAgent)?14:10;
+    if(grade.dataset.mrgColunas==='6')tamanho+=3;
+    else if(grade.dataset.mrgColunas==='10')tamanho-=1;
+    else if(grade.dataset.mrgColunas==='12')tamanho-=2;
     const largura=Math.max(8,card.clientWidth-4);
     texto.style.setProperty('font-size',tamanho+'px','important');
     while(tamanho>4 && texto.getBoundingClientRect().width>largura){
@@ -1776,6 +1779,24 @@ function mrgP3AjustarFonteGrade(){
   });
 }
 let mrgP3FonteGradePendente=false;
+function mrgP3ConfigurarColunasHistorico(){
+  const grade=document.getElementById('p3HistoricoGrid'), seletor=document.getElementById('mrgP3HistoricoColunas');
+  if(!grade||!seletor)return;
+  const opcoes=['12','10','8','6'], chave='mrg_p3_historico_colunas_v1';
+  function aplicar(valor,salvar){
+    if(!opcoes.includes(valor))valor='8';
+    seletor.value=valor;
+    grade.style.setProperty('grid-template-columns','repeat('+valor+',minmax(0,1fr))','important');
+    grade.dataset.mrgColunas=valor;
+    if(salvar)try{localStorage.setItem(chave,valor)}catch(e){}
+    mrgP3AgendarFonteGrade();
+  }
+  let valor='8';try{valor=localStorage.getItem(chave)||'8'}catch(e){}
+  seletor.addEventListener('change',()=>aplicar(seletor.value,true));
+  aplicar(valor,false);
+}
+
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mrgP3ConfigurarColunasHistorico,{once:true});else mrgP3ConfigurarColunasHistorico();
 function mrgP3AgendarFonteGrade(){
   if(mrgP3FonteGradePendente)return;
   mrgP3FonteGradePendente=true;
